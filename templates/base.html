@@ -16,6 +16,7 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:browse' %}">Browse</a></li>
                 <li class="nav-item"><a class="nav-link" href="/accounts/login/">Login</a></li>
                 <li class="nav-item"><a class="nav-link" href="/accounts/signup/">Sign up</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'orders:cart_detail' %}">Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a></li>
             </ul>
         </div>
     </div>
