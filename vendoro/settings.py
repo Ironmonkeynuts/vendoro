@@ -65,6 +65,10 @@ ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+ACCOUNT_FORMS = {
+    "signup": "users.forms.RoleSignupForm",
+}
+
 
 # Email backend: console in dev, SMTP in prod
 if DEBUG:
@@ -87,6 +91,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'vendoro.urls'
