@@ -77,3 +77,29 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.shop.name})"
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField(upload_to="product_images/")
+    alt_text = models.CharField(max_length=200, blank=True)
+
+
+class Inventory(models.Model):
+    product = models.OneToOneField(
+        Product, on_delete=models.CASCADE, related_name="inventory"
+    )
+    quantity = models.PositiveIntegerField(default=0)
+    low_stock_threshold = models.PositiveIntegerField(default=5)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def is_in_stock(self):
+        return self.quantity > 0
+
+    def is_low_stock(self):
+        return self.quantity <= self.low_stock_threshold
+
+    def __str__(self):
+        return f"{self.product.title} ({self.quantity} in stock)"
