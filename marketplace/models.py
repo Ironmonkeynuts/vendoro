@@ -98,6 +98,9 @@ class Inventory(models.Model):
     low_stock_threshold = models.PositiveIntegerField(default=5)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'inventories'
+
     def is_in_stock(self):
         return self.quantity > 0
 
