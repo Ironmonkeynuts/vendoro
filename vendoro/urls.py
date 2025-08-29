@@ -23,4 +23,11 @@ urlpatterns = [
             namespace="marketplace"
         )
     ),
+    path(
+        "orders/",
+        include(
+            ("orders.urls", "orders"),
+            namespace="orders"
+        )
+    ),
 ]
