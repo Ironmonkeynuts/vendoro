@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'home',
     'users',
     'marketplace',
+    'orders',
 ]
 
 SITE_ID = 1
