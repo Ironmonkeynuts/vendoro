@@ -54,8 +54,8 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
-"django.contrib.auth.backends.ModelBackend",
-"allauth.account.auth_backends.AuthenticationBackend",
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 # allauth config
@@ -80,7 +80,9 @@ else:
     EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "apikey")
     EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
     EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@vendoro.app")
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "no-reply@vendoro.app"
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
