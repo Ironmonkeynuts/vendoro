@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-8">
+            <h2>{{ product.title }}</h2>
+            <p class="lead">£{{ product.price }}</p>
+            <p>{{ product.description }}</p>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Sold by</h6>
+                    <a href="{% url 'marketplace:shop_detail' slug=product.shop.slug %}">{{ product.shop.name }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

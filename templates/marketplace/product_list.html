@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Browse products</h2>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-sm-6"><input class="form-control" type="text" name="q" value="{{ request.GET.q }}" placeholder="Search"></div>
+    <div class="col-sm-3">
+        <select class="form-select" name="sort">
+            <option value="">Newest</option>
+            <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price ↑</option>
+            <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price ↓</option>
+        </select>
+    </div>
+    <div class="col-sm-3"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    {% for p in object_list %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ p.title }}</h5>
+                    <p class="card-text">£{{ p.price }}</p>
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'marketplace:product_detail' shop_slug=p.shop.slug product_slug=p.slug %}">View</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'marketplace:shop_detail' slug=p.shop.slug %}">{{ p.shop.name }}</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p>No products yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="p-3 mb-3 rounded" style="background: {{ shop.primary_color }}; color: #fff;">
+        <h2 class="m-0">{{ shop.name }}</h2>
+        <small style="color: {{ shop.highlight_color }}">{{ shop.tagline }}</small>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+        {% for p in products %}
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ p.title }}</h5>
+                        <p class="card-text">£{{ p.price }}</p>
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'marketplace:product_detail' shop_slug=shop.slug product_slug=p.slug %}">View</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No products yet.</p>
+        {% endfor %}
+    </div>
+    </div>
+{% endblock %}
