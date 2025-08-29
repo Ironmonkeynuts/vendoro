@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # Apps
     'home',
     'users',
+    'marketplace',
 ]
 
 SITE_ID = 1
