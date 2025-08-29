@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from home.views import health
+from home.views import index
 from allauth.account.decorators import verified_email_required
 from django.http import HttpResponse
 
@@ -29,6 +29,7 @@ def verified(_):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
-    path("", health, name="health"),
     path("protected/", verified, name="verified"),
+    path("", index, name="home"),
+    path("home/", index, name="home_alt"),
 ]
