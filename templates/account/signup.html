@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<h2>Create account</h2>
+<form method="post" class="row">{% csrf_token %}
+{{ form.non_field_errors }}
+<div class="col-md-6">{{ form.username.label_tag }} {{ form.username }}</div>
+<div class="col-md-6">{{ form.email.label_tag }} {{ form.email }}</div>
+<div class="col-md-6">{{ form.password1.label_tag }} {{ form.password1 }}</div>
+<div class="col-md-6">{{ form.password2.label_tag }} {{ form.password2 }}</div>
+<div class="col-12">{{ form.role.label_tag }} {{ form.role }}</div>
+<div class="col-12 mt-3"><button class="btn btn-primary">{% trans "Create account" %}</button></div>
+</form>
+{% endblock %}

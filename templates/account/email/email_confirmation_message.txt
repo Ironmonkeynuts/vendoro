@@ -1,0 +1,8 @@
+Hi {{ user.username }},
+
+Please confirm your email for Vendoro by clicking the link below:
+{{ activate_url }}
+
+If you didn’t request this, you can ignore this email.
+
+— Vendoro
