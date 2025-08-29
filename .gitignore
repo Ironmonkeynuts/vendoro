@@ -7,3 +7,12 @@ __pycache__/
 node_modules/
 .github/
 cloudinary_python.txt
+.venv/
+.env
+settings.json
+# Django
+/staticfiles/
+/media/
+.DS_Store
+# SQLite dev
+/db.sqlite3
