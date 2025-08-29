@@ -41,6 +41,9 @@ class Category(models.Model):
     name = models.CharField(max_length=120, unique=True)
     slug = models.SlugField(unique=True, blank=True)
 
+    class Meta:
+        verbose_name_plural = 'categories'
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
