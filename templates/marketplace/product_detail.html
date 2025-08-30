@@ -17,6 +17,9 @@
     </div>
     <form method="post" action="{% url 'orders:add_to_cart' product_id=product.id %}">
         {% csrf_token %}
-        <button class="btn btn-success">Add to cart</button>
+        <div class="input-group" style="max-width:220px;">
+            <input type="number" name="quantity" class="form-control" min="1" value="1">
+            <button class="btn btn-success">Add to cart</button>
+        </div>
     </form>
 {% endblock %}
