@@ -83,3 +83,13 @@ def remove_item(request, item_id):
         "ok": True,
         "total": float(cart.total())
     })
+
+
+@login_required
+def clear_cart(request):
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST required")
+    cart = Cart.objects.filter(user=request.user, active=True).first()
+    if cart:
+        cart.items.all().delete()
+    return redirect("orders:cart_detail")

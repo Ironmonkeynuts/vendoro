@@ -20,6 +20,9 @@
   {% endfor %}
   </tbody>
 </table>
+<form class="d-inline" method="post" action="{% url 'orders:clear_cart' %}">{% csrf_token %}
+  <button class="btn btn-outline-secondary">Empty cart</button>
+</form>
 <h4>Total: £<span id="cart-total">{{ total }}</span></h4>
 <a class="btn btn-primary" href="#" disabled>Checkout</a>
 {% else %}
