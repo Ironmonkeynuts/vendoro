@@ -3,6 +3,8 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from marketplace.models import Product
 from .models import Cart, CartItem
+from .forms import QuantityAddForm
+from .utils import get_active_cart
 
 
 @login_required
@@ -22,12 +24,18 @@ def cart_detail(request):
 def add_to_cart(request, product_id):
     if request.method != "POST":
         return HttpResponseBadRequest("POST required")
+    form = QuantityAddForm(request.POST)
+    if not form.is_valid():
+        return HttpResponseBadRequest("Invalid quantity")
+    qty = form.cleaned_data["quantity"]
     product = get_object_or_404(Product, id=product_id, is_active=True)
-    cart, _ = Cart.objects.get_or_create(user=request.user, active=True)
+    cart = get_active_cart(request.user)
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    if not created:
-        item.quantity += 1
-        item.save()
+    if created:
+        item.quantity = qty
+    else:
+        item.quantity += qty
+    item.save()
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({
             "ok": True,

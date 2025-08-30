@@ -8,21 +8,31 @@ User = settings.AUTH_USER_MODEL
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="carts"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
 
     def total(self) -> Decimal:
-        return sum((item.subtotal() for item in self.items.select_related("product")), Decimal("0.00"))
+        return sum(
+            (item.subtotal() for item in self.items.select_related("product")),
+            Decimal("0.00")
+        )
 
     def __str__(self):
         return f"Cart #{self.id} for {self.user} (active={self.active})"
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    cart = models.ForeignKey(
+        Cart, on_delete=models.CASCADE, related_name="items"
+    )
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+    quantity = models.PositiveIntegerField(
+        default=1, validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         unique_together = ("cart", "product")
