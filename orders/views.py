@@ -81,6 +81,10 @@ def remove_item(request, item_id):
     )
     cart = item.cart
     item.delete()
+    messages.success(
+        request,
+        f"Removed {item.quantity} × {item.product.title} from your cart."
+    )
     return JsonResponse({
         "ok": True,
         "total": float(cart.total())
@@ -94,4 +98,5 @@ def clear_cart(request):
     cart = Cart.objects.filter(user=request.user, active=True).first()
     if cart:
         cart.items.all().delete()
+        messages.success(request, "Your cart has been cleared.")
     return redirect("orders:cart_detail")
