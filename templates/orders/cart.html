@@ -24,11 +24,10 @@
   <button class="btn btn-outline-secondary">Empty cart</button>
 </form>
 <h4>Total: £<span id="cart-total">{{ total }}</span></h4>
-{% extends "base.html" %}
-{% block content %}
-  <div class="alert alert-warning">Checkout canceled. You can try again anytime.</div>
-  <a class="btn btn-secondary" href="{% url 'orders:cart_detail' %}">Back to cart</a>
-{% endblock %}
+<form method="post" action="{% url 'payments:create_checkout_session' %}" class="d-inline">
+  {% csrf_token %}
+  <button class="btn btn-primary">Checkout</button>
+</form>
 {% else %}
 <p>Your cart is empty.</p>
 {% endif %}
