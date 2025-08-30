@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from orders.models import Cart, Order, OrderItem
 import stripe
@@ -85,7 +86,10 @@ def create_checkout_session(request):
 
 @login_required
 def success(request):
-    messages.success(request, "Payment received. Thank you! Your order is confirmed.")
+    messages.success(
+        request,
+        "Payment received. Thank you! Your order is confirmed."
+    )
     return render(request, "payments/success.html")
 
 
@@ -93,3 +97,51 @@ def success(request):
 def cancel(request):
     messages.warning(request, "Checkout canceled. Your cart is preserved.")
     return render(request, "payments/cancel.html")
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError:
+        return HttpResponse(status=400)
+    except stripe.SignatureVerificationError:
+        return HttpResponse(status=400)
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        metadata = session.get("metadata", {})
+        order_id = metadata.get("order_id")
+        cart_id = metadata.get("cart_id")
+
+        if order_id:
+            try:
+                order = Order.objects.get(id=order_id)
+                order.status = Order.Status.PAID
+                if session.get("amount_total"):
+                    if session["amount_total"] != _pence(order.total_amount):
+                        messages.error(
+                            request,
+                            "Stripe amount does not match order total."
+                        )
+                    order.total_amount = Decimal(session["amount_total"]) / 100
+                order.save()
+            except Order.DoesNotExist:
+                pass
+
+        if cart_id:
+            try:
+                cart = Cart.objects.get(id=cart_id)
+                cart.items.all().delete()
+                cart.active = False
+                cart.save()
+            except Cart.DoesNotExist:
+                pass
+
+    return HttpResponse(status=200)
