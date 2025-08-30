@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="alert alert-warning">Checkout canceled. You can try again anytime.</div>
+  <a class="btn btn-secondary" href="{% url 'orders:cart_detail' %}">Back to cart</a>
+{% endblock %}
