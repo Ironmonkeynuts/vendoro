@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from marketplace.models import Product
@@ -36,6 +37,7 @@ def add_to_cart(request, product_id):
     else:
         item.quantity += qty
     item.save()
+    messages.success(request, f"Added {qty} × {product.title} to your cart.")
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({
             "ok": True,
