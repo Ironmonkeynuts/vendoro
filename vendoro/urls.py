@@ -30,4 +30,11 @@ urlpatterns = [
             namespace="orders"
         )
     ),
+    path(
+        "payments/",
+        include(
+            ("payments.urls", "payments"),
+            namespace="payments"
+        )
+    ),
 ]
