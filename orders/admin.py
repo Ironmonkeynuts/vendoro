@@ -14,5 +14,11 @@ class CartAdmin(admin.ModelAdmin):
     inlines = [CartItemInline]
 
 
-admin.site.register(Order)
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "shop", "status", "total_amount", "created_at")
+    list_filter = ("status", "shop")
+    date_hierarchy = "created_at"
+
+
 admin.site.register(OrderItem)
