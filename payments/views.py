@@ -8,8 +8,11 @@ from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from orders.models import Cart, Order, OrderItem
 import stripe
+import logging
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+logger = logging.getLogger(__name__)
 
 
 def _abs_url(request, name):
@@ -25,64 +28,88 @@ def create_checkout_session(request):
     if request.method != "POST":
         return HttpResponseBadRequest("POST required")
 
-    cart = Cart.objects.filter(
-        user=request.user, active=True
-    ).prefetch_related("items__product", "items").first()
+    # Fast fail if keys aren’t set
+    if not settings.STRIPE_SECRET_KEY or not settings.STRIPE_PUBLIC_KEY:
+        messages.error(
+            request, "Payment is not configured. Please try again later."
+        )
+        return redirect("orders:cart_detail")
+
+    cart = (Cart.objects
+            .filter(user=request.user, active=True)
+            .prefetch_related("items__product", "items")
+            .first())
     if not cart or cart.items.count() == 0:
         messages.error(request, "Your cart is empty.")
         return redirect("orders:cart_detail")
-    # Enforce single-shop cart for now
+
+    # Enforce single-shop cart (for now)
     shops = {i.product.shop_id for i in cart.items.all()}
     if len(shops) != 1:
         messages.error(
             request,
-            "Multi‑shop checkout not yet supported. "
+            "Multi-shop checkout not yet supported. "
             "Please keep items from one shop."
         )
         return redirect("orders:cart_detail")
 
     shop_id = next(iter(shops))
-    # Create pending Order + OrderItems (snapshot prices)
+
+    # Create pending Order + snapshot items
     total = Decimal("0.00")
     order = Order.objects.create(
         user=request.user, shop_id=shop_id, status=Order.Status.PENDING
     )
     for it in cart.items.all():
         OrderItem.objects.create(
-            order=order,
-            product=it.product,
-            unit_price=it.product.price,
+            order=order, product=it.product, unit_price=it.product.price,
             quantity=it.quantity
         )
         total += it.product.price * it.quantity
     order.total_amount = total
     order.save()
-    # Build Stripe line items
-    line_items = []
-    for it in cart.items.select_related("product"):
-        line_items.append({
-            "price_data": {
-                "currency": settings.STRIPE_CURRENCY,
-                "product_data": {"name": it.product.title},
-                "unit_amount": _pence(it.product.price),
-            },
-            "quantity": it.quantity,
-        })
 
-    session = stripe.checkout.Session.create(
-        mode="payment",
-        line_items=line_items,
-        success_url=_abs_url(request, "payments:success"),
-        cancel_url=_abs_url(request, "payments:cancel"),
-        metadata={
-            "order_id": str(order.id),
-            "user_id": str(request.user.id),
-            "cart_id": str(cart.id),
+    line_items = [{
+        "price_data": {
+            "currency": settings.STRIPE_CURRENCY,
+            "product_data": {"name": it.product.title},
+            "unit_amount": _pence(it.product.price),
         },
-    )
-    messages.info(request, "Redirecting to secure checkout…")
-    # Redirect user to Stripe Checkout
-    return redirect(session.url)
+        "quantity": it.quantity,
+    } for it in cart.items.select_related("product")]  # type: ignore
+
+    try:
+        session = stripe.checkout.Session.create(
+            mode="payment",
+            line_items=line_items,  # type: ignore
+            success_url=_abs_url(request, "payments:success"),
+            cancel_url=_abs_url(request, "payments:cancel"),
+            metadata={  # type: ignore
+                "order_id": str(order.id),
+                "user_id": str(request.user.id),
+                "cart_id": str(cart.id)
+            },
+        )
+        return redirect(session.url)
+
+    except stripe.AuthenticationError:
+        order.status = Order.Status.CANCELED
+        order.save()
+        messages.error(
+            request,
+            "Payment configuration error. Please try again later."
+        )
+        return redirect("orders:cart_detail")
+
+    except stripe.StripeError as e:
+        order.status = Order.Status.CANCELED
+        order.save()
+        messages.error(
+            request,
+            getattr(e, "user_message", "Unable to start checkout.")
+        )
+        return redirect("orders:cart_detail")
+
 
 @login_required
 def success(request):
@@ -124,13 +151,18 @@ def stripe_webhook(request):
             try:
                 order = Order.objects.get(id=order_id)
                 order.status = Order.Status.PAID
-                if session.get("amount_total"):
-                    if session["amount_total"] != _pence(order.total_amount):
-                        messages.error(
-                            request,
-                            "Stripe amount does not match order total."
+                if session.get("amount_total") is not None:
+                    reported = Decimal(session["amount_total"]) / 100
+                    if reported != order.total_amount:
+                        logger.warning(
+                            "Stripe amount mismatch",
+                            extra={
+                                "order_id": order.id,  # type: ignore
+                                "expected": str(order.total_amount),
+                                "reported": str(reported)
+                            }
                         )
-                    order.total_amount = Decimal(session["amount_total"]) / 100
+                    order.total_amount = reported
                 order.save()
             except Order.DoesNotExist:
                 pass
@@ -138,7 +170,7 @@ def stripe_webhook(request):
         if cart_id:
             try:
                 cart = Cart.objects.get(id=cart_id)
-                cart.items.all().delete()
+                cart.items.all().delete()  # type: ignore
                 cart.active = False
                 cart.save()
             except Cart.DoesNotExist:
