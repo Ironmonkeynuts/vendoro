@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'allauth',
     'allauth.account',
+    'cloudinary',
+    'cloudinary_storage',
     # Apps
     'home',
     'users',
@@ -122,6 +124,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'orders.context_processors.cart_count',
+                'marketplace.context_processors.cloudinary',
             ],
         },
     },
@@ -187,6 +190,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get("CLOUDINARY_NAME", ""),
+    'API_KEY': os.environ.get("CLOUDINARY_API", ""),
+    'API_SECRET': os.environ.get("CLOUDINARY_SECRET", ""),
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -1,6 +1,12 @@
+import json
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView
+from cloudinary.utils import api_sign_request
 from .models import Product, Shop, ProductImage
 
 
@@ -19,7 +25,10 @@ class ProductList(ListView):
         cat = self.request.GET.get("category")
         sort = self.request.GET.get("sort")
         if q:
-            qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) | Q(shop__name__icontains=q) | Q(category__name__icontains=q))
+            qs = qs.filter(
+                Q(title__icontains=q) | Q(description__icontains=q) |
+                Q(shop__name__icontains=q) | Q(category__name__icontains=q)
+            )
         if cat:
             qs = qs.filter(category__slug=cat)
         # qs = qs.annotate(avg_rating=Avg("reviews__rating"))
@@ -53,4 +62,75 @@ def shop_detail(request, slug):
     products = shop.products.filter(is_active=True).order_by("-created_at")
     return render(
         request, "marketplace/shop_detail.html",
-        {"shop": shop, "products": products})
+        {"shop": shop, "products": products}
+    )
+
+
+ALLOWED_FOLDERS = {
+    "product": "vendoro/product_images",
+    "banner": "vendoro/shop_banners",
+}
+
+
+def _owns_product(user, product): 
+    return product.shop.owner_id == user.id
+
+
+def _owns_shop(user, shop): 
+    return shop.owner_id == user.id
+
+
+@login_required
+@require_GET
+def cloudinary_sign(request):
+    """
+    Sign the params the Upload Widget plans to use (e.g., timestamp, folder).
+    Only allow known folders; never expose API secret.
+    """
+    params = request.GET.dict()
+    folder = params.get("folder")
+    if folder not in ALLOWED_FOLDERS.values():
+        return HttpResponseBadRequest("Invalid folder")
+    signature = api_sign_request(
+        params, settings.CLOUDINARY_STORAGE["API_SECRET"]
+    )
+    return JsonResponse({"signature": signature})
+
+
+@login_required
+@require_POST
+def attach_product_image(request, pk):
+    """
+    After a successful client upload, the widget returns a public_id.
+    Persist it by creating a ProductImage row.
+    """
+    product = get_object_or_404(Product, pk=pk)
+    if not _owns_product(request.user, product):
+        return HttpResponseForbidden("Not your product")
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        public_id = data["public_id"]
+        alt_text = data.get("alt_text", "")
+    except Exception:
+        return HttpResponseBadRequest("Invalid payload")
+    ProductImage.objects.create(product=product, image=public_id, alt_text=alt_text)
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def update_shop_banner(request, slug):
+    """
+    Save/replace the shop banner with the uploaded Cloudinary public_id.
+    """
+    shop = get_object_or_404(Shop, slug=slug)
+    if not _owns_shop(request.user, shop):
+        return HttpResponseForbidden("Not your shop")
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        public_id = data["public_id"]
+    except Exception:
+        return HttpResponseBadRequest("Invalid payload")
+    shop.banner = public_id
+    shop.save(update_fields=["banner"])
+    return JsonResponse({"ok": True})

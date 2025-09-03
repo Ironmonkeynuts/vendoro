@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 
 
 User = settings.AUTH_USER_MODEL
@@ -16,7 +17,12 @@ class Shop(models.Model):
     tagline = models.CharField(max_length=255, blank=True)
     primary_color = models.CharField(max_length=7, default='#111827')
     highlight_color = models.CharField(max_length=7, default='#06b6d4')
-    banner = models.ImageField(upload_to='shop_banners/', blank=True)
+    banner = CloudinaryField(
+        'image',
+        folder='vendoro/shop_banners',
+        blank=True,
+        null=True
+    )
 
     class Meta:
         unique_together = ('owner', 'name')
@@ -86,7 +92,13 @@ class ProductImage(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="images"
     )
-    image = models.ImageField(upload_to="product_images/")
+    image = CloudinaryField(
+        'image',
+        folder='vendoro/product_images',
+        tags=['product_image'],
+        blank=True,
+        null=True
+    )
     alt_text = models.CharField(max_length=200, blank=True)
 
 
