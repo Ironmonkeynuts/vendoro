@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load cloudinary %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 980px;">
+  <h1 class="h4 mb-3">Edit Product — {{ product.title }}</h1>
+
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary">Save</button>
+    <a class="btn btn-outline-secondary" href="{% url 'marketplace:product_detail' product.shop.slug product.slug %}">View</a>
+  </form>
+
+  <hr class="my-4"/>
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h5 m-0">Images</h2>
+    <button id="btn-upload" class="btn btn-outline-primary">Add Images</button>
+  </div>
+
+  <div class="row g-3">
+    {% for pi in product.images.all %}
+      <div class="col-6 col-md-3 text-center">
+        {% cloudinary pi.image width=300 height=300 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=pi.alt_text %}
+        <div class="small text-muted mt-1">{{ pi.alt_text|default:"" }}</div>
+      </div>
+    {% empty %}
+      <div class="col-12"><em>No images yet.</em></div>
+    {% endfor %}
+  </div>
+</div>
+
+{# If not already included in base.html, include once here #}
+<script src="https://widget.cloudinary.com/v2.0/global/all.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cloudName = "{{ CLOUDINARY_CLOUD_NAME }}";
+  const apiKey = "{{ CLOUDINARY_API_KEY }}";
+  const signUrl = "{% url 'marketplace:cloudinary_sign' %}";
+  const attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
+
+  function getCookie(name){
+    const m=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+    return m?m.pop():'';
+  }
+
+  const widget = cloudinary.createUploadWidget({
+    cloudName,
+    apiKey,
+    uploadSignature: async (callback, paramsToSign) => {
+      const qs = new URLSearchParams(paramsToSign);
+      const res = await fetch(`${signUrl}?${qs.toString()}`, { credentials:'same-origin' });
+      callback((await res.json()).signature);
+    },
+    folder: 'vendoro/product_images',
+    sources: ['local','url','camera'],
+    multiple: true,
+    clientAllowedFormats: ['png','jpg','jpeg','webp'],
+    maxFileSize: 5_000_000
+  }, async (error, result) => {
+    if (!error && result && result.event === 'success') {
+      const info = result.info;
+      await fetch(attachUrl, {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type':'application/json'},
+        body: JSON.stringify({ public_id: info.public_id, alt_text: info.original_filename || '' })
+      });
+      location.reload();
+    }
+  });
+
+  const btn = document.getElementById('btn-upload');
+  if (btn) btn.addEventListener('click', () => widget.open());
+});
+</script>
+{% endblock %}

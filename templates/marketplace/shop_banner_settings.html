@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load cloudinary %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 960px;">
+  <h1 class="h4 mb-3">Shop Banner — {{ shop.name }}</h1>
+
+  <div class="mb-3">
+    {% if shop.banner %}
+      {% cloudinary shop.banner width=1200 height=375 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=shop.name %}
+    {% else %}
+      <div class="alert alert-info">No banner yet. Upload one below.</div>
+    {% endif %}
+  </div>
+
+  <button id="btn-banner" class="btn btn-outline-primary">Upload / Replace Banner</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cloudName = "{{ CLOUDINARY_CLOUD_NAME }}";
+  const apiKey = "{{ CLOUDINARY_API_KEY }}";
+
+  const signUrl = "{% url 'marketplace:cloudinary_sign' %}";
+  const updateUrl = "{% url 'marketplace:shop_banner_update' shop.slug %}";
+
+  function getCookie(name){
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
+  }
+
+  const widget = cloudinary.createUploadWidget({
+    cloudName: cloudName,
+    apiKey: apiKey,
+    uploadSignature: async (callback, paramsToSign) => {
+      const qs = new URLSearchParams(paramsToSign);
+      const res = await fetch(`${signUrl}?${qs.toString()}`, { credentials: 'same-origin' });
+      callback((await res.json()).signature);
+    },
+    folder: 'vendoro/shop_banners',
+    sources: ['local','url','camera'],
+    multiple: false,
+    clientAllowedFormats: ['png','jpg','jpeg','webp'],
+    maxFileSize: 8_000_000
+  }, async (error, result) => {
+    if (!error && result && result.event === 'success') {
+      const info = result.info;
+      await fetch(updateUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ public_id: info.public_id })
+      });
+      location.reload();
+    }
+  });
+
+  document.getElementById('btn-banner').addEventListener('click', () => widget.open());
+});
+</script>
+{% endblock %}

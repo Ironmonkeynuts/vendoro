@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load cloudinary %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 980px;">
+  <h1 class="h4 mb-3">Shop Settings — {{ shop.name }}</h1>
+
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary">Save</button>
+    <a class="btn btn-outline-secondary" href="{% url 'marketplace:shop_detail' shop.slug %}">View</a>
+  </form>
+
+  <hr class="my-4"/>
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h5 m-0">Banner</h2>
+    <button id="btn-banner" class="btn btn-outline-primary">Upload / Replace</button>
+  </div>
+
+  <div class="mb-3">
+    {% if shop.banner %}
+      {% cloudinary shop.banner width=1200 height=375 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=shop.name %}
+    {% else %}
+      <div class="alert alert-info">No banner yet. Upload one above.</div>
+    {% endif %}
+  </div>
+</div>
+
+{# If not already included in base.html, include once here #}
+<script src="https://widget.cloudinary.com/v2.0/global/all.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cloudName = "{{ CLOUDINARY_CLOUD_NAME }}";
+  const apiKey = "{{ CLOUDINARY_API_KEY }}";
+  const signUrl = "{% url 'marketplace:cloudinary_sign' %}";
+  const updateUrl = "{% url 'marketplace:shop_banner_update' shop.slug %}";
+
+  function getCookie(name){
+    const m=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+    return m?m.pop():'';
+  }
+
+  const widget = cloudinary.createUploadWidget({
+    cloudName,
+    apiKey,
+    uploadSignature: async (cb, params) => {
+      const res = await fetch(`${signUrl}?` + new URLSearchParams(params), { credentials:'same-origin' });
+      cb((await res.json()).signature);
+    },
+    folder: 'vendoro/shop_banners',
+    multiple: false,
+    clientAllowedFormats: ['png','jpg','jpeg','webp'],
+    maxFileSize: 8_000_000
+  }, async (error, result) => {
+    if (!error && result && result.event === 'success') {
+      const info = result.info;
+      await fetch(updateUrl, {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type':'application/json'},
+        body: JSON.stringify({ public_id: info.public_id })
+      });
+      location.reload();
+    }
+  });
+
+  const btn = document.getElementById('btn-banner');
+  if (btn) btn.addEventListener('click', () => widget.open());
+});
+</script>
+{% endblock %}
