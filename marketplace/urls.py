@@ -22,4 +22,15 @@ urlpatterns = [
         views.update_shop_banner,
         name="shop_banner_update"
     ),
+    path(
+        "products/<int:pk>/edit/",
+        views.product_edit,
+        name="product_edit"
+    ),
+    path(
+        "shops/<slug:slug>/settings/",
+        views.shop_settings,
+        name="shop_settings"
+    ),
+
 ]

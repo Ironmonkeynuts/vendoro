@@ -1,16 +1,26 @@
 import json
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    JsonResponse
+)
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
 from .models import Product, Shop, ProductImage
+from .forms import ProductForm, ShopForm
 
 
 class ProductList(ListView):
+    """
+    Display a list of products with search and sort functionality.
+    """
+    allow_empty = True
     template_name = "marketplace/product_list.html"
     model = Product
     paginate_by = 12
@@ -40,6 +50,9 @@ class ProductList(ListView):
 
 
 def product_detail(request, shop_slug, product_slug):
+    """
+    Display the details of a specific product.
+    """
     product = get_object_or_404(
         Product.objects.select_related("shop", "category"),
         shop__slug=shop_slug,
@@ -57,6 +70,9 @@ def product_detail(request, shop_slug, product_slug):
 
 
 def shop_detail(request, slug):
+    """
+    Display the details of a specific shop.
+    """
     shop = get_object_or_404(Shop, slug=slug)
     # shop.products is the reverse ForeignKey from Product model
     products = shop.products.filter(is_active=True).order_by("-created_at")
@@ -72,20 +88,73 @@ ALLOWED_FOLDERS = {
 }
 
 
-def _owns_product(user, product): 
+def _owns_product(user, product):
     return product.shop.owner_id == user.id
 
 
-def _owns_shop(user, shop): 
+def _owns_shop(user, shop):
     return shop.owner_id == user.id
+
+
+@login_required
+def product_edit(request, pk):
+    """
+    Edit a product.
+    """
+    if not request.user.is_authenticated:
+        return redirect("account:login")
+    product = get_object_or_404(Product, pk=pk)
+    if not _owns_product(request.user, product):
+        return HttpResponseForbidden("Not your product")
+
+    if request.method == "POST":
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product updated.")
+            return redirect("marketplace:product_edit", pk=product.pk)
+    else:
+        form = ProductForm(instance=product)
+
+    return render(
+        request,
+        "marketplace/product_edit.html",
+        {"product": product, "form": form},
+    )
+
+
+@login_required
+def shop_settings(request, slug):
+    """
+    Edit shop settings.
+    """
+    if not request.user.is_authenticated:
+        return redirect("account:login")
+    shop = get_object_or_404(Shop, slug=slug)
+    if not _owns_shop(request.user, shop):
+        return HttpResponseForbidden("Not your shop")
+
+    if request.method == "POST":
+        form = ShopForm(request.POST, instance=shop)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Shop settings saved.")
+            return redirect("marketplace:shop_settings", slug=shop.slug)
+    else:
+        form = ShopForm(instance=shop)
+
+    return render(
+        request,
+        "marketplace/shop_settings.html",
+        {"shop": shop, "form": form},
+    )
 
 
 @login_required
 @require_GET
 def cloudinary_sign(request):
     """
-    Sign the params the Upload Widget plans to use (e.g., timestamp, folder).
-    Only allow known folders; never expose API secret.
+    Sign a Cloudinary upload request.
     """
     params = request.GET.dict()
     folder = params.get("folder")
@@ -101,8 +170,7 @@ def cloudinary_sign(request):
 @require_POST
 def attach_product_image(request, pk):
     """
-    After a successful client upload, the widget returns a public_id.
-    Persist it by creating a ProductImage row.
+    Attach an image to a product.
     """
     product = get_object_or_404(Product, pk=pk)
     if not _owns_product(request.user, product):
@@ -113,7 +181,9 @@ def attach_product_image(request, pk):
         alt_text = data.get("alt_text", "")
     except Exception:
         return HttpResponseBadRequest("Invalid payload")
-    ProductImage.objects.create(product=product, image=public_id, alt_text=alt_text)
+    ProductImage.objects.create(
+        product=product, image=public_id, alt_text=alt_text
+    )
     return JsonResponse({"ok": True})
 
 
@@ -121,7 +191,7 @@ def attach_product_image(request, pk):
 @require_POST
 def update_shop_banner(request, slug):
     """
-    Save/replace the shop banner with the uploaded Cloudinary public_id.
+    Update the shop banner.
     """
     shop = get_object_or_404(Shop, slug=slug)
     if not _owns_shop(request.user, shop):
