@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView
-from .models import Product, Shop
+from .models import Product, Shop, ProductImage
 
 
 class ProductList(ListView):
@@ -19,7 +19,7 @@ class ProductList(ListView):
         cat = self.request.GET.get("category")
         sort = self.request.GET.get("sort")
         if q:
-            qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q))
+            qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) | Q(shop__name__icontains=q) | Q(category__name__icontains=q))
         if cat:
             qs = qs.filter(category__slug=cat)
         # qs = qs.annotate(avg_rating=Avg("reviews__rating"))
@@ -37,8 +37,13 @@ def product_detail(request, shop_slug, product_slug):
         slug=product_slug,
         is_active=True
     )
+    product_images = ProductImage.objects.filter(product=product)
+    context = {
+        "product": product,
+        "product_images": product_images,
+    }
     return render(
-        request, "marketplace/product_detail.html", {"product": product}
+        request, "marketplace/product_detail.html", context
     )
 
 
