@@ -1,26 +1,69 @@
 {% extends "base.html" %}
+{% load cloudinary %}
+
 {% block content %}
-    <div class="row">
-        <div class="col-md-8">
-            <h2>{{ product.title }}</h2>
-            <img src="{{ product_image.image.url }}" alt="">
-            <p class="lead">£{{ product.price }}</p>
-            <p>{{ product.description }}</p>
+<div class="row g-4">
+  <div class="col-md-8">
+    <h1 class="h4 mb-3">{{ product.title }}</h1>
+
+    {# Main image + thumbs #}
+    {% with images=product.images.all %}
+      {% if images %}
+        {% with lead=images.0 %}
+          <div class="mb-3">
+            {% cloudinary lead.image width=900 height=900 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=lead.alt_text class="img-fluid rounded" %}
+          </div>
+        {% endwith %}
+        {% if images|length > 1 %}
+          <div class="d-flex flex-wrap gap-2">
+            {% for pi in images %}
+              <a href="{% url 'marketplace:product_detail' product.shop.slug product.slug %}#"
+                 onclick="event.preventDefault(); document.getElementById('lead-img-{{ forloop.counter }}')?.scrollIntoView({behavior:'smooth'});">
+                {% cloudinary pi.image width=140 height=140 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=pi.alt_text class="img-thumbnail" %}
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="bg-secondary bg-opacity-10 border rounded d-flex align-items-center justify-content-center" style="height: 420px;">
+          <span class="text-muted">No image yet</span>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6>Sold by</h6>
-                    <a href="{% url 'marketplace:shop_detail' slug=product.shop.slug %}">{{ product.shop.name }}</a>
-                </div>
-            </div>
-        </div>
+      {% endif %}
+    {% endwith %}
+
+    <p class="lead mt-4">£{{ product.price|floatformat:2 }}</p>
+    {% if product.description %}
+      <p>{{ product.description }}</p>
+    {% endif %}
+  </div>
+
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h6 class="text-uppercase text-muted mb-2">Sold by</h6>
+        <a href="{% url 'marketplace:shop_detail' slug=product.shop.slug %}">{{ product.shop.name }}</a>
+      </div>
     </div>
-    <form method="post" action="{% url 'orders:add_to_cart' product_id=product.id %}">
-        {% csrf_token %}
-        <div class="input-group" style="max-width:220px;">
-            <input type="number" name="quantity" class="form-control" min="1" value="1">
-            <button class="btn btn-success">Add to cart</button>
-        </div>
-    </form>
+
+    {# Add to cart #}
+    <div class="card">
+      <div class="card-body">
+        <form method="post" action="{% url 'orders:add_to_cart' product_id=product.id %}">
+          {% csrf_token %}
+          <div class="input-group" style="max-width: 260px;">
+            <input type="number" name="quantity" class="form-control" min="1" value="1" required>
+            <button class="btn btn-success" type="submit">Add to cart</button>
+          </div>
+        </form>
+        {% if product.inventory %}
+          {% if product.inventory.is_in_stock %}
+            <small class="text-success d-block mt-2">In stock ({{ product.inventory.quantity }})</small>
+          {% else %}
+            <small class="text-danger d-block mt-2">Out of stock</small>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -36,37 +36,55 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const cloudName = "{{ CLOUDINARY_CLOUD_NAME }}";
-  const apiKey = "{{ CLOUDINARY_API_KEY }}";
+  const cloudName = "{{ CLOUDINARY_CLOUD_NAME|default:'' }}";
+  const apiKey = "{{ CLOUDINARY_API_KEY|default:'' }}";
+
   const signUrl = "{% url 'marketplace:cloudinary_sign' %}";
   const attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
 
   function getCookie(name){
-    const m=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
-    return m?m.pop():'';
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
   }
 
   const widget = cloudinary.createUploadWidget({
-    cloudName,
-    apiKey,
-    uploadSignature: async (callback, paramsToSign) => {
-      const qs = new URLSearchParams(paramsToSign);
-      const res = await fetch(`${signUrl}?${qs.toString()}`, { credentials:'same-origin' });
-      callback((await res.json()).signature);
+    cloudName: cloudName,
+    apiKey: apiKey,
+    uploadSignature: async (cb, paramsToSign) => {
+      const url = signUrl + "?" + new URLSearchParams(paramsToSign).toString();
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) {
+        console.error("Sign failed", res.status, await res.text());
+        return cb("");
+      }
+      const { signature } = await res.json();
+      cb(signature);
     },
     folder: 'vendoro/product_images',
-    sources: ['local','url','camera'],
     multiple: true,
+    sources: ['local','url','camera'],
     clientAllowedFormats: ['png','jpg','jpeg','webp'],
-    maxFileSize: 5_000_000
+    maxFileSize: 5_000_000,
+    resourceType: 'image'
   }, async (error, result) => {
-    if (!error && result && result.event === 'success') {
+    if (error) {
+      console.error("Upload error:", error);
+      alert("Upload failed.");
+      return;
+    }
+    if (result && result.event === 'success') {
       const info = result.info;
-      await fetch(attachUrl, {
+      const r = await fetch(attachUrl, {
         method: 'POST',
-        headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type':'application/json'},
-        body: JSON.stringify({ public_id: info.public_id, alt_text: info.original_filename || '' })
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify({ public_id: info.public_id, alt_text: info.original_filename || '' }),
+        credentials: 'same-origin'
       });
+      if (!r.ok) {
+        console.error("Attach error", r.status, await r.text());
+        alert("Failed to attach image.");
+        return;
+      }
       location.reload();
     }
   });
@@ -75,4 +93,5 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) btn.addEventListener('click', () => widget.open());
 });
 </script>
+
 {% endblock %}
