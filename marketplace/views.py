@@ -159,25 +159,55 @@ def cloudinary_sign(request):
     return JsonResponse({"signature": signature})
 
 
+ALLOWED_PUBLIC_ID_PREFIX = "vendoro/product_images/"
+
+
 @login_required
 @require_POST
 def attach_product_image(request, pk):
     """
-    Attach an image to a product.
+    Attach a Cloudinary image (by public_id) to a product the user owns.
+    Expects JSON: {"public_id": "...", "alt_text": "..."}.
+    Returns 201 with basic image info.
     """
     product = get_object_or_404(Product, pk=pk)
     if not _owns_product(request.user, product):
         return HttpResponseForbidden("Not your product")
+
+    # Ensure we actually got JSON
+    if "application/json" not in request.headers.get("Content-Type", ""):
+        return HttpResponseBadRequest("Expected application/json")
+
     try:
         data = json.loads(request.body.decode("utf-8"))
         public_id = data["public_id"]
-        alt_text = data.get("alt_text", "")
-    except Exception:
+        alt_text = (data.get("alt_text") or "").strip()
+    except (json.JSONDecodeError, KeyError):
         return HttpResponseBadRequest("Invalid payload")
-    ProductImage.objects.create(
+
+    # Defense-in-depth: only allow images from our folder
+    if not public_id or not public_id.startswith(ALLOWED_PUBLIC_ID_PREFIX):
+        return HttpResponseBadRequest("Invalid public_id")
+
+    # Optional: cap alt text length to model max (200)
+    if len(alt_text) > 200:
+        alt_text = alt_text[:200]
+
+    # Create the DB record (CloudinaryField accepts a public_id string)
+    pi = ProductImage.objects.create(
         product=product, image=public_id, alt_text=alt_text
     )
-    return JsonResponse({"ok": True})
+
+    # Build a secure thumbnail URL so the client can inject it without a reload
+    thumb_url = CloudinaryImage(public_id).build_url(
+        width=600, height=600, crop="fill", gravity="auto",
+        fetch_format="auto", quality="auto", secure=True
+    )
+
+    return JsonResponse(
+        {"ok": True, "id": pi.id, "public_id": public_id, "url": thumb_url, "alt": alt_text},
+        status=201,
+    )
 
 
 @login_required
