@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 900px;">
+  <h1 class="h4 mb-3">Add Product — {{ shop.name }}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary">Create product</button>
+    <a class="btn btn-outline-secondary" href="{% url 'marketplace:shop_detail' shop.slug %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

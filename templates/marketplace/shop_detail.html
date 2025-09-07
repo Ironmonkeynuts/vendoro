@@ -4,6 +4,11 @@
         <h2 class="m-0">{{ shop.name }}</h2>
         <small style="color: {{ shop.highlight_color }}">{{ shop.tagline }}</small>
     </div>
+    {% if request.user.is_authenticated and request.user.id == shop.owner_id %}
+        <a class="btn btn-primary btn-sm" href="{% url 'marketplace:product_create' shop.slug %}">
+            + Add product
+        </a>
+    {% endif %}
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
         {% for p in products %}
             <div class="col">
