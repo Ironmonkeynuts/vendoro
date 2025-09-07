@@ -1,6 +1,7 @@
 import os
-import cloudinary
+import cloudinary as cld
 from django.conf import settings
+
 
 def cloudinary(request):
     """
@@ -8,7 +9,7 @@ def cloudinary(request):
     Pull from runtime SDK first, then env, then settings;
     always strip whitespace.
     """
-    cfg = cloudinary.config()
+    cfg = cld.config()
     store = getattr(settings, "CLOUDINARY_STORAGE", {})
 
     cloud_name = (
