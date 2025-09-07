@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from marketplace.models import Product, Shop
@@ -10,10 +11,24 @@ User = settings.AUTH_USER_MODEL
 class Cart(models.Model):
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="carts"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="carts"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=Q(active=True),
+                name="unique_active_cart_per_user",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["user", "active"]),
+        ]
 
     def total(self) -> Decimal:
         return sum(
