@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -144,8 +145,9 @@ WSGI_APPLICATION = 'vendoro.wsgi.application'
 # }
 DATABASES = {
    "default": dj_database_url.parse(
-       os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-       conn_max_age=600,
+        os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        conn_max_age=600,
+        ssl_require=not DEBUG
    )
 }
 
