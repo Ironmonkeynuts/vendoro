@@ -6,6 +6,8 @@ app_name = "marketplace"
 urlpatterns = [
     path("", views.ProductList.as_view(), name="browse"),
     path("cloudinary/sign/", views.cloudinary_sign, name="cloudinary_sign"),
+    # Shop creation
+    path("shops/new/", views.shop_create, name="shop_create"),
     # Shop settings
     path(
         "shops/<slug:slug>/settings/",

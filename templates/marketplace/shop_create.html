@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 900px;">
+  <h1 class="h4 mb-3">Create Shop</h1>
+
+  {% if form.errors %}
+    <div class="alert alert-danger">Please fix the errors below.</div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Create shop</button>
+    <a class="btn btn-outline-secondary" href="{% url 'marketplace:browse' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form');
+  if (!form) return;
+  form.addEventListener('submit', () => {
+    const btn = form.querySelector('button[type="submit"], .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
+  });
+});
+</script>
+{% endblock %}

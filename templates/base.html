@@ -22,7 +22,7 @@
                             <a class="nav-link" href="{% url 'marketplace:browse' %}">Browse</a>
                         </li>
 
-                        {# CASE A: You're on a product page and you own the shop #}
+                        <!-- CASE A: You're on a product page and you own the shop -->
                         {% if user.is_authenticated and product and product.shop.owner_id == user.id %}
                             <li class="nav-item">
                             <a class="nav-link" href="{% url 'marketplace:product_edit' product.id %}">Edit Product</a>
@@ -31,32 +31,43 @@
                             <a class="nav-link" href="{% url 'marketplace:shop_settings' product.shop.slug %}">Shop Settings</a>
                             </li>
 
-                        {# CASE B: You're on a shop page and you own it #}
+                        <!-- CASE B: You're on a shop page and you own it -->
                         {% elif user.is_authenticated and shop and shop.owner_id == user.id %}
                             <li class="nav-item">
-                            <a class="nav-link" href="{% url 'marketplace:product_create' shop.slug %}">Add Product</a>
+                                <a class="nav-link" href="{% url 'marketplace:product_create' shop.slug %}">Add Product</a>
                             </li>
                             <li class="nav-item">
-                            <a class="nav-link" href="{% url 'marketplace:shop_settings' shop.slug %}">Shop Settings</a>
+                                <a class="nav-link" href="{% url 'marketplace:shop_settings' shop.slug %}">Shop Settings</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'marketplace:shop_detail' shop.slug %}">View Shop</a>
                             </li>
 
-                        {# CASE C: Anywhere else — show a dropdown of *your* shops #}
-                        {% elif user.is_authenticated and my_shops %}
+                        <!-- CASE C: Anywhere — show Sell menu for any logged-in user -->
+                        {% elif user.is_authenticated %}
                             <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Sell
                             </a>
                             <ul class="dropdown-menu">
-                                {% for s in my_shops %}
-                                <li><h6 class="dropdown-header">{{ s.name }}</h6></li>
-                                <li><a class="dropdown-item" href="{% url 'marketplace:product_create' s.slug %}">Add Product</a></li>
-                                <li><a class="dropdown-item" href="{% url 'marketplace:shop_settings' s.slug %}">Shop Settings</a></li>
-                                <li><a class="dropdown-item" href="{% url 'marketplace:shop_detail' s.slug %}">View Shop</a></li>
-                                {% if not forloop.last %}<li><hr class="dropdown-divider"></li>{% endif %}
-                                {% endfor %}
+                                {% if my_shops %}
+                                    {% for s in my_shops %}
+                                        <li><h6 class="dropdown-header">{{ s.name }}</h6></li>
+                                        <li><a class="dropdown-item" href="{% url 'marketplace:product_create' s.slug %}">Add Product</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'marketplace:shop_settings' s.slug %}">Shop Settings</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'marketplace:shop_detail' s.slug %}">View Shop</a></li>
+                                        {% if not forloop.last %}<li><hr class="dropdown-divider"></li>{% endif %}
+                                    {% endfor %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'marketplace:shop_create' %}">Create another shop</a></li>
+                                {% else %}
+                                    <li><span class="dropdown-item-text text-muted">You don’t have a shop yet.</span></li>
+                                    <li><a class="dropdown-item" href="{% url 'marketplace:shop_create' %}">Create Shop</a></li>
+                               {% endif %}
                             </ul>
                             </li>
                         {% endif %}
+
                     </ul>
                     <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Cart badge if your orders context processor supplies cart_count -->

@@ -70,6 +70,29 @@ def product_detail(request, shop_slug, product_slug):
     )
 
 
+@login_required
+def shop_create(request):
+    """
+    Create a new shop (owner = request.user), then jump to settings to add banner etc.
+    """
+    if request.method == "POST":
+        form = ShopForm(request.POST, owner=request.user)
+        if form.is_valid():
+            shop = form.save(commit=False)
+            shop.owner = request.user
+            try:
+                shop.save()
+            except IntegrityError:
+                form.add_error("name", "You already have a shop with this name.")
+            else:
+                messages.success(request, "Shop created! Configure your shop settings below.")
+                return redirect("marketplace:shop_settings", slug=shop.slug)
+    else:
+        form = ShopForm(owner=request.user)
+
+    return render(request, "marketplace/shop_create.html", {"form": form})
+
+
 def shop_detail(request, slug):
     """
     Display the details of a specific shop.

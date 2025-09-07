@@ -36,11 +36,22 @@ class ProductForm(forms.ModelForm):
 
 
 class ShopForm(forms.ModelForm):
-    """Form for creating and updating shops."""
+    """ Form for creating and updating shops. """
+    def __init__(self, *args, owner=None, **kwargs):
+        self.owner = owner
+        super().__init__(*args, **kwargs)
+        self.fields["name"].widget.attrs.update(
+            {"placeholder": "My Awesome Shop"})
+
     class Meta:
         model = Shop
         fields = ["name", "tagline", "primary_color", "highlight_color"]
-        widgets = {
-            "primary_color": forms.TextInput(attrs={"type": "color"}),
-            "highlight_color": forms.TextInput(attrs={"type": "color"}),
-        }
+
+    def clean_name(self):
+        name = (self.cleaned_data.get("name") or "").strip()
+        owner = self.owner or getattr(self.instance, "owner", None)
+        if owner and name and Shop.objects.filter(
+            owner=owner, name__iexact=name
+        ).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("You already have a shop with this name.")
+        return name
