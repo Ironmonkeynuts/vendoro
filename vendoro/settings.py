@@ -19,7 +19,7 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 if os.path.isfile(BASE_DIR / "env.py"):
-    import env  # sets os.environ values
+    import env  # noqa; sets os.environ values
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -30,11 +30,25 @@ SECRET_KEY = os.environ.get("SECRET_KEY", default='your secret key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1"
+).split(",")
+
+CSRF_TRUSTED_ORIGINS = [
+    # Accept explicit entries from env (comma-separated, must include scheme)
+    *[o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o],
+    # Also auto-add https:// for any non-local ALLOWED_HOSTS
+    *[f"https://{h}" for h in ALLOWED_HOSTS if h and h not in (
+        "localhost", "127.0.0.1")],
 ]
 
+# Heroku proxy/HTTPS
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = os.getenv(
+    "SECURE_SSL_REDIRECT", "1") == "1" and not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Application definition
 
