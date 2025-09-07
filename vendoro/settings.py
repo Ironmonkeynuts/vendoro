@@ -140,6 +140,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'orders.context_processors.cart_count',
                 'marketplace.context_processors.cloudinary',
+                'marketplace.context_processors.seller_nav',
             ],
         },
     },

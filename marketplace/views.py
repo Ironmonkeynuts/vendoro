@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
-from .models import Product, Shop, ProductImage
+from .models import Shop, Product, ProductImage
 from .forms import ProductForm, ShopForm
 
 
@@ -204,3 +204,31 @@ def update_shop_banner(request, slug):
     shop.banner = public_id
     shop.save(update_fields=["banner"])
     return JsonResponse({"ok": True})
+
+
+@login_required
+def product_create(request, slug):
+    """
+    Create a product under a shop (owner only).
+    After save, jump to Edit (to add images).
+    """
+    shop = get_object_or_404(Shop, slug=slug)
+    if not _owns_shop(request.user, shop):
+        return HttpResponseForbidden("Not your shop")
+
+    if request.method == "POST":
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.shop = shop
+            product.save()
+            messages.success(request, "Product created. Add images below.")
+            return redirect("marketplace:product_edit", pk=product.pk)
+    else:
+        form = ProductForm()
+
+    return render(
+        request,
+        "marketplace/product_create.html",
+        {"shop": shop, "form": form}
+    )
