@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from django.contrib.messages import constants as messages
 from pathlib import Path
 import os
+import cloudinary
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -207,13 +208,21 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get("CLOUDINARY_NAME", ""),
     'API_KEY': os.environ.get("CLOUDINARY_API", ""),
     'API_SECRET': os.environ.get("CLOUDINARY_SECRET", ""),
 }
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_NAME", ""),
+    api_key=os.environ.get("CLOUDINARY_API", ""),
+    api_secret=os.environ.get("CLOUDINARY_SECRET", ""),
+    secure=True,
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
