@@ -1,5 +1,8 @@
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
+from django.db import transaction
+from django.db.models import F
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from marketplace.models import Product
@@ -22,28 +25,37 @@ def cart_detail(request):
 
 
 @login_required
+@require_POST  # Enforce POST method
 def add_to_cart(request, product_id):
-    if request.method != "POST":
-        return HttpResponseBadRequest("POST required")
     form = QuantityAddForm(request.POST)
     if not form.is_valid():
         return HttpResponseBadRequest("Invalid quantity")
+
     qty = form.cleaned_data["quantity"]
+    # (optional) clamp to sane bounds
+    qty = max(1, min(qty, 99))
+
     product = get_object_or_404(Product, id=product_id, is_active=True)
-    cart = get_active_cart(request.user)
-    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    if created:
-        item.quantity = qty
-    else:
-        item.quantity += qty
-    item.save()
+    # Avoids double adds
+    with transaction.atomic():
+        # Locks the active cart row(s) in our utils
+        cart = get_active_cart(request.user)
+        # Create (qty=0) or fetch the line, then increment atomically with F()
+        line, _ = cart.items.get_or_create(
+            product=product, defaults={"quantity": 0})
+        cart.items.filter(pk=line.pk).update(quantity=F("quantity") + qty)
+        # Refresh in-memory value if needed
+        line.refresh_from_db(fields=["quantity"])
+
     messages.success(request, f"Added {qty} × {product.title} to your cart.")
+
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        return JsonResponse({
-            "ok": True,
-            "qty": item.quantity,
-            "total": float(cart.total())
-        })
+        # Safer to return strings for money/decimals
+        total = str(cart.total())  
+        # If you have a cart_count helper, compute it here too:
+        cart_count = sum(i.quantity for i in cart.items.all())
+        return JsonResponse({"ok": True, "qty": line.quantity, "total": total, "cart_count": cart_count})
+
     return redirect("orders:cart_detail")
 
 
