@@ -28,15 +28,16 @@ class Shop(models.Model):
         unique_together = ('owner', 'name')
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            base = slugify(self.name)
-            candidate = base
-            i = 1
-            from django.db.models import Q
-            while Shop.objects.filter(Q(slug=candidate)).exists():
-                i += 1
-                candidate = f"{base}-{i}"
-            self.slug = candidate
+        base = (slugify(self.name) or "shop")
+        # If user provided a slug, start from that; otherwise from base
+        seed = (self.slug or base)
+        # Try the given seed; if taken, append -1, -2, ...
+        candidate = seed
+        i = 1
+        while Shop.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+            candidate = f"{seed}-{i}"
+            i += 1
+        self.slug = candidate
         return super().save(*args, **kwargs)
 
     def __str__(self):
