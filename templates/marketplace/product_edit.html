@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Template vars
   const signUrl   = "{% url 'marketplace:cloudinary_sign' %}";
   const attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
-  const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}";
-  const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}";
+  const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}".trim();
+  const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}".trim();
   if (!CLOUD_NAME) err('Missing CLOUDINARY_CLOUD_NAME');
   if (!API_KEY)    err('Missing CLOUDINARY_API_KEY');
 
