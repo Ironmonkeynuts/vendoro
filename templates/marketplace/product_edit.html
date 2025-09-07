@@ -33,68 +33,128 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  const log = (...a) => console.log('[uploader]', ...a);
+  const err = (...a) => console.error('[uploader]', ...a);
+
+  const btn = document.getElementById('btn-upload');
+  if (!btn) { err('No #btn-upload'); return; }
+  btn.type = 'button';
+  btn.disabled = true;
+  btn.textContent = 'Loading uploader…';
+
+  // Template vars
+  const signUrl   = "{% url 'marketplace:cloudinary_sign' %}";
+  const attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
+  const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}";
+  const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}";
+  if (!CLOUD_NAME) err('Missing CLOUDINARY_CLOUD_NAME');
+  if (!API_KEY)    err('Missing CLOUDINARY_API_KEY');
+
   function getCookie(name){
     const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return m ? m.pop() : '';
   }
 
-  const signUrl = "{% url 'marketplace:cloudinary_sign' %}";
-  const attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
-
-  // Cloudinary config check
-  const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}";
-  const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}";
-  if (!CLOUD_NAME) console.error('Missing CLOUDINARY_CLOUD_NAME');
-  if (!API_KEY)    console.error('Missing CLOUDINARY_API_KEY');
-
-  const widget = cloudinary.createUploadWidget({
-    cloudName: "{{ CLOUDINARY_CLOUD_NAME }}",
-    apiKey: "{{ CLOUDINARY_API_KEY }}",
-    uploadSignature: async (cb, paramsToSign) => {
-      const url = signUrl + "?" + new URLSearchParams(paramsToSign).toString();
-      const res = await fetch(url, { credentials: "same-origin" });
-      if (!res.ok) {
-        console.error("Sign failed", res.status, await res.text());
-        cb("");
-        return;
+  // Ensure the Cloudinary widget API is present
+  function ensureCloudinaryLoaded() {
+    return new Promise((resolve, reject) => {
+      if (window.cloudinary && cloudinary.createUploadWidget) {
+        log('Cloudinary widget API already present');
+        return resolve();
       }
-      const { signature } = await res.json();
-      cb(signature);
-    },
-    folder: "vendoro/product_images",
-    multiple: true,
-    sources: ["local","url","camera"],
-    clientAllowedFormats: ["png","jpg","jpeg","webp"],
-    maxFileSize: 5_000_000,
-  }, 
-  // keep this async so 'await' is valid here
-  async (error, result) => {
-    if (error) { console.error("Upload error", error); return; }
-    if (result && result.event === "success") {
-      const info = result.info;
-      const r = await fetch(attachUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify({
-          public_id: info.public_id,
-          alt_text: info.original_filename || ""
-        }),
-        credentials: "same-origin",
-      });
-      if (!r.ok) {
-        console.error("Attach failed", r.status, await r.text());
-        return;
-      }
-      location.reload();
-    }
-  });
+      log('Injecting Cloudinary widget script…');
+      const s = document.createElement('script');
+      s.src = 'https://widget.cloudinary.com/v2.0/global/all.js';
+      s.async = true;
+      s.onload = () => {
+        if (window.cloudinary && cloudinary.createUploadWidget) {
+          log('Cloudinary widget script loaded');
+          resolve();
+        } else {
+          reject(new Error('Cloudinary API missing after load'));
+        }
+      };
+      s.onerror = () => reject(new Error('Failed to load widget script'));
+      document.head.appendChild(s);
+    });
+  }
 
-  const btn = document.getElementById('btn-upload');
-  if (btn) btn.addEventListener('click', () => widget.open());
+  let widget = null;
+
+  async function makeWidget() {
+    widget = cloudinary.createUploadWidget({
+      cloudName: CLOUD_NAME,
+      apiKey: API_KEY,
+      folder: "vendoro/product_images",
+      multiple: true,
+      sources: ["local","url","camera"],
+      clientAllowedFormats: ["png","jpg","jpeg","webp"],
+      maxFileSize: 5_000_000,
+      uploadSignature: async (cb, paramsToSign) => {
+        try {
+          const url = signUrl + "?" + new URLSearchParams(paramsToSign).toString();
+          log('Signing', url);
+          const res = await fetch(url, { credentials: "same-origin" });
+          if (!res.ok) {
+            err('Sign failed', res.status, await res.text());
+            return cb("");
+          }
+          const { signature } = await res.json();
+          log('Sign ok');
+          cb(signature);
+        } catch (e) {
+          err('Sign exception', e);
+          cb("");
+        }
+      }
+    }, async (error, result) => {
+      if (error) { err('Upload error', error); return; }
+      if (result && result.event === "success") {
+        const info = result.info;
+        log('Upload success, attaching', info.public_id);
+        try {
+          const r = await fetch(attachUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              public_id: info.public_id,
+              alt_text: info.original_filename || ""
+            }),
+          });
+          if (!r.ok) {
+            err('Attach failed', r.status, await r.text());
+            alert("Failed to attach image.");
+            return;
+          }
+          log('Attach ok, reloading…');
+          location.reload();
+        } catch (e) {
+          err('Attach exception', e);
+          alert("Could not attach image to product.");
+        }
+      }
+    });
+
+    // Expose for manual testing
+    window.__vendoroWidget = widget;
+
+    btn.disabled = false;
+    btn.textContent = 'Add Images';
+    btn.addEventListener('click', () => {
+      log('Button click');
+      try { widget.open(); } catch (e) { err('widget.open failed', e); }
+    });
+  }
+
+  ensureCloudinaryLoaded()
+    .then(makeWidget)
+    .catch(e => { err(e); btn.textContent = 'Uploader failed to load'; });
 });
 </script>
+
 
 {% endblock %}
