@@ -79,10 +79,31 @@ class Product(models.Model):
 
     class Meta:
         unique_together = ("shop", "title")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["shop", "slug"],
+                name="uniq_product_slug_per_shop"
+            )
+        ]
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
+        """
+        Ensure a unique, URL-friendly slug per shop.
+        If a slug is provided, use it as the seed; otherwise slugify the title.
+        Append -1, -2, ... until unique within this shop.
+        """
+        base = slugify(self.title) or "product"
+        seed = self.slug or base
+
+        candidate = seed
+        i = 1
+        # Uniqueness is per shop
+        while Product.objects.filter(
+                shop=self.shop, slug=candidate).exclude(pk=self.pk).exists():
+            candidate = f"{seed}-{i}"
+            i += 1
+
+        self.slug = candidate
         return super().save(*args, **kwargs)
 
     def __str__(self):

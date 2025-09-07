@@ -2,6 +2,7 @@ import json
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -94,33 +95,6 @@ def _owns_product(user, product):
 
 def _owns_shop(user, shop):
     return shop.owner_id == user.id
-
-
-@login_required
-def product_edit(request, pk):
-    """
-    Edit a product.
-    """
-    if not request.user.is_authenticated:
-        return redirect("account:login")
-    product = get_object_or_404(Product, pk=pk)
-    if not _owns_product(request.user, product):
-        return HttpResponseForbidden("Not your product")
-
-    if request.method == "POST":
-        form = ProductForm(request.POST, instance=product)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Product updated.")
-            return redirect("marketplace:product_edit", pk=product.pk)
-    else:
-        form = ProductForm(instance=product)
-
-    return render(
-        request,
-        "marketplace/product_edit.html",
-        {"product": product, "form": form},
-    )
 
 
 @login_required
@@ -221,14 +195,57 @@ def product_create(request, slug):
         if form.is_valid():
             product = form.save(commit=False)
             product.shop = shop
-            product.save()
-            messages.success(request, "Product created. Add images below.")
-            return redirect("marketplace:product_edit", pk=product.pk)
+            try:
+                product.save()
+            except IntegrityError:
+                form.add_error(
+                    "title",
+                    "A product with this title already exists in this shop."
+                )
+            else:
+                messages.success(request, "Product created. Add images below.")
+                return redirect("marketplace:product_edit", pk=product.pk)
     else:
-        form = ProductForm()
+        form = ProductForm(shop=shop)
 
     return render(
         request,
         "marketplace/product_create.html",
         {"shop": shop, "form": form}
+    )
+
+
+@login_required
+def product_edit(request, pk):
+    """
+    Edit a product.
+    """
+    product = get_object_or_404(Product, pk=pk)
+    if not _owns_product(request.user, product):
+        return HttpResponseForbidden("Not your product")
+
+    if request.method == "POST":
+        form = ProductForm(
+            request.POST,
+            instance=product,
+            shop=product.shop
+        )
+        if form.is_valid():
+            try:
+                form.save()
+            except IntegrityError:
+                form.add_error(
+                    "title",
+                    "A product with this title already exists in this shop."
+                )
+            else:
+                messages.success(request, "Product updated.")
+                return redirect("marketplace:product_edit", pk=product.pk)
+    else:
+        form = ProductForm(instance=product, shop=product.shop)
+
+    return render(
+        request,
+        "marketplace/product_edit.html",
+        {"product": product, "form": form},
     )
