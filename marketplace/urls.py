@@ -5,19 +5,14 @@ app_name = "marketplace"
 
 urlpatterns = [
     path("", views.ProductList.as_view(), name="browse"),
-    path("shops/<slug:slug>/", views.shop_detail, name="shop_detail"),
-    path(
-        "shops/<slug:shop_slug>/<slug:product_slug>/",
-        views.product_detail,
-        name="product_detail"
-    ),
     path("cloudinary/sign/", views.cloudinary_sign, name="cloudinary_sign"),
+    # Shop settings
     path(
-        "product/<int:pk>/images/attach/",
-        views.attach_product_image,
-        name="product_image_attach"
+        "shops/<slug:slug>/settings/",
+        views.shop_settings,
+        name="shop_settings"
     ),
-    path(
+        path(
         "shops/<slug:slug>/banner/update/",
         views.update_shop_banner,
         name="shop_banner_update"
@@ -26,14 +21,23 @@ urlpatterns = [
          views.product_create,
          name="product_create"
     ),
+    # Shop details
+    path("shops/<slug:slug>/", views.shop_detail, name="shop_detail"),
+    # Product management
     path(
         "products/<int:pk>/edit/",
         views.product_edit,
         name="product_edit"
     ),
     path(
-        "shops/<slug:slug>/settings/",
-        views.shop_settings,
-        name="shop_settings"
+        "product/<int:pk>/images/attach/",
+        views.attach_product_image,
+        name="product_image_attach"
+    ),
+    # Generic product detail
+    path(
+        "shops/<slug:shop_slug>/<slug:product_slug>/",
+        views.product_detail,
+        name="product_detail"
     ),
 ]

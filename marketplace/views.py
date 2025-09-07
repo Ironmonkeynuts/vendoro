@@ -183,15 +183,14 @@ def update_shop_banner(request, slug):
 @login_required
 def product_create(request, slug):
     """
-    Create a product under a shop (owner only).
-    After save, jump to Edit (to add images).
+    Create a product under a shop (owner only), then PRG redirect to edit.
     """
     shop = get_object_or_404(Shop, slug=slug)
     if not _owns_shop(request.user, shop):
         return HttpResponseForbidden("Not your shop")
 
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, shop=shop)
         if form.is_valid():
             product = form.save(commit=False)
             product.shop = shop
@@ -209,8 +208,7 @@ def product_create(request, slug):
         form = ProductForm(shop=shop)
 
     return render(
-        request,
-        "marketplace/product_create.html",
+        request, "marketplace/product_create.html",
         {"shop": shop, "form": form}
     )
 

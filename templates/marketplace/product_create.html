@@ -3,11 +3,35 @@
 {% block content %}
 <div class="container py-3" style="max-width: 900px;">
   <h1 class="h4 mb-3">Add Product — {{ shop.name }}</h1>
-  <form method="post">
+
+  <!-- Show a friendly message if validation fails -->
+  {% if form.errors %}
+    <div class="alert alert-danger">Please fix the errors below.</div>
+  {% endif %}
+
+  <form method="post" novalidate>
     {% csrf_token %}
     {{ form.as_p }}
-    <button class="btn btn-primary">Create product</button>
+    <button class="btn btn-primary" type="submit">Create product</button>
     <a class="btn btn-outline-secondary" href="{% url 'marketplace:shop_detail' shop.slug %}">Cancel</a>
   </form>
 </div>
+{% endblock %}
+
+<!-- Prevent accidental double POSTs -->
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form');
+  if (!form) return;
+  form.addEventListener('submit', () => {
+    const btn = form.querySelector('button[type="submit"], .btn-primary');
+    if (btn) {
+      btn.disabled = true;
+      btn.dataset.originalText = btn.textContent;
+      btn.textContent = 'Saving…';
+    }
+  });
+});
+</script>
 {% endblock %}
