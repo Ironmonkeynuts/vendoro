@@ -26,26 +26,25 @@
         <div class="ratio ratio-1x1 rounded overflow-hidden bg-light">
           {% cloudinary pi.image width=300 height=300 crop="fill" gravity="auto" fetch_format="auto" quality="auto" class="w-100 h-100 d-block" alt=pi.alt_text %}
         </div>
-
         <div class="d-flex gap-2 mt-2">
           <form method="post"
                 action="{% url 'marketplace:product_image_remove' product.id pi.id %}"
                 class="d-inline"
-                onsubmit="return confirm('Remove this image from the product?');">
+                data-confirm="Remove this image from the product?"
+                onsubmit="if(this.dataset.submitting==='1'||!confirm(this.getAttribute('data-confirm')||'Are you sure?')) return false; this.dataset.submitting='1'; this.querySelector('button[type=submit]')?.setAttribute('disabled','disabled')">
             {% csrf_token %}
-            <button class="btn btn-sm btn-outline-secondary">Remove</button>
+            <button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button>
           </form>
-
           <form method="post"
                 action="{% url 'marketplace:product_image_remove' product.id pi.id %}"
                 class="d-inline"
-                onsubmit="return confirm('Remove and permanently delete this image from Cloudinary?');">
+                data-confirm="Remove and permanently delete this image from Cloudinary?"
+                onsubmit="if(this.dataset.submitting==='1'||!confirm(this.getAttribute('data-confirm')||'Are you sure?')) return false; this.dataset.submitting='1'; this.querySelector('button[type=submit]')?.setAttribute('disabled','disabled')">
             {% csrf_token %}
             <input type="hidden" name="purge" value="1">
-            <button class="btn btn-sm btn-outline-danger">Remove&nbsp;&amp;&nbsp;purge</button>
+            <button class="btn btn-sm btn-outline-danger" type="submit">Remove&nbsp;&amp;&nbsp;purge</button>
           </form>
         </div>
-
         <div class="small text-muted mt-1 text-truncate">{{ pi.alt_text|default:"" }}</div>
       </div>
 {% endfor %}
@@ -56,48 +55,38 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('btn-upload');
-  const statusEl = document.getElementById('upload-status');
   if (!btn) return;
-
-  // Template vars
-  const signUrl    = "{% url 'marketplace:cloudinary_sign' %}";
-  const attachUrl  = "{% url 'marketplace:product_image_attach' product.id %}";
-  const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}".trim();
-  const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}".trim();
-
-  // If config is missing, quietly bail (button stays disabled)
-  if (!CLOUD_NAME || !API_KEY) {
-    if (statusEl) statusEl.textContent = "Uploader unavailable.";
-    btn.disabled = true;
-    return;
-  }
-
-  // Lightweight status helper (no alerts)
-  const setStatus = (msg) => { if (statusEl) statusEl.textContent = msg || ""; };
 
   btn.type = 'button';
   btn.disabled = true;
-  setStatus("Loading uploader…");
+  btn.textContent = 'Loading…';
 
-  function getCookie(name) {
+  const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}".trim();
+  const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}".trim();
+  const signUrl    = "{% url 'marketplace:cloudinary_sign' %}";
+  const attachUrl  = "{% url 'marketplace:product_image_attach' product.id %}";
+
+  if (!CLOUD_NAME || !API_KEY) {
+    btn.textContent = 'Uploader unavailable';
+    return;
+  }
+
+  function ensureCloudinaryLoaded(cb) {
+    if (window.cloudinary?.createUploadWidget) return cb();
+    const s = document.createElement('script');
+    s.src = 'https://widget.cloudinary.com/v2.0/global/all.js';
+    s.async = true;
+    s.onload = cb;
+    s.onerror = () => { btn.textContent = 'Uploader failed to load'; };
+    document.head.appendChild(s);
+  }
+
+  function getCookie(name){
     const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return m ? m.pop() : '';
   }
 
-  // Lazy-load the Cloudinary widget only if needed
-  function ensureCloudinaryLoaded() {
-    if (window.cloudinary?.createUploadWidget) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://widget.cloudinary.com/v2.0/global/all.js';
-      s.async = true;
-      s.onload  = () => window.cloudinary?.createUploadWidget ? resolve() : reject();
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
-
-  ensureCloudinaryLoaded().then(() => {
+  ensureCloudinaryLoaded(() => {
     const widget = cloudinary.createUploadWidget({
       cloudName: CLOUD_NAME,
       apiKey: API_KEY,
@@ -106,50 +95,43 @@ document.addEventListener('DOMContentLoaded', () => {
       sources: ["local","url","camera"],
       clientAllowedFormats: ["png","jpg","jpeg","webp"],
       maxFileSize: 5_000_000,
-      uploadSignature: async (cb, paramsToSign) => {
+      uploadSignature: async (cb, params) => {
         try {
-          const res = await fetch(
-            signUrl + "?" + new URLSearchParams(paramsToSign),
-            { credentials: "same-origin" }
-          );
+          const url = signUrl + "?" + new URLSearchParams(params).toString();
+          const res = await fetch(url, { credentials: "same-origin" });
+          if (!res.ok) return cb("");
           const { signature } = await res.json();
-          cb(signature || "");
-        } catch (_) {
-          cb("");
-        }
+          cb(signature);
+        } catch { cb(""); }
       }
     }, async (error, result) => {
-      if (error || !result || result.event !== "success") return;
-      setStatus("Saving…");
-      try {
-        const r = await fetch(attachUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-          credentials: "same-origin",
-          body: JSON.stringify({
-            public_id: result.info.public_id,
-            alt_text: result.info.original_filename || "",
-          }),
-        });
-        if (r.ok) {
-          // keep UX snappy and consistent
+      if (error) return;
+      if (result?.event === "success") {
+        const info = result.info;
+        try {
+          const r = await fetch(attachUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              public_id: info.public_id,
+              alt_text: info.original_filename || ""
+            }),
+          });
+          // Keep it simple: reload to show the new image in the grid.
+          if (r.ok) location.reload(); else location.reload();
+        } catch {
           location.reload();
-        } else {
-          setStatus("Could not save image.");
         }
-      } catch {
-        setStatus("Could not save image.");
       }
     });
 
     btn.disabled = false;
-    setStatus("");
+    btn.textContent = 'Add Images';
     btn.addEventListener('click', () => widget.open());
-  }).catch(() => {
-    setStatus("Uploader failed to load.");
   });
 });
 </script>

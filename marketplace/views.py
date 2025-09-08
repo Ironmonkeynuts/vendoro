@@ -223,13 +223,17 @@ def product_image_remove(request, pk, image_id):
 
     pi = get_object_or_404(ProductImage, pk=image_id, product=product)
 
-    # Optional purge of the actual Cloudinary asset
+    # Purge of the actual Cloudinary asset
     if request.POST.get("purge") == "1":
         public_id = getattr(pi.image, "public_id", None) or str(pi.image)
+        if not str(public_id).startswith(ALLOWED_PUBLIC_ID_PREFIX):
+            return HttpResponseBadRequest(
+                "Refusing to purge disallowed public_id"
+            )
         try:
             cl_destroy(public_id, invalidate=True)
         except Exception:
-            pass  # don't block UI if Cloudinary delete hiccups
+            pass  # ignore Cloudinary errors
 
     pi.delete()
 
