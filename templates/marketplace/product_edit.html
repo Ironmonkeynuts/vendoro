@@ -21,9 +21,11 @@
 
   <div class="row g-3">
     {% for pi in product.images.all %}
-      <div class="col-6 col-md-3 text-center">
-        {% cloudinary pi.image width=300 height=300 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=pi.alt_text %}
-        <div class="small text-muted mt-1">{{ pi.alt_text|default:"" }}</div>
+      <div class="col-6 col-md-3">
+        <div class="ratio ratio-1x1 rounded overflow-hidden bg-light">
+          {% cloudinary pi.image width=300 height=300 crop="fill" gravity="auto" fetch_format="auto" quality="auto" class="w-100 h-100 d-block" alt=pi.alt_text %}
+        </div>
+        <div class="small text-muted mt-1 text-truncate">{{ pi.alt_text|default:"" }}</div>
       </div>
     {% empty %}
       <div class="col-12"><em>No images yet.</em></div>

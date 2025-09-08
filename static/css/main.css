@@ -4,3 +4,6 @@ main {
     border-radius: 0.5rem;
     box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
 }
+
+/* Make images neatly fill their ratio box */
+.object-fit-cover { object-fit: cover; }
