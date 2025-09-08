@@ -14,9 +14,10 @@
 
   <hr class="my-4"/>
 
-  <div class="d-flex justify-content-between align-items-center mb-2">
+  <div class="d-flex align-items-center gap-2 mb-2">
     <h2 class="h5 m-0">Images</h2>
-    <button id="btn-upload" class="btn btn-outline-primary" type="button">Add Images</button>
+    <button id="btn-upload" class="btn btn-outline-primary btn-sm" type="button">Add Images</button>
+    <span id="upload-status" class="text-muted small" aria-live="polite"></span>
   </div>
 
   <div class="row g-3">
@@ -35,56 +36,50 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const log = (...a) => console.log('[uploader]', ...a);
-  const err = (...a) => console.error('[uploader]', ...a);
-
   const btn = document.getElementById('btn-upload');
-  if (!btn) { err('No #btn-upload'); return; }
-  btn.type = 'button';
-  btn.disabled = true;
-  btn.textContent = 'Loading uploader…';
+  const statusEl = document.getElementById('upload-status');
+  if (!btn) return;
 
   // Template vars
-  const signUrl   = "{% url 'marketplace:cloudinary_sign' %}";
-  const attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
+  const signUrl    = "{% url 'marketplace:cloudinary_sign' %}";
+  const attachUrl  = "{% url 'marketplace:product_image_attach' product.id %}";
   const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}".trim();
   const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}".trim();
-  if (!CLOUD_NAME) err('Missing CLOUDINARY_CLOUD_NAME');
-  if (!API_KEY)    err('Missing CLOUDINARY_API_KEY');
 
-  function getCookie(name){
+  // If config is missing, quietly bail (button stays disabled)
+  if (!CLOUD_NAME || !API_KEY) {
+    if (statusEl) statusEl.textContent = "Uploader unavailable.";
+    btn.disabled = true;
+    return;
+  }
+
+  // Lightweight status helper (no alerts)
+  const setStatus = (msg) => { if (statusEl) statusEl.textContent = msg || ""; };
+
+  btn.type = 'button';
+  btn.disabled = true;
+  setStatus("Loading uploader…");
+
+  function getCookie(name) {
     const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return m ? m.pop() : '';
   }
 
-  // Ensure the Cloudinary widget API is present
+  // Lazy-load the Cloudinary widget only if needed
   function ensureCloudinaryLoaded() {
+    if (window.cloudinary?.createUploadWidget) return Promise.resolve();
     return new Promise((resolve, reject) => {
-      if (window.cloudinary && cloudinary.createUploadWidget) {
-        log('Cloudinary widget API already present');
-        return resolve();
-      }
-      log('Injecting Cloudinary widget script…');
       const s = document.createElement('script');
       s.src = 'https://widget.cloudinary.com/v2.0/global/all.js';
       s.async = true;
-      s.onload = () => {
-        if (window.cloudinary && cloudinary.createUploadWidget) {
-          log('Cloudinary widget script loaded');
-          resolve();
-        } else {
-          reject(new Error('Cloudinary API missing after load'));
-        }
-      };
-      s.onerror = () => reject(new Error('Failed to load widget script'));
+      s.onload  = () => window.cloudinary?.createUploadWidget ? resolve() : reject();
+      s.onerror = reject;
       document.head.appendChild(s);
     });
   }
 
-  let widget = null;
-
-  async function makeWidget() {
-    widget = cloudinary.createUploadWidget({
+  ensureCloudinaryLoaded().then(() => {
+    const widget = cloudinary.createUploadWidget({
       cloudName: CLOUD_NAME,
       apiKey: API_KEY,
       folder: "vendoro/product_images",
@@ -94,69 +89,50 @@ document.addEventListener('DOMContentLoaded', () => {
       maxFileSize: 5_000_000,
       uploadSignature: async (cb, paramsToSign) => {
         try {
-          const url = signUrl + "?" + new URLSearchParams(paramsToSign).toString();
-          log('Signing', url);
-          const res = await fetch(url, { credentials: "same-origin" });
-          if (!res.ok) {
-            err('Sign failed', res.status, await res.text());
-            return cb("");
-          }
+          const res = await fetch(
+            signUrl + "?" + new URLSearchParams(paramsToSign),
+            { credentials: "same-origin" }
+          );
           const { signature } = await res.json();
-          log('Sign ok');
-          cb(signature);
-        } catch (e) {
-          err('Sign exception', e);
+          cb(signature || "");
+        } catch (_) {
           cb("");
         }
       }
     }, async (error, result) => {
-      if (error) { err('Upload error', error); return; }
-      if (result && result.event === "success") {
-        const info = result.info;
-        log('Upload success, attaching', info.public_id);
-        try {
-          const r = await fetch(attachUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCookie("csrftoken"),
-            },
-            credentials: "same-origin",
-            body: JSON.stringify({
-              public_id: info.public_id,
-              alt_text: info.original_filename || ""
-            }),
-          });
-          if (!r.ok) {
-            err('Attach failed', r.status, await r.text());
-            alert("Failed to attach image.");
-            return;
-          }
-          log('Attach ok, reloading…');
+      if (error || !result || result.event !== "success") return;
+      setStatus("Saving…");
+      try {
+        const r = await fetch(attachUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            public_id: result.info.public_id,
+            alt_text: result.info.original_filename || "",
+          }),
+        });
+        if (r.ok) {
+          // keep UX snappy and consistent
           location.reload();
-        } catch (e) {
-          err('Attach exception', e);
-          alert("Could not attach image to product.");
+        } else {
+          setStatus("Could not save image.");
         }
+      } catch {
+        setStatus("Could not save image.");
       }
     });
 
-    // Expose for manual testing
-    window.__vendoroWidget = widget;
-
     btn.disabled = false;
-    btn.textContent = 'Add Images';
-    btn.addEventListener('click', () => {
-      log('Button click');
-      try { widget.open(); } catch (e) { err('widget.open failed', e); }
-    });
-  }
-
-  ensureCloudinaryLoaded()
-    .then(makeWidget)
-    .catch(e => { err(e); btn.textContent = 'Uploader failed to load'; });
+    setStatus("");
+    btn.addEventListener('click', () => widget.open());
+  }).catch(() => {
+    setStatus("Uploader failed to load.");
+  });
 });
 </script>
-
 
 {% endblock %}
