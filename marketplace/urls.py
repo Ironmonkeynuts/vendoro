@@ -36,6 +36,11 @@ urlpatterns = [
         views.attach_product_image,
         name="product_image_attach"
     ),
+    path(
+        "products/<int:pk>/images/<int:image_id>/remove/",
+        views.product_image_remove,
+        name="product_image_remove"
+    ),
     # Generic product detail
     path(
         "shops/<slug:shop_slug>/<slug:product_slug>/",

@@ -14,6 +14,7 @@ from django.views.decorators.http import (
 )
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
+from cloudinary.uploader import destroy as cl_destroy
 from .models import Shop, Product, ProductImage
 from .forms import ProductForm, ShopForm
 
@@ -206,6 +207,38 @@ def attach_product_image(request, pk):
         },
         status=201,
     )
+
+
+@login_required
+@require_POST
+def product_image_remove(request, pk, image_id):
+    """
+    Remove an image from a product (delete DB row).
+    If 'purge=1' is posted, also delete the Cloudinary asset.
+    Owner-only.
+    """
+    product = get_object_or_404(Product, pk=pk)
+    if not _owns_product(request.user, product):
+        return HttpResponseForbidden("Not your product")
+
+    pi = get_object_or_404(ProductImage, pk=image_id, product=product)
+
+    # Optional purge of the actual Cloudinary asset
+    if request.POST.get("purge") == "1":
+        public_id = getattr(pi.image, "public_id", None) or str(pi.image)
+        try:
+            cl_destroy(public_id, invalidate=True)
+        except Exception:
+            pass  # don't block UI if Cloudinary delete hiccups
+
+    pi.delete()
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True})
+
+    messages.success(request, "Image removed.")
+    return redirect("marketplace:product_edit", pk=product.pk)
+
 
 
 @login_required
