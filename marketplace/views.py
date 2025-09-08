@@ -8,9 +8,10 @@ from django.http import (
     HttpResponseForbidden,
     JsonResponse
 )
-from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, redirect
-from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.views.decorators.http import (
+    require_POST, require_http_methods
+)
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
 from .models import Shop, Product, ProductImage
@@ -66,7 +67,8 @@ def product_detail(request, shop_slug, product_slug):
 @login_required
 def shop_create(request):
     """
-    Create a new shop (owner = request.user), then jump to settings to add banner etc.
+    Create a new shop (owner = request.user),
+    then jump to settings to add banner etc.
     """
     if request.method == "POST":
         form = ShopForm(request.POST, owner=request.user)
@@ -76,9 +78,15 @@ def shop_create(request):
             try:
                 shop.save()
             except IntegrityError:
-                form.add_error("name", "You already have a shop with this name.")
+                form.add_error(
+                    "name",
+                    "You already have a shop with this name."
+                )
             else:
-                messages.success(request, "Shop created! Configure your shop settings below.")
+                messages.success(
+                    request,
+                    "Shop created! Configure your shop settings below."
+                )
                 return redirect("marketplace:shop_settings", slug=shop.slug)
     else:
         form = ShopForm(owner=request.user)
@@ -106,11 +114,11 @@ ALLOWED_FOLDERS = {
 
 
 def _owns_product(user, product):
-    return product.shop.owner_id == user.id
+    return user.is_authenticated and product.shop.owner_id == user.id
 
 
 def _owns_shop(user, shop):
-    return shop.owner_id == user.id
+    return user.is_authenticated and shop.owner_id == user.id
 
 
 @login_required
@@ -166,46 +174,36 @@ ALLOWED_PUBLIC_ID_PREFIX = "vendoro/product_images/"
 @require_POST
 def attach_product_image(request, pk):
     """
-    Attach a Cloudinary image (by public_id) to a product the user owns.
-    Expects JSON: {"public_id": "...", "alt_text": "..."}.
-    Returns 201 with basic image info.
+    Attach a Cloudinary image (by public_id) to a product.
+    Expects JSON: {"public_id": "...", "alt_text": "..."}
     """
     product = get_object_or_404(Product, pk=pk)
     if not _owns_product(request.user, product):
         return HttpResponseForbidden("Not your product")
 
-    # Ensure we actually got JSON
-    if "application/json" not in request.headers.get("Content-Type", ""):
-        return HttpResponseBadRequest("Expected application/json")
-
     try:
         data = json.loads(request.body.decode("utf-8"))
-        public_id = data["public_id"]
-        alt_text = (data.get("alt_text") or "").strip()
-    except (json.JSONDecodeError, KeyError):
+        # validate public_id
+        public_id = data["public_id"].strip()
+        alt_text = data.get("alt_text", "").strip()
+        if not public_id:
+            raise ValueError("missing public_id")
+    except Exception:
         return HttpResponseBadRequest("Invalid payload")
 
-    # Defense-in-depth: only allow images from our folder
-    if not public_id or not public_id.startswith(ALLOWED_PUBLIC_ID_PREFIX):
-        return HttpResponseBadRequest("Invalid public_id")
-
-    # Optional: cap alt text length to model max (200)
-    if len(alt_text) > 200:
-        alt_text = alt_text[:200]
-
-    # Create the DB record (CloudinaryField accepts a public_id string)
     pi = ProductImage.objects.create(
-        product=product, image=public_id, alt_text=alt_text
+        product=product,
+        # CloudinaryField accepts the public_id string
+        image=public_id,
+        alt_text=alt_text,
     )
-
-    # Build a secure thumbnail URL so the client can inject it without a reload
-    thumb_url = CloudinaryImage(public_id).build_url(
-        width=600, height=600, crop="fill", gravity="auto",
-        fetch_format="auto", quality="auto", secure=True
-    )
-
     return JsonResponse(
-        {"ok": True, "id": pi.id, "public_id": public_id, "url": thumb_url, "alt": alt_text},
+        {
+            "ok": True,
+            "id": pi.id,
+            "public_id": public_id,
+            "alt_text": alt_text
+        },
         status=201,
     )
 
