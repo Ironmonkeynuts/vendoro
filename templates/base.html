@@ -68,8 +68,8 @@
                             </ul>
                             </li>
                         {% endif %}
-
                     </ul>
+
                     <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Cart badge if your orders context processor supplies cart_count -->
                         {% if cart_count %}
@@ -81,6 +81,23 @@
                                 {{ cart_count }}
                             </span>
                             </a>
+                        </li>
+                        {% endif %}
+                        {% if user.is_authenticated and user.is_superuser %}
+                        <li class="nav-item dropdown me-2">
+                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Admin
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                                <li><a class="dropdown-item" href="/control/">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="/control/users/">Users</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/control/reviews/">Reviews</a></li>
+                                <li><a class="dropdown-item" href="/control/reports/">Reports</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/control/shops/">Shops</a></li>
+                                <li><a class="dropdown-item" href="/control/products/">Products</a></li>
+                            </ul>
                         </li>
                         {% endif %}
                         <!-- User auth links -->

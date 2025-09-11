@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'marketplace',
     'orders',
     'payments',
+    'admintools',
 ]
 
 SITE_ID = 1

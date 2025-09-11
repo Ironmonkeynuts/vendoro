@@ -39,4 +39,11 @@ urlpatterns = [
             namespace="payments"
         )
     ),
+    path(
+        "control/",
+        include(
+            ("admintools.urls", "admintools"),
+            namespace="admintools"
+        )
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
