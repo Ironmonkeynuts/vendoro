@@ -31,21 +31,21 @@ def add_to_cart(request, product_id):
     if not form.is_valid():
         return HttpResponseBadRequest("Invalid quantity")
 
-    qty = form.cleaned_data["quantity"]
     # (optional) clamp to sane bounds
-    qty = max(1, min(qty, 99))
+    qty = max(1, min(form.cleaned_data["quantity"], 99))
 
     product = get_object_or_404(Product, id=product_id, is_active=True)
     # Avoids double adds
     with transaction.atomic():
         # Locks the active cart row(s) in our utils
         cart = get_active_cart(request.user)
-        # Create (qty=0) or fetch the line, then increment atomically with F()
-        line, _ = cart.items.get_or_create(
-            product=product, defaults={"quantity": 0})
-        cart.items.filter(pk=line.pk).update(quantity=F("quantity") + qty)
-        # Refresh in-memory value if needed
-        line.refresh_from_db(fields=["quantity"])
+        # Create (qty=1) or fetch the line, then increment atomically with F()
+        line, created = cart.items.get_or_create(
+            product=product, defaults={"quantity": qty})
+        if not created:
+            cart.items.filter(pk=line.pk).update(quantity=F("quantity") + qty)
+            # Refresh in-memory value if needed
+            line.refresh_from_db(fields=["quantity"])
 
     messages.success(request, f"Added {qty} × {product.title} to your cart.")
 
