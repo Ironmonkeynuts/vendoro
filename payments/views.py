@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
@@ -35,10 +35,12 @@ def create_checkout_session(request):
         )
         return redirect("orders:cart_detail")
 
-    cart = (Cart.objects
-            .filter(user=request.user, active=True)
-            .prefetch_related("items__product", "items")
-            .first())
+    cart = (
+        Cart.objects
+        .filter(user=request.user, active=True)
+        .prefetch_related("items__product", "items")
+        .first()
+    )
     if not cart or cart.items.count() == 0:
         messages.error(request, "Your cart is empty.")
         return redirect("orders:cart_detail")
@@ -113,12 +115,31 @@ def create_checkout_session(request):
 
 @login_required
 def success(request):
+    # order = get_object_or_404(Order, order_number=order_number)
+
+    cart = (
+        Cart.objects
+        .filter(user=request.user, active=True)
+        .prefetch_related("items__product", "items")
+        .first()
+    )
+
+    cart.delete()
+
     messages.success(
         request,
         "Payment received. Thank you! Your order is confirmed."
     )
-    return render(request, "payments/success.html")
 
+    if 'bag' in request.session:
+        del request.session['bag']
+
+    template = 'payments/success.html'
+    context = {
+        # 'order': order,
+    }
+
+    return render(request, template, context)
 
 @login_required
 def cancel(request):
