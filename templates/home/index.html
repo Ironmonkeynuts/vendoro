@@ -1,8 +1,16 @@
 {% extends "base.html" %}
+{% load static %}
+{% block title %}Home - Vendoro{% endblock %}
 {% block content %}
 <div class="p-5 bg-white rounded-3 shadow-sm">
 <h1 class="display-5">Welcome to Vendoro</h1>
 <p class="lead">A multi-vendor marketplace. Sign up to buy or sell.</p>
 <a class="btn btn-primary" href="/accounts/signup/">Get started</a>
 </div>
+<section class="py-5 text-white hero-bg">
+  <div class="container home-hero">
+    <h1 class="display-5 fw-bold mb-2">Vendoro</h1>
+    <p class="lead mt-1 mb-0">Discover independent shops & unique products</p>
+  </div>
+</section>
 {% endblock %}

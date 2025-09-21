@@ -7,3 +7,53 @@ main {
 
 /* Make images neatly fill their ratio box */
 .object-fit-cover { object-fit: cover; }
+
+
+/* Desktop hero background */
+.hero-bg {
+    background: url("../img/vendoro-hero-1920x600.png") center/cover no-repeat;
+}
+
+/* Push text right so it clears the logo in the hero */
+.home-hero {
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.25rem;
+    /* BIG left padding; desktop */
+    padding-left: clamp(18rem, 36vw, 54rem);
+    text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+/* Tablet & down — use smaller image + smaller offset */
+@media (max-width: 991.98px) {
+    .hero-bg {
+        background-image: url("../img/vendoro-hero-1200x400.png");
+    }
+    .home-hero {
+        min-height: 280px;
+        padding-left: clamp(18rem, 36vw, 54rem);
+    }
+}
+
+/* Mobile — stack hero text vertically */
+@media (max-width: 575.98px) {
+  .hero-bg {
+    background-image: url("../img/vendoro-hero-mobile.png");
+  }
+
+  .home-hero {
+    min-height: 200px;
+    padding-left: clamp(1rem, 5vw, 3rem);
+    display: flex;             /* ensure flex context */
+    flex-direction: column;    /* stack h1 and p */
+    align-items: flex-start;   /* left-align the text block */
+    gap: .25rem;               /* small space between lines */
+  }
+
+  /* Optional: ensure spacing looks right if Bootstrap adds mb-0, etc. */
+  .home-hero h1 { margin: 0 0 .25rem; }
+  .home-hero p  { margin: 0 !important; }
+}
