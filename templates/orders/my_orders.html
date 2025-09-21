@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}My Orders — Vendoro{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">My Orders</h1>
+
+{% if orders %}
+  <div class="vstack gap-3">
+    {% for o in orders %}
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between flex-wrap gap-2">
+            <div>
+              <div class="fw-semibold">Order #{{ o.id }}</div>
+              <div class="text-muted small">Shop: {{ o.shop.name }}</div>
+            </div>
+            <div class="text-end">
+                <!-- Payment status badge -->
+                <span class="badge text-bg-{% if o.status == 'paid' %}success{% else %}secondary{% endif %}">
+                    {{ o.get_status_display }}
+                </span>
+                <!-- Fulfilment status badge -->
+                <span class="badge text-bg-{% if o.fulfillment_status == 'completed' %}success{% elif o.fulfillment_status == 'dispatched' %}primary{% elif o.fulfillment_status == 'processing' %}warning{% else %}secondary{% endif %}">
+                    {{ o.get_fulfillment_status_display }}
+                </span>
+
+              <div class="mt-1 fw-semibold">Total: {{ o.total_amount }}</div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="row g-3">
+            {% for it in o.items.all %}
+              <div class="col-12 col-md-6">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="small flex-grow-1">
+                    <div class="fw-semibold">
+                      <a href="{{ it.product.get_absolute_url }}">{{ it.product.title }}</a>
+                    </div>
+                    <div class="text-muted">Qty {{ it.quantity }} · {{ it.unit_price }}</div>
+
+                    {% if o.status == 'PAID' and o.fulfillment_status == 'completed' %}
+                      {% if it.review %}
+                        <span class="badge text-bg-success mt-1">Reviewed</span>
+                      {% else %}
+                        <a class="btn btn-sm btn-outline-primary mt-1"
+                           href="{% url 'marketplace:review_add' it.id %}">Add review</a>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">You have no orders yet.</p>
+{% endif %}
+{% endblock %}

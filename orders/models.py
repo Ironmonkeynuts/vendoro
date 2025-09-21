@@ -12,6 +12,13 @@ User = settings.AUTH_USER_MODEL
 TWO_DP = Decimal("0.01")
 
 
+class FulfillmentStatus(models.TextChoices):
+    PENDING = "pending",     "Pending"
+    PROCESSING = "processing",  "Processing"
+    DISPATCHED = "dispatched",  "Dispatched"
+    COMPLETED = "completed",   "Completed"
+
+
 class Cart(models.Model):
 
     user = models.ForeignKey(
@@ -106,6 +113,13 @@ class Order(models.Model):
     )
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    fulfillment_status = models.CharField(
+        max_length=20,
+        choices=FulfillmentStatus.choices,
+        default=FulfillmentStatus.PENDING,
+        db_index=True,
+        help_text="Shipping/fulfilment state (separate from payment status).",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

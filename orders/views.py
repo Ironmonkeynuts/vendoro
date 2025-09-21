@@ -6,7 +6,7 @@ from django.db.models import F
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from marketplace.models import Product
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Order
 from .forms import QuantityAddForm
 from .utils import get_active_cart
 
@@ -112,3 +112,15 @@ def clear_cart(request):
         cart.items.all().delete()
         messages.success(request, "Your cart has been cleared.")
     return redirect("orders:cart_detail")
+
+
+@login_required
+def my_orders(request):
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .select_related("shop")
+        .prefetch_related("items__product")
+        .order_by("-id")
+    )
+    return render(request, "orders/my_orders.html", {"orders": orders})
