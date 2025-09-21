@@ -31,18 +31,29 @@ SECRET_KEY = os.environ.get("SECRET_KEY", default='your secret key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = os.environ.get(
+
+def env_csv(key: str, default: str = "") -> list[str]:
+    return [
+        x.strip() for x in os.environ.get(key, default).split(",") if x.strip()
+    ]
+
+
+ALLOWED_HOSTS = env_csv(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-).split(",")
+    "imn-vendoro-55af0b986025.herokuapp.com,localhost,127.0.0.1"
+)
 
 CSRF_TRUSTED_ORIGINS = [
     # Accept explicit entries from env (comma-separated, must include scheme)
     *[o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o],
     # Also auto-add https:// for any non-local ALLOWED_HOSTS
     *[f"https://{h}" for h in ALLOWED_HOSTS if h and h not in (
-        "localhost", "127.0.0.1")],
+        "localhost",
+        "127.0.0.1",
+        "https://imn-vendoro-55af0b986025.herokuapp.com"
+    )],
 ]
+
 
 # Heroku proxy/HTTPS
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -239,3 +250,15 @@ STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", default="")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", default="")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", default="")
 STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", default="gbp")
+
+DEBUG_PROPAGATE_EXCEPTIONS = True  # TEMP: so 500s print a stacktrace in logs
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO"},
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+    },
+}
