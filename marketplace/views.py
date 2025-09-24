@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.db.models import Avg, Count
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -56,9 +57,15 @@ def product_detail(request, shop_slug, product_slug):
         is_active=True
     )
     product_images = ProductImage.objects.filter(product=product)
+    rating_stats = product.reviews.aggregate(
+        avg=Avg("rating"),
+        count=Count("id"),
+    )
     context = {
         "product": product,
         "product_images": product_images,
+        "rating_avg": rating_stats["avg"],
+        "rating_count": rating_stats["count"],
     }
     return render(
         request, "marketplace/product_detail.html", context

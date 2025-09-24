@@ -5,7 +5,13 @@
 <div class="row g-4">
   <div class="col-md-8">
     <h1 class="h4 mb-3">{{ product.title }}</h1>
-
+    {% if rating_count %}
+      <div class="text-muted">
+        Rating: {{ rating_avg|floatformat:1 }} / 5 • ({{ rating_count }} review{{ rating_count|pluralize }})
+      </div>
+    {% else %}
+      <div class="text-muted">No reviews yet.</div>
+    {% endif %}
     {# Main image + thumbs #}
     {% with images=product.images.all %}
       {% if images %}
