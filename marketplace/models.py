@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
@@ -143,3 +143,31 @@ class Inventory(models.Model):
 
     def __str__(self):
         return f"{self.product.title} ({self.quantity} in stock)"
+
+
+class ProductReview(models.Model):
+    product = models.ForeignKey(
+        "marketplace.Product",
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        null=True, blank=True,          # nullable for now
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="product_reviews",
+        null=True, blank=True,          # nullable for now
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        null=True, blank=True,          # nullable for now
+    )
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        u = getattr(self.user, "username", self.user_id)
+        return f"Review({self.product_id}) by {u} • {self.rating}"
