@@ -37,16 +37,9 @@
                     <div class="fw-semibold">
                       <a href="{{ it.product.get_absolute_url }}">{{ it.product.title }}</a>
                     </div>
-                    <div class="text-muted">Qty {{ it.quantity }} · {{ it.unit_price }}</div>
-
-                    {% if o.status == 'PAID' and o.fulfillment_status == 'completed' %}
-                      {% if it.review %}
-                        <span class="badge text-bg-success mt-1">Reviewed</span>
-                      {% else %}
-                        <a class="btn btn-sm btn-outline-primary mt-1"
-                           href="{% url 'marketplace:review_add' it.id %}">Add review</a>
-                      {% endif %}
-                    {% endif %}
+                    <div class="text-muted">
+                      Qty {{ it.quantity }} · {{ it.unit_price }}
+                    </div>
                   </div>
                 </div>
               </div>
