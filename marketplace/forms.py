@@ -1,7 +1,7 @@
 # apps/marketplace/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Product, Shop
+from .models import Product, Shop, ProductReview
 
 
 class ProductForm(forms.ModelForm):
@@ -55,3 +55,17 @@ class ShopForm(forms.ModelForm):
         ).exclude(pk=self.instance.pk).exists():
             raise ValidationError("You already have a shop with this name.")
         return name
+
+
+class ProductReviewForm(forms.ModelForm):
+    class Meta:
+        model = ProductReview
+        fields = ("rating", "comment")
+        widgets = {
+            "rating": forms.NumberInput(
+                attrs={"min": 1, "max": 5, "step": 1, "class": "form-control"}
+            ),
+            "comment": forms.Textarea(
+                attrs={"rows": 3, "class": "form-control"}
+            ),
+        }

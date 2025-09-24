@@ -16,8 +16,8 @@ from django.views.decorators.http import (
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
 from cloudinary.uploader import destroy as cl_destroy
-from .models import Shop, Product, ProductImage
-from .forms import ProductForm, ShopForm
+from .models import Shop, Product, ProductImage, ProductReview
+from .forms import ProductForm, ShopForm, ProductReviewForm
 
 
 class ProductList(ListView):
@@ -337,4 +337,47 @@ def product_edit(request, pk):
         request,
         "marketplace/product_edit.html",
         {"product": product, "form": form},
+    )
+
+
+@login_required
+def review_add(request, shop_slug, product_slug):
+    product = get_object_or_404(
+        Product,
+        shop__slug=shop_slug,
+        slug=product_slug,
+        is_active=True,
+    )
+
+    # one review per user/product
+    if ProductReview.objects.filter(
+        product=product, user=request.user
+    ).exists():
+        messages.info(request, "You have already reviewed this product.")
+        return redirect(
+            "product_detail",
+            shop_slug=shop_slug,
+            product_slug=product_slug
+        )
+
+    if request.method == "POST":
+        form = ProductReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.user = request.user
+            review.save()
+            messages.success(request, "Thanks for your review!")
+            return redirect(
+                "product_detail",
+                shop_slug=shop_slug,
+                product_slug=product_slug
+            )
+    else:
+        form = ProductReviewForm()
+
+    return render(
+        request,
+        "marketplace/review_form.html",
+        {"form": form, "product": product}
     )
