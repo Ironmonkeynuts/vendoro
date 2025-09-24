@@ -24,7 +24,11 @@ urlpatterns = [
          name="product_create"
     ),
     # Shop details
-    path("shops/<slug:slug>/", views.shop_detail, name="shop_detail"),
+    path(
+        "shops/<slug:slug>/",
+        views.shop_detail,
+        name="shop_detail"
+    ),
     # Product management
     path(
         "products/<int:pk>/edit/",
