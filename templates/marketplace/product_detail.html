@@ -5,12 +5,12 @@
 <div class="row g-4">
   <div class="col-md-8">
     <h1 class="h4 mb-3">{{ product.title }}</h1>
+    {# Average + count #}
     {% if rating_count %}
-      <div class="text-muted">
-        Rating: {{ rating_avg|floatformat:1 }} / 5 • ({{ rating_count }} review{{ rating_count|pluralize }})
-      </div>
-    {% else %}
-      <div class="text-muted">No reviews yet.</div>
+      <p class="mb-1">
+        <strong>{{ rating_avg|floatformat:1 }}/5</strong>
+        <span class="text-muted">({{ rating_count }} review{{ rating_count|pluralize }})</span>
+      </p>
     {% endif %}
     {# Main image + thumbs #}
     {% with images=product.images.all %}
@@ -72,4 +72,38 @@
     </div>
   </div>
 </div>
+{# CTA #}
+{% if user.is_authenticated %}
+  {% if already_reviewed %}
+    <p class="text-muted small mb-3">You’ve already reviewed this product.</p>
+  {% else %}
+    <a class="btn btn-sm btn-primary mb-3"
+       href="{% url 'marketplace:review_add' product.shop.slug product.slug %}">
+       Write a review
+    </a>
+  {% endif %}
+{% else %}
+  <p class="small mb-3">
+    <a href="{% url 'account_login' %}?next={{ request.path }}">Sign in</a> to write a review.
+  </p>
+{% endif %}
+{# List reviews #}
+{% if reviews %}
+  <div class="vstack gap-3">
+    {% for r in reviews %}
+      <div class="border rounded p-3">
+        <div class="d-flex justify-content-between">
+          <strong>{{ r.user.username }}</strong>
+          <span class="text-muted small">{{ r.created_at|date:"M j, Y" }}</span>
+        </div>
+        <div class="mb-1">Rating: {{ r.rating }} / 5</div>
+        {% if r.comment %}
+          <p class="mb-0">{{ r.comment }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">No reviews yet.</p>
+{% endif %}
 {% endblock %}

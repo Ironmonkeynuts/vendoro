@@ -57,15 +57,29 @@ def product_detail(request, shop_slug, product_slug):
         is_active=True
     )
     product_images = ProductImage.objects.filter(product=product)
-    rating_stats = product.reviews.aggregate(
+    
+    # Get reviews and aggregate stats
+    reviews = (
+        product.reviews
+        .select_related("user")           # avoid N+1 on user
+        .order_by("-created_at")
+    )
+    rating_stats = reviews.aggregate(
         avg=Avg("rating"),
         count=Count("id"),
     )
+    already_reviewed = (
+        request.user.is_authenticated and
+        reviews.filter(user=request.user).exists()
+    )
+    # Context for template
     context = {
         "product": product,
         "product_images": product_images,
-        "rating_avg": rating_stats["avg"],
-        "rating_count": rating_stats["count"],
+        "reviews": reviews,
+        "rating_avg": rating_stats["avg"] or 0,
+        "rating_count": rating_stats["count"] or 0,
+        "already_reviewed": already_reviewed,
     }
     return render(
         request, "marketplace/product_detail.html", context

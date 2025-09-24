@@ -51,11 +51,6 @@ urlpatterns = [
         views.product_detail,
         name="product_detail"
     ),
-]
-
-
-urlpatterns = [
-    # ...your existing routes...
     path(
         "browse/shops/<slug:shop_slug>/<slug:product_slug>/review/",
         views.review_add,
