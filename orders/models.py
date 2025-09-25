@@ -123,6 +123,9 @@ class Order(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Order #{self.id} for {self.user or 'guest'}"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(
@@ -135,3 +138,6 @@ class OrderItem(models.Model):
     def line_total(self):
         return (self.unit_price * self.quantity).quantize(
             TWO_DP, rounding=ROUND_HALF_UP)
+
+    def __str__(self):
+        return f"{self.quantity} × {self.product} (order {self.order_id})"
