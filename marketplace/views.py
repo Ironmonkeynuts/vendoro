@@ -17,6 +17,7 @@ from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
 from cloudinary.uploader import destroy as cl_destroy
 from .models import Shop, Product, ProductImage, ProductReview
+from orders.models import OrderItem
 from .forms import ProductForm, ShopForm, ProductReviewForm
 
 
@@ -357,7 +358,7 @@ def product_edit(request, pk):
 @login_required
 def review_add(request, shop_slug, product_slug):
     product = get_object_or_404(
-        Product,
+        Product.objects.select_related("shop"),
         shop__slug=shop_slug,
         slug=product_slug,
         is_active=True,
@@ -369,11 +370,23 @@ def review_add(request, shop_slug, product_slug):
     ).exists():
         messages.info(request, "You have already reviewed this product.")
         return redirect(
-            "product_detail",
+            "marketplace:product_detail",
             shop_slug=shop_slug,
-            product_slug=product_slug
+            product_slug=product_slug,
         )
-
+    # must have at least one completed order for this product
+    has_completed = OrderItem.objects.filter(
+        order__user=request.user,
+        product=product,
+        order__fulfillment_status="completed",
+    ).exists()
+    if not has_completed:
+        messages.error(request, "You can only review products you’ve purchased.")
+        return redirect(
+            "marketplace:product_detail",
+            shop_slug=shop_slug,
+            product_slug=product_slug,
+        )
     if request.method == "POST":
         form = ProductReviewForm(request.POST)
         if form.is_valid():
@@ -383,7 +396,7 @@ def review_add(request, shop_slug, product_slug):
             review.save()
             messages.success(request, "Thanks for your review!")
             return redirect(
-                "product_detail",
+                "marketplace:product_detail",
                 shop_slug=shop_slug,
                 product_slug=product_slug
             )

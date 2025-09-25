@@ -52,7 +52,7 @@ urlpatterns = [
         name="product_detail"
     ),
     path(
-        "browse/shops/<slug:shop_slug>/<slug:product_slug>/review/",
+        "shops/<slug:shop_slug>/<slug:product_slug>/review/",
         views.review_add,
         name="review_add",
     ),

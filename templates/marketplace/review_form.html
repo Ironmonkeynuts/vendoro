@@ -19,7 +19,7 @@
   <div class="d-flex gap-2">
     <button class="btn btn-primary">Submit review</button>
     <a class="btn btn-outline-secondary"
-       href="{% url 'product_detail' shop_slug=product.shop.slug product_slug=product.slug %}">Cancel</a>
+       href="{% url 'marketplace:product_detail' product.shop.slug product.slug %}">Cancel</a>
   </div>
 </form>
 {% endblock %}
