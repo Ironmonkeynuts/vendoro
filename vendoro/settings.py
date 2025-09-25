@@ -34,7 +34,8 @@ DEBUG = os.environ.get("DEBUG", "1") == "1"
 
 def env_csv(key: str, default: str = "") -> list[str]:
     return [
-        x.strip() for x in os.environ.get(key, default).split(",") if x.strip()
+        x.strip() for x in os.environ.get(key, default).split(",")
+        if x.strip()
     ]
 
 
@@ -43,16 +44,11 @@ ALLOWED_HOSTS = env_csv(
     "imn-vendoro-55af0b986025.herokuapp.com,localhost,127.0.0.1"
 )
 
-CSRF_TRUSTED_ORIGINS = [
-    # Accept explicit entries from env (comma-separated, must include scheme)
-    *[o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o],
-    # Also auto-add https:// for any non-local ALLOWED_HOSTS
-    *[f"https://{h}" for h in ALLOWED_HOSTS if h and h not in (
-        "localhost",
-        "127.0.0.1",
-        "https://imn-vendoro-55af0b986025.herokuapp.com"
-    )],
-]
+
+CSRF_TRUSTED_ORIGINS = env_csv(
+    "CSRF_TRUSTED_ORIGINS",
+    "https://imn-vendoro-55af0b986025.herokuapp.com"
+)
 
 
 # Heroku proxy/HTTPS
