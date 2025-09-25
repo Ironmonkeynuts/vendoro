@@ -1,16 +1,39 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block title %}Home - Vendoro{% endblock %}
+
 {% block content %}
-<div class="p-5 bg-white rounded-3 shadow-sm">
-<h1 class="display-5">Welcome to Vendoro</h1>
-<p class="lead">A multi-vendor marketplace. Sign up to buy or sell.</p>
-<a class="btn btn-primary" href="/accounts/signup/">Get started</a>
+{# Choose a friendly display name: first name, else username, else email, else "there" #}
+{% if user.is_authenticated %}
+  {% firstof user.first_name user.username user.email "there" as display_name %}
+{% endif %}
+
+{# Top card varies by auth status #}
+<div class="p-5 bg-white rounded-3 shadow-sm mb-4">
+  {% if user.is_authenticated %}
+    <h1 class="display-6">Welcome back, {{ display_name }} 👋</h1>
+    <p class="lead mb-3">What would you like to do today?</p>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-primary" href="/browse/">Browse products</a>
+      <a class="btn btn-outline-secondary" href="/orders/myorders/">My orders</a>
+    </div>
+  {% else %}
+    <h1 class="display-5">Welcome to Vendoro</h1>
+    <p class="lead">A multi-vendor marketplace. Sign up to buy or sell.</p>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-primary" href="{% url 'account_signup' %}">Get started</a>
+      <a class="btn btn-outline-secondary" href="{% url 'account_login' %}">Log in</a>
+    </div>
+  {% endif %}
 </div>
+
+<!-- Hero section -->
 <section class="py-5 text-white hero-bg">
   <div class="container home-hero">
     <h1 class="display-5 fw-bold mb-2">Vendoro</h1>
-    <p class="lead mt-1 mb-0">Discover independent shops & unique products</p>
+    <p class="lead mt-1 mb-0">Discover independent shops &amp; unique products</p>
   </div>
 </section>
 {% endblock %}
+
