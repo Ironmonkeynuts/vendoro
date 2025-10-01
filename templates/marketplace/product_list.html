@@ -5,17 +5,30 @@
 <h2 class="mb-3">Browse products</h2>
 
 <form method="get" class="row g-2 mb-3">
-  <div class="col-sm-6">
-    <input class="form-control" type="text" name="q" value="{{ request.GET.q }}" placeholder="Search">
+  <div class="col-sm-4">
+    <input class="form-control" type="text" name="q" value="{{ q }}" placeholder="Search">
   </div>
+
+  <div class="col-sm-3">
+    <select class="form-select" name="category">
+      <option value="">All categories</option>
+      {% for c in categories %}
+        <option value="{{ c.slug }}" {% if active_category == c.slug %}selected{% endif %}>
+          {{ c.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
   <div class="col-sm-3">
     <select class="form-select" name="sort">
       <option value="">Newest</option>
-      <option value="price_asc"  {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price ↑</option>
-      <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price ↓</option>
+      <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>Price ↑</option>
+      <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price ↓</option>
     </select>
   </div>
-  <div class="col-sm-3">
+
+  <div class="col-sm-2">
     <button class="btn btn-primary w-100">Filter</button>
   </div>
 </form>

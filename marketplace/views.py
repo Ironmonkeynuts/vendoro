@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -16,7 +16,7 @@ from django.views.decorators.http import (
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
 from cloudinary.uploader import destroy as cl_destroy
-from .models import Shop, Product, ProductImage, ProductReview
+from .models import Shop, Product, ProductImage, ProductReview, Category
 from orders.models import OrderItem
 from .forms import ProductForm, ShopForm, ProductReviewForm
 
@@ -31,20 +31,45 @@ class ProductList(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        qs = (Product.objects.filter(is_active=True)
-              .select_related("shop")
-              .prefetch_related("images"))
-        q = self.request.GET.get("q")
+        qs = (
+            Product.objects.filter(is_active=True)
+            .select_related("shop", "category")
+            .prefetch_related("images")
+        )
+
+        q = (self.request.GET.get("q") or "").strip()
+        cat_slug = (self.request.GET.get("category") or self.request.GET.get("cat") or "").strip()
+        sort = (self.request.GET.get("sort") or "").strip()
+
         if q:
-            qs = qs.filter(title__icontains=q)
-        sort = self.request.GET.get("sort")
+            qs = qs.filter(
+                Q(title__icontains=q)
+                | Q(description__icontains=q)
+                | Q(shop__name__icontains=q)
+            )
+
+        if cat_slug:
+            qs = qs.filter(category__slug=cat_slug)
+
         if sort == "price_asc":
             qs = qs.order_by("price", "-id")
         elif sort == "price_desc":
             qs = qs.order_by("-price", "-id")
         else:
             qs = qs.order_by("-created_at")
+
         return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["categories"] = Category.objects.order_by("name")
+        ctx["q"] = (self.request.GET.get("q") or "").strip()
+        ctx["active_category"] = (
+            self.request.GET.get("category") or
+            self.request.GET.get("cat") or ""
+        ).strip()
+        ctx["sort"] = (self.request.GET.get("sort") or "").strip()
+        return ctx
 
 
 def product_detail(request, shop_slug, product_slug):
