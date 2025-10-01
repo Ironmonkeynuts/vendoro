@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
 
@@ -105,6 +106,12 @@ class Product(models.Model):
 
         self.slug = candidate
         return super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse(
+            "marketplace:product_detail",
+            kwargs={"shop_slug": self.shop.slug, "product_slug": self.slug}
+        )
 
     def __str__(self):
         return f"{self.title} ({self.shop.name})"
