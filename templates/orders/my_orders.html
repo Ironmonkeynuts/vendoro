@@ -11,19 +11,24 @@
           <div class="d-flex justify-content-between flex-wrap gap-2">
             <div>
               <div class="fw-semibold">Order #{{ o.id }}</div>
-              <div class="text-muted small">Shop: {{ o.shop.name }}</div>
+              <div class="text-muted small">
+                Shop:
+                <a href="{% url 'marketplace:shop_detail' slug=o.shop.slug %}">
+                  {{ o.shop.name }}
+                </a>
+              </div>
             </div>
             <div class="text-end">
-                <!-- Payment status badge -->
-                <span class="badge text-bg-{% if o.status == 'paid' %}success{% else %}secondary{% endif %}">
-                    {{ o.get_status_display }}
-                </span>
-                <!-- Fulfilment status badge -->
-                <span class="badge text-bg-{% if o.fulfillment_status == 'completed' %}success{% elif o.fulfillment_status == 'dispatched' %}primary{% elif o.fulfillment_status == 'processing' %}warning{% else %}secondary{% endif %}">
-                    {{ o.get_fulfillment_status_display }}
-                </span>
+              <!-- Payment status badge -->
+              <span class="badge text-bg-{% if o.status == 'paid' %}success{% else %}secondary{% endif %}">
+                  {{ o.get_status_display }}
+              </span>
+              <!-- Fulfilment status badge -->
+              <span class="badge text-bg-{% if o.fulfillment_status == 'completed' %}success{% elif o.fulfillment_status == 'dispatched' %}primary{% elif o.fulfillment_status == 'processing' %}warning{% else %}secondary{% endif %}">
+                  {{ o.get_fulfillment_status_display }}
+              </span>
 
-              <div class="mt-1 fw-semibold">Total: {{ o.total_amount }}</div>
+              <div class="mt-1 fw-semibold">Total: £{{ o.total_amount|floatformat:2 }}</div>
             </div>
           </div>
 
@@ -35,10 +40,18 @@
                 <div class="d-flex align-items-start gap-3">
                   <div class="small flex-grow-1">
                     <div class="fw-semibold">
-                      <a href="{{ it.product.get_absolute_url }}">{{ it.product.title }}</a>
+                      {% if it.product %}
+                        {% if it.product.is_active %}
+                          <a href="{{ it.product.get_absolute_url }}">{{ it.product.title }}</a>
+                        {% else %}
+                          <span class="text-muted">{{ it.product.title }} (no longer available)</span>
+                        {% endif %}
+                      {% else %}
+                        <span class="text-muted">Product unavailable</span>
+                      {% endif %}
                     </div>
                     <div class="text-muted">
-                      Qty {{ it.quantity }} · {{ it.unit_price }}
+                      Qty {{ it.quantity }} · £{{ it.unit_price|floatformat:2 }}
                     </div>
                   </div>
                 </div>

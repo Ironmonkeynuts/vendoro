@@ -120,7 +120,7 @@ def my_orders(request):
         Order.objects
         .filter(user=request.user)
         .select_related("shop")
-        .prefetch_related("items__product")
-        .order_by("-id")
+        .prefetch_related("items__product__shop")
+        .order_by("-id", "-created_at")
     )
     return render(request, "orders/my_orders.html", {"orders": orders})
