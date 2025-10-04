@@ -451,10 +451,23 @@ def seller_dashboard(request):
         # nudge them to create a shop first
         return redirect("marketplace:shop_create")
 
-    # lightweight counts to show something
-    shops = (Shop.objects.filter(owner=request.user)
-             .only("id", "name", "slug"))
+    # Prefetch products and annotate review stats
+    products = (
+        Product.objects
+        .filter(shop__owner=request.user, is_active=True)
+        .select_related("shop", "category")
+        .annotate(
+            review_count=Count("reviews", distinct=True),
+            review_avg=Avg("reviews__rating"),
+        )
+        .order_by("shop__name", "-created_at")
+    )
+
+    # group by shop id in memory for simple rendering
+    by_shop = {}
+    for p in products:
+        by_shop.setdefault(p.shop, []).append(p)
 
     return render(request, "marketplace/seller_dashboard.html", {
-        "shops": shops,
+        "inventory_by_shop": by_shop,   # {Shop: [Product, ...]}
     })
