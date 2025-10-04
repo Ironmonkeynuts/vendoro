@@ -3,7 +3,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.db.models import Avg, Count, Q
+from django.db.models import (
+    Avg, Count, Q, F, Sum, DecimalField, ExpressionWrapper
+)
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -488,11 +490,58 @@ def seller_dashboard(request):
         .order_by("-created_at")[:20]
     )
 
-    return render(request, "marketplace/seller_dashboard.html", {
+    sale_statuses = ["paid", "completed"]  # adjust if your enum differs
+    items_qs = (
+        OrderItem.objects
+        .filter(
+            product__shop__owner=request.user,
+            order__status__in=sale_statuses
+        )
+        .select_related("product", "product__shop")
+    )
+
+    revenue_expr = ExpressionWrapper(
+        F("unit_price") * F("quantity"),
+        output_field=DecimalField(max_digits=12, decimal_places=2),
+    )
+
+    per_product = (
+        items_qs
+        .values(
+            "product_id", "product__title", "product__slug",
+            "product__shop_id", "product__shop__name",
+            "product__shop__slug"
+        )
+        .annotate(
+            qty_sold=Sum("quantity"),
+            revenue=Sum(revenue_expr),
+        )
+        .order_by("-qty_sold", "-revenue")
+    )
+
+    # Top and bottom slices
+    top_5 = list(per_product[:5])
+    lowest_5 = list(per_product.order_by("qty_sold", "revenue")[:5])
+
+    # Group by shop for the main stats table
+    stats_by_shop = {}
+    for row in per_product:
+        key = (
+            row["product__shop_id"],
+            row["product__shop__name"],
+            row["product__shop__slug"],
+        )
+        stats_by_shop.setdefault(key, []).append(row)
+
+    context = {
         "inventory_by_shop": by_shop,
         "recent_items": recent_items,
         "new_reviews": new_reviews,
-    })
+        "stats_by_shop": stats_by_shop,
+        "top_5": top_5,
+        "lowest_5": lowest_5,
+    }
+    return render(request, "marketplace/seller_dashboard.html", context)
 
 
 @login_required
@@ -509,4 +558,4 @@ def review_reply(request, review_id):
         else:
             # TODO: persist the reply (model/field as you prefer)
             messages.success(request, "Reply saved (stub).")
-    return redirect("marketplace:seller") 
+    return redirect("marketplace:seller")
