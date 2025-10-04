@@ -468,6 +468,22 @@ def seller_dashboard(request):
     for p in products:
         by_shop.setdefault(p.shop, []).append(p)
 
+    recent_items = (
+        OrderItem.objects
+        .filter(product__shop__owner=request.user)
+        .select_related("order", "product", "product__shop", "order__user")
+        .order_by("-order__created_at")[:20]
+    )
+
+    new_reviews = (
+        ProductReview.objects
+        .filter(product__shop__owner=request.user)
+        .select_related("product", "product__shop", "user")
+        .order_by("-created_at")[:20]
+    )
+
     return render(request, "marketplace/seller_dashboard.html", {
-        "inventory_by_shop": by_shop,   # {Shop: [Product, ...]}
+        "inventory_by_shop": by_shop,
+        "recent_items": recent_items,
+        "new_reviews": new_reviews,
     })
