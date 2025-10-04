@@ -68,60 +68,76 @@
     </div>
 
     <div id="tab-alerts" class="tab-pane fade" role="tabpanel">
-    <div class="row g-4">
-        <div class="col-lg-6">
-        <h2 class="h6">Recent transactions</h2>
-        {% if recent_items %}
-            <div class="vstack gap-2">
-            {% for it in recent_items %}
-                <div class="border rounded p-2 d-flex justify-content-between">
-                <div class="me-3">
-                    <div class="small text-muted">{{ it.order.created_at|date:"Y-m-d H:i" }}</div>
-                    <div>
-                    <a href="{% url 'marketplace:product_detail' shop_slug=it.product.shop.slug product_slug=it.product.slug %}">
-                        {{ it.product.title }}
-                    </a>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h2 class="h6">Recent transactions</h2>
+                {% if recent_items %}
+                    <div class="vstack gap-2">
+                        {% for it in recent_items %}
+                            <div class="border rounded p-2 d-flex justify-content-between">
+                                <div class="me-3">
+                                    <div class="small text-muted">{{ it.order.created_at|date:"Y-m-d H:i" }}</div>
+                                    <div>
+                                        <a href="{% url 'marketplace:product_detail' shop_slug=it.product.shop.slug product_slug=it.product.slug %}">
+                                            {{ it.product.title }}
+                                        </a>
+                                    </div>
+                                    <div class="small">Qty {{ it.quantity }} · £{{ it.unit_price|floatformat:2 }}</div>
+                                    <div class="small text-muted">Order #{{ it.order_id }} by {{ it.order.user }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge text-bg-secondary">{{ it.order.get_status_display }}</span>
+                                    <span class="badge text-bg-secondary">{{ it.order.get_fulfillment_status_display }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                    <div class="small">Qty {{ it.quantity }} · £{{ it.unit_price|floatformat:2 }}</div>
-                    <div class="small text-muted">Order #{{ it.order_id }} by {{ it.order.user }}</div>
-                </div>
-                <div class="text-end">
-                    <span class="badge text-bg-secondary">{{ it.order.get_status_display }}</span>
-                    <span class="badge text-bg-secondary">{{ it.order.get_fulfillment_status_display }}</span>
-                </div>
-                </div>
-            {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent transactions.</p>
+                {% endif %}
             </div>
-        {% else %}
-            <p class="text-muted">No recent transactions.</p>
-        {% endif %}
-        </div>
 
-        <div class="col-lg-6">
-        <h2 class="h6">New reviews</h2>
-        {% if new_reviews %}
-            <div class="vstack gap-2">
-            {% for r in new_reviews %}
-                <div class="border rounded p-2">
-                <div class="d-flex justify-content-between">
-                    <div>
-                    <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
-                        {{ r.product.title }}
-                    </a>
-                    <div class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</div>
+            <div class="col-lg-6">
+                <h2 class="h6">New reviews</h2>
+                {% if new_reviews %}
+                    <div class="vstack gap-2">
+                        {% for r in new_reviews %}
+                            <div class="border rounded p-2">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
+                                            {{ r.product.title }}
+                                        </a>
+                                        <div class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</div>
+                                    </div>
+                                    <div>⭐ {{ r.rating }}/5</div>
+                                </div>
+
+                                {% if r.comment %}<p class="mb-1">{{ r.comment }}</p>{% endif %}
+                                <div class="small text-muted">by {{ r.user.username }}</div>
+
+                                {% if r.reply %}
+                                    <div class="mt-2 p-2 bg-light border rounded">
+                                        <div class="small text-muted">Your reply ({{ r.reply.created_at|date:"Y-m-d H:i" }}):</div>
+                                        <div>{{ r.reply.body }}</div>
+                                    </div>
+                                {% else %}
+                                    <form class="mt-2" method="post" action="{% url 'marketplace:review_reply' review_id=r.id %}">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <textarea class="form-control" name="body" rows="1" placeholder="Reply to this review..." required></textarea>
+                                            <button class="btn btn-outline-primary">Reply</button>
+                                        </div>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                     </div>
-                    <div>⭐ {{ r.rating }}/5</div>
-                </div>
-                {% if r.comment %}<p class="mb-1">{{ r.comment }}</p>{% endif %}
-                <div class="small text-muted">by {{ r.user.username }}</div>
-                </div>
-            {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent reviews.</p>
+                {% endif %}
             </div>
-        {% else %}
-            <p class="text-muted">No recent reviews.</p>
-        {% endif %}
         </div>
-    </div>
     </div>
 
     <div id="tab-stats" class="tab-pane fade" role="tabpanel">

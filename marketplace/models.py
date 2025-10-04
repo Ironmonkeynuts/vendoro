@@ -178,3 +178,26 @@ class ProductReview(models.Model):
     def __str__(self):
         u = getattr(self.user, "username", self.user_id)
         return f"Review({self.product_id}) by {u} • {self.rating}"
+
+
+class ReviewReply(models.Model):
+    review = models.OneToOneField(
+        "marketplace.ProductReview",
+        on_delete=models.CASCADE,
+        related_name="reply",
+    )
+    responder = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="review_replies",
+    )
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Reply to review {self.review_id}"

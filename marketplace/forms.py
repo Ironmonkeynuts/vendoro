@@ -1,7 +1,7 @@
 # apps/marketplace/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Product, Shop, ProductReview
+from .models import Product, Shop, ProductReview, ReviewReply
 
 
 class ProductForm(forms.ModelForm):
@@ -67,5 +67,16 @@ class ProductReviewForm(forms.ModelForm):
             ),
             "comment": forms.Textarea(
                 attrs={"rows": 3, "class": "form-control"}
+            ),
+        }
+
+
+class ReviewReplyForm(forms.ModelForm):
+    class Meta:
+        model = ReviewReply
+        fields = ["body"]
+        widgets = {
+            "body": forms.Textarea(
+                attrs={"rows": 2, "placeholder": "Write a reply..."}
             ),
         }

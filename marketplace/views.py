@@ -16,7 +16,13 @@ from django.views.decorators.http import (
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
 from cloudinary.uploader import destroy as cl_destroy
-from .models import Shop, Product, ProductImage, ProductReview, Category
+from .models import (
+    Shop,
+    Product,
+    ProductImage,
+    ProductReview,
+    Category
+)
 from orders.models import OrderItem
 from .forms import ProductForm, ShopForm, ProductReviewForm
 
@@ -487,3 +493,20 @@ def seller_dashboard(request):
         "recent_items": recent_items,
         "new_reviews": new_reviews,
     })
+
+
+@login_required
+def review_reply(request, review_id):
+    review = get_object_or_404(
+        ProductReview,
+        pk=review_id,
+        product__shop__owner=request.user,  # ownership check
+    )
+    if request.method == "POST":
+        body = (request.POST.get("body") or "").strip()
+        if not body:
+            messages.error(request, "Reply cannot be empty.")
+        else:
+            # TODO: persist the reply (model/field as you prefer)
+            messages.success(request, "Reply saved (stub).")
+    return redirect("marketplace:seller") 

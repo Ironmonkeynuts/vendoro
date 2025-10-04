@@ -4,6 +4,16 @@ from . import views
 app_name = "marketplace"
 
 urlpatterns = [
+    path(
+        "seller/",
+        views.seller_dashboard,
+        name="seller"
+    ),
+    path(
+        "seller/reviews/<int:review_id>/reply/",
+        views.review_reply,
+        name="review_reply"
+    ),
     path("", views.ProductList.as_view(), name="browse"),
     path("cloudinary/sign/", views.cloudinary_sign, name="cloudinary_sign"),
     # Shop creation
@@ -56,10 +66,4 @@ urlpatterns = [
         views.review_add,
         name="review_add",
     ),
-    path(
-        "seller/",
-        views.seller_dashboard,
-        name="seller"
-    ),
-
 ]
