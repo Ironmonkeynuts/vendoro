@@ -20,7 +20,7 @@
 
         {# Inline seller shortcuts if user owns at least one shop #}
         {% if user.shops.exists %}
-          <a class="btn btn-outline-primary" href="/">Seller dashboard</a>
+          <a class="btn btn-outline-primary" href="/browse/seller/">Seller dashboard</a>
           {% if myshop %}
             <a class="btn btn-outline-secondary"
                href="{% url 'marketplace:shop_detail' slug=myshop.slug %}">

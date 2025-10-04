@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Seller Dashboard — Vendoro{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-3">Seller dashboard</h1>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-inventory" type="button" role="tab">Inventory</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-alerts" type="button" role="tab">Alerts</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-stats" type="button" role="tab">Stats</button>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <div id="tab-inventory" class="tab-pane fade show active" role="tabpanel">
+    <p class="text-muted">Your shops & products will appear here.</p>
+  </div>
+
+  <div id="tab-alerts" class="tab-pane fade" role="tabpanel">
+    <p class="text-muted">Recent transactions & new reviews will appear here.</p>
+  </div>
+
+  <div id="tab-stats" class="tab-pane fade" role="tabpanel">
+    <p class="text-muted">Sales stats will appear here.</p>
+  </div>
+</div>
+{% endblock %}

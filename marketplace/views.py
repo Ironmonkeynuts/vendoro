@@ -38,7 +38,10 @@ class ProductList(ListView):
         )
 
         q = (self.request.GET.get("q") or "").strip()
-        cat_slug = (self.request.GET.get("category") or self.request.GET.get("cat") or "").strip()
+        cat_slug = (
+            self.request.GET.get("category") or
+            self.request.GET.get("cat") or ""
+        ).strip()
         sort = (self.request.GET.get("sort") or "").strip()
 
         if q:
@@ -83,7 +86,7 @@ def product_detail(request, shop_slug, product_slug):
         is_active=True
     )
     product_images = ProductImage.objects.filter(product=product)
-    
+
     # Get reviews and aggregate stats
     reviews = (
         product.reviews
@@ -291,7 +294,6 @@ def product_image_remove(request, pk, image_id):
     return redirect("marketplace:product_edit", pk=product.pk)
 
 
-
 @login_required
 @require_POST
 def update_shop_banner(request, slug):
@@ -406,7 +408,10 @@ def review_add(request, shop_slug, product_slug):
         order__fulfillment_status="completed",
     ).exists()
     if not has_completed:
-        messages.error(request, "You can only review products you’ve purchased.")
+        messages.error(
+            request,
+            "You can only review products you’ve purchased."
+        )
         return redirect(
             "marketplace:product_detail",
             shop_slug=shop_slug,
@@ -433,3 +438,23 @@ def review_add(request, shop_slug, product_slug):
         "marketplace/review_form.html",
         {"form": form, "product": product}
     )
+
+
+@login_required
+def seller_dashboard(request):
+    """
+    Display a dashboard for the seller with their shops and products.
+    Shell with tabs. Requires the user to own a shop.
+    """
+    has_shop = Shop.objects.filter(owner=request.user).exists()
+    if not has_shop:
+        # nudge them to create a shop first
+        return redirect("marketplace:shop_create")
+
+    # lightweight counts to show something
+    shops = (Shop.objects.filter(owner=request.user)
+             .only("id", "name", "slug"))
+
+    return render(request, "marketplace/seller_dashboard.html", {
+        "shops": shops,
+    })

@@ -56,4 +56,9 @@ urlpatterns = [
         views.review_add,
         name="review_add",
     ),
+    path(
+        "seller/",
+        views.seller_dashboard,
+        name="seller_dashboard"
+    ),
 ]
