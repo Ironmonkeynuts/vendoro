@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
+from django.views.generic import RedirectView
 from home.views import index
 from allauth.account.decorators import verified_email_required
 from django.http import HttpResponse
@@ -24,6 +25,14 @@ urlpatterns = [
             ("marketplace.urls", "marketplace"),
             namespace="marketplace"
         )
+    ),
+    path(
+        "seller/",
+        RedirectView.as_view(
+            pattern_name="marketplace:seller",
+            permanent=False
+        ),
+        name="seller_redirect",
     ),
     path(
         "orders/",

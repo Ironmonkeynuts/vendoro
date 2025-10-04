@@ -69,7 +69,7 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'marketplace:shop_create' %}">Create another shop</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/browse/seller/">Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'marketplace:seller' %}">Dashboard</a></li>
                                     {% else %}
                                     <li><span class="dropdown-item-text text-muted">You don’t have a shop yet.</span></li>
                                     <li><a class="dropdown-item" href="{% url 'marketplace:shop_create' %}">Create Shop</a></li>

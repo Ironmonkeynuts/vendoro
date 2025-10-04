@@ -59,6 +59,7 @@ urlpatterns = [
     path(
         "seller/",
         views.seller_dashboard,
-        name="seller_dashboard"
+        name="seller"
     ),
+
 ]
