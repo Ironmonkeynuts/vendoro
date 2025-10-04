@@ -100,6 +100,15 @@
         {% if r.comment %}
           <p class="mb-0">{{ r.comment }}</p>
         {% endif %}
+        <!-- Seller reply -->
+        {% if r.reply %}
+          <div class="mt-2 p-2 bg-light border rounded">
+            <div class="small text-muted">
+              Reply from {{ product.shop.name }} · {{ r.reply.created_at|date:"M j, Y" }}
+            </div>
+            <div>{{ r.reply.body }}</div>
+          </div>
+        {% endif %}
       </div>
     {% endfor %}
   </div>

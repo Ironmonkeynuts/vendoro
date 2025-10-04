@@ -98,7 +98,7 @@ def product_detail(request, shop_slug, product_slug):
     # Get reviews and aggregate stats
     reviews = (
         product.reviews
-        .select_related("user")           # avoid N+1 on user
+        .select_related("user", "reply", "product__shop")  # reply is OneToOne
         .order_by("-created_at")
     )
     rating_stats = reviews.aggregate(
