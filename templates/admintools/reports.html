@@ -112,4 +112,90 @@
     </div>
   </div>
 </div>
+
+<hr class="my-4">
+
+<h2 class="h5 mb-3">Top performers (selected range)</h2>
+<div class="row g-3">
+  <!-- Top Shops -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="h6 mb-3">Top Shops by Revenue</div>
+        {% if leaders.shops %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr class="text-muted small">
+                  <th>Shop</th>
+                  <th class="text-end">Orders</th>
+                  <th class="text-end">Items</th>
+                  <th class="text-end">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in leaders.shops %}
+                  <tr>
+                    <td>
+                      <a href="{% url 'marketplace:shop_detail' slug=s.product__shop__slug %}">
+                        {{ s.product__shop__name }}
+                      </a>
+                      <div class="small text-muted">@{{ s.product__shop__owner__username }}</div>
+                    </td>
+                    <td class="text-end">{{ s.orders }}</td>
+                    <td class="text-end">{{ s.items_sold }}</td>
+                    <td class="text-end">£{{ s.revenue|floatformat:2 }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No paid orders in this range.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="h6 mb-3">Top Products by Revenue</div>
+        {% if leaders.products %}
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr class="text-muted small">
+                  <th>Product</th>
+                  <th class="text-end">Orders</th>
+                  <th class="text-end">Items</th>
+                  <th class="text-end">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in leaders.products %}
+                  <tr>
+                    <td>
+                      <a href="{% url 'marketplace:product_detail' shop_slug=p.product__shop__slug product_slug=p.product__slug %}">
+                        {{ p.product__title }}
+                      </a>
+                      <div class="small text-muted">{{ p.product__shop__name }}</div>
+                    </td>
+                    <td class="text-end">{{ p.orders }}</td>
+                    <td class="text-end">{{ p.items_sold }}</td>
+                    <td class="text-end">£{{ p.revenue|floatformat:2 }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No paid orders in this range.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

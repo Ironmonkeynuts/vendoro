@@ -405,4 +405,52 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                 },
             }
         )
+
+        # Common filters for the selected range
+        range_filters = {
+            "order__status": "paid",
+            "order__created_at__gte": start,
+            "order__created_at__lte": end,
+        }
+
+        # Top PRODUCTS (by revenue, then items, then orders)
+        product_leaders_qs = (
+            OrderItem.objects.filter(**range_filters)
+            .values(
+                "product_id",
+                "product__title",
+                "product__slug",
+                "product__shop__slug",
+                "product__shop__name",
+            )
+            .annotate(
+                orders=Count("order_id", distinct=True),
+                items_sold=Coalesce(Sum("quantity"), 0),
+                revenue=Coalesce(Sum(line_amount_expr), Decimal("0")),
+            )
+            .order_by("-revenue", "-items_sold", "-orders")[:10]
+        )
+
+        # Top SHOPS (by revenue, then items, then orders)
+        shop_leaders_qs = (
+            OrderItem.objects.filter(**range_filters)
+            .values(
+                "product__shop_id",
+                "product__shop__name",
+                "product__shop__slug",
+                "product__shop__owner__username",
+            )
+            .annotate(
+                orders=Count("order_id", distinct=True),
+                items_sold=Coalesce(Sum("quantity"), 0),
+                revenue=Coalesce(Sum(line_amount_expr), Decimal("0")),
+            )
+            .order_by("-revenue", "-items_sold", "-orders")[:10]
+        )
+
+        ctx["leaders"] = {
+            "products": list(product_leaders_qs),
+            "shops": list(shop_leaders_qs),
+        }
+
         return ctx
