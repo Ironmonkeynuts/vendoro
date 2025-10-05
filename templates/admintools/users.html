@@ -1,6 +1,9 @@
 {% extends "admintools/base.html" %}
 
 {% block admintools_content %}
+
+<h1 class="h4 mb-3">Users</h1>
+
 <form method="get" class="row g-2 align-items-center mb-3">
   <div class="col-sm-8">
     <input type="text" name="q" value="{{ request.GET.q }}" class="form-control"

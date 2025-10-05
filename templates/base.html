@@ -98,14 +98,13 @@
                                 Admin
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-                                <li><a class="dropdown-item" href="/control/">Dashboard</a></li>
-                                <li><a class="dropdown-item" href="/control/users/">Users</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admintools:index' %}">Dashboard</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <!-- <li><a class="dropdown-item" href="/control/reviews/">Reviews</a></li> -->
-                                <li><a class="dropdown-item" href="/control/reports/">Reports</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/control/shops/">Shops</a></li>
-                                <li><a class="dropdown-item" href="/control/products/">Products</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admintools:users' %}">Users</a></li>
+                                <li><a class="dropdown-item" href="/">Reviews</a></li>
+                                <li><a class="dropdown-item" href="/">Reports</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admintools:shops_products' %}">Shops & Products</a></li>
+
                             </ul>
                         </li>
                         {% endif %}

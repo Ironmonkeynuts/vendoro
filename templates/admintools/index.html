@@ -12,7 +12,6 @@
     </a>
   </div>
 
-  <!-- Placeholders for upcoming tools -->
   <div class="col-sm-6 col-lg-3">
     <div class="card h-100 opacity-75">
       <div class="card-body">
@@ -21,6 +20,7 @@
       </div>
     </div>
   </div>
+
   <div class="col-sm-6 col-lg-3">
     <div class="card h-100 opacity-75">
       <div class="card-body">
@@ -29,13 +29,16 @@
       </div>
     </div>
   </div>
+
   <div class="col-sm-6 col-lg-3">
-    <div class="card h-100 opacity-75">
-      <div class="card-body">
-        <div class="h5 mb-1">Shops & Products</div>
-        <div class="text-muted small">Coming soon</div>
+    <a class="text-decoration-none" href="{% url 'admintools:shops_products' %}">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="h5 mb-1">Shops & Products</div>
+          <div class="text-muted small">View shops and product stats</div>
+        </div>
       </div>
-    </div>
+    </a>
   </div>
 </div>
 {% endblock %}

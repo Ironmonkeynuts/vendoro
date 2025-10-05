@@ -1,7 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Q
+from django.db.models import (
+    Q, F, Count, Avg, Sum, Prefetch, DecimalField, ExpressionWrapper
+)
+from marketplace.models import Shop, Product
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, ListView
@@ -146,6 +149,31 @@ def user_toggle_suspend(request, pk: int):
     return _safe_redirect_next(request)
 
 
+@require_POST
+def product_toggle_suspend(request, pk: int):
+    """Superuser: toggle Product.is_active (suspend / activate)."""
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        messages.error(request, "You do not have permission to do that.")
+        return _safe_redirect_next(request, fallback_name="admintools:shops")
+
+    product = get_object_or_404(
+        Product.objects.select_related("shop", "shop__owner"),
+        pk=pk
+    )
+
+    product.is_active = not product.is_active
+    product.save(update_fields=["is_active"])
+
+    messages.success(
+        request,
+        (
+            f"{'Reactivated' if product.is_active else 'Suspended'} "
+            f"“{product.title}”."
+        )
+    )
+    return _safe_redirect_next(request, fallback_name="admintools:shops")
+
+
 class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
     """
     Admin-only page that lists all shops with expandable rows
@@ -173,11 +201,14 @@ class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
         )
 
         # Prefetch the annotated products to each shop as "adm_products"
-        products_prefetch = Prefetch("products", queryset=products_qs, to_attr="adm_products")
+        products_prefetch = Prefetch(
+            "products", queryset=products_qs, to_attr="adm_products"
+        )
 
         # Per-shop rollups
         shop_revenue_expr = ExpressionWrapper(
-            F("products__orderitem__unit_price") * F("products__orderitem__quantity"),
+            F("products__orderitem__unit_price") *
+            F("products__orderitem__quantity"),
             output_field=DecimalField(max_digits=12, decimal_places=2),
         )
 
