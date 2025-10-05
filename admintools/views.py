@@ -10,7 +10,9 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, ListView
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.dateparse import parse_date
 from decimal import Decimal
+from datetime import datetime, time
 
 from marketplace.models import Shop, Product, ProductReview
 from orders.models import Order, OrderItem
@@ -57,9 +59,9 @@ class UserListView(SuperuserRequiredMixin, ListView):
         q = self.request.GET.get("q", "").strip()
         if q:
             qs = qs.filter(
-                Q(username__icontains=q)|
-                Q(email__icontains=q)|
-                Q(first_name__icontains=q)|
+                Q(username__icontains=q) |
+                Q(email__icontains=q) |
+                Q(first_name__icontains=q) |
                 Q(last_name__icontains=q)
             )
         sort = (self.request.GET.get("sort") or "").strip()
@@ -255,7 +257,6 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
         inactive_products = total_products - active_products
 
         # Orders & Revenue
-        # Treat "paid" as completed payment
         paid_orders = Order.objects.filter(status="paid")
         total_orders = paid_orders.count()
 
@@ -269,11 +270,55 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
 
-        # Recent windows
+        # Range parsing
         now = timezone.now()
+        rng = (self.request.GET.get("range") or "7").strip()
+        start_param = self.request.GET.get("start")
+        end_param = self.request.GET.get("end")
+
+        if rng in {"7", "30", "90"}:
+            start = now - timezone.timedelta(days=int(rng))
+            end = now
+            range_label = rng
+        else:
+            # custom
+            sd = parse_date(start_param) if start_param else None
+            ed = parse_date(end_param) if end_param else None
+            start = timezone.make_aware(
+                datetime.combine(sd, time.min)
+            ) if sd else now - timezone.timedelta(days=7)
+            end = timezone.make_aware(
+                datetime.combine(ed, time.max)
+            ) if ed else now
+            range_label = "custom"
+
+        ctx["range"] = {"label": range_label, "start": start, "end": end}
+
+        # Recent windows (fixed)
         last_7_days = now - timezone.timedelta(days=7)
         last_30_days = now - timezone.timedelta(days=30)
         last_1_year = now - timezone.timedelta(days=365)
+
+        # Range-scoped stats
+        orders_range = paid_orders.filter(
+            created_at__gte=start,
+            created_at__lte=end
+        ).count()
+        revenue_range = (
+            OrderItem.objects.filter(
+                order__status="paid",
+                order__created_at__gte=start,
+                order__created_at__lte=end,
+            ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
+        )["total"] or Decimal("0")
+        new_users_range = User.objects.filter(
+            date_joined__gte=start,
+            date_joined__lte=end
+        ).count()
+        new_reviews_range = ProductReview.objects.filter(
+            created_at__gte=start,
+            created_at__lte=end
+        ).count()
 
         # 7-day stats
         orders_7d = paid_orders.filter(created_at__gte=last_7_days).count()
@@ -285,40 +330,37 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                 total=Coalesce(Sum(line_amount_expr), Decimal("0"))
             )
         )["total"] or Decimal("0")
-
         new_users_7d = User.objects.filter(date_joined__gte=last_7_days).count()
         new_reviews_7d = (
-            ProductReview.objects.filter(created_at__gte=last_7_days).count()
+            ProductReview.objects.filter(created_at__gte=last_7_days)
+            .count()
         )
 
         # 30-day stats
         orders_30d = paid_orders.filter(created_at__gte=last_30_days).count()
         revenue_30d = (
             OrderItem.objects.filter(
-                order__status="paid", order__created_at__gte=last_30_days)
-            .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
+                order__status="paid",
+                order__created_at__gte=last_30_days
+            ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-
-        new_users_30d = (
-            User.objects.filter(date_joined__gte=last_30_days).count()
-        )
+        new_users_30d = User.objects.filter(
+            date_joined__gte=last_30_days
+        ).count()
         new_reviews_30d = (
             ProductReview.objects.filter(created_at__gte=last_30_days)
             .count()
         )
 
         # 1-year stats
-        last_1_year = now - timezone.timedelta(days=365)
         orders_1y = paid_orders.filter(created_at__gte=last_1_year).count()
         revenue_1y = (
             OrderItem.objects.filter(
-                order__status="paid", order__created_at__gte=last_1_year)
-            .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
+                order__status="paid",
+                order__created_at__gte=last_1_year
+            ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-
-        new_users_1y = (
-            User.objects.filter(date_joined__gte=last_1_year).count()
-        )
+        new_users_1y = User.objects.filter(date_joined__gte=last_1_year).count()
         new_reviews_1y = (
             ProductReview.objects.filter(created_at__gte=last_1_year)
             .count()
@@ -333,6 +375,7 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                         "suspended": suspended_users,
                         "staff": staff_users,
                         "superusers": superusers,
+                        "new_range": new_users_range,
                         "new_7d": new_users_7d,
                         "new_30d": new_users_30d,
                         "new_1y": new_users_1y,
@@ -342,6 +385,7 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                         "products": total_products,
                         "active_products": active_products,
                         "inactive_products": inactive_products,
+                        "reviews_range": new_reviews_range,
                         "reviews_7d": new_reviews_7d,
                         "reviews_30d": new_reviews_30d,
                         "reviews_1y": new_reviews_1y,
@@ -349,6 +393,8 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                     "sales": {
                         "orders": total_orders,
                         "gross_revenue": gross_revenue,
+                        "orders_range": orders_range,
+                        "revenue_range": revenue_range,
                         "orders_7d": orders_7d,
                         "revenue_7d": revenue_7d,
                         "orders_30d": orders_30d,

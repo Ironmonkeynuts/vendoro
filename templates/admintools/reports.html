@@ -2,103 +2,112 @@
 {% block admintools_content %}
 <h1 class="h4 mb-3">Reports</h1>
 
+<!-- Range bar -->
+<form method="get" class="row g-2 align-items-end mb-4">
+  <div class="col-auto">
+    <label class="form-label small mb-1">Quick range</label>
+    <div class="btn-group" role="group" aria-label="Range">
+      {% with curr=request.GET.range|default:"7" %}
+        <a class="btn btn-outline-primary {% if curr == '7' %}active{% endif %}"
+           href="?range=7">7d</a>
+        <a class="btn btn-outline-primary {% if curr == '30' %}active{% endif %}"
+           href="?range=30">30d</a>
+        <a class="btn btn-outline-primary {% if curr == '90' %}active{% endif %}"
+           href="?range=90">90d</a>
+        <a class="btn btn-outline-primary {% if curr == 'custom' %}active{% endif %}"
+           href="?range=custom&start={{ request.GET.start }}&end={{ request.GET.end }}">Custom</a>
+      {% endwith %}
+    </div>
+  </div>
+
+  <div class="col-auto">
+    <label for="start" class="form-label small mb-1">Start</label>
+    <input type="date" id="start" name="start" value="{{ request.GET.start }}" class="form-control">
+  </div>
+  <div class="col-auto">
+    <label for="end" class="form-label small mb-1">End</label>
+    <input type="date" id="end" name="end" value="{{ request.GET.end }}" class="form-control">
+  </div>
+
+  <div class="col-auto">
+    <input type="hidden" name="range" value="{{ request.GET.range|default:'custom' }}">
+    <button class="btn btn-primary">Apply</button>
+    <a class="btn btn-outline-secondary" href="{% url 'admintools:reports' %}">Reset</a>
+  </div>
+
+  {% if range %}
+    <div class="col-12 small text-muted mt-1">
+      Showing <strong>{{ range.label }}</strong>:
+      {{ range.start|date:"Y-m-d H:i" }} → {{ range.end|date:"Y-m-d H:i" }}
+    </div>
+  {% endif %}
+</form>
+
 <div class="row g-3">
-  <!-- Users KPI -->
+  <!-- Users -->
   <div class="col-lg-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 text-muted mb-2">Users</div>
-        <div class="d-flex justify-content-between">
-          <div>Total</div><div class="fw-semibold">{{ kpi.users.total }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Active</div><div class="fw-semibold">{{ kpi.users.active }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Suspended</div><div class="fw-semibold">{{ kpi.users.suspended }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Staff</div><div class="fw-semibold">{{ kpi.users.staff }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Superusers</div><div class="fw-semibold">{{ kpi.users.superusers }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>New (7d)</div><div class="fw-semibold">{{ kpi.users.new_7d }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>New (30d)</div><div class="fw-semibold">{{ kpi.users.new_30d }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>New (1y)</div><div class="fw-semibold">{{ kpi.users.new_1y }}</div>
-        </div>
+        <div class="h6 mb-3">Users</div>
+        <ul class="list-unstyled mb-0">
+          <li>Total: <strong>{{ kpi.users.total }}</strong></li>
+          <li>Active: <strong>{{ kpi.users.active }}</strong></li>
+          <li>Suspended: <strong>{{ kpi.users.suspended }}</strong></li>
+          <li>Staff: <strong>{{ kpi.users.staff }}</strong></li>
+          <li>Superusers: <strong>{{ kpi.users.superusers }}</strong></li>
+          <li class="mt-2 text-muted small">New (range): <strong>{{ kpi.users.new_range }}</strong></li>
+          <li class="text-muted small">New (7d/30d/1y): <strong>{{ kpi.users.new_7d }}</strong> /
+            <strong>{{ kpi.users.new_30d }}</strong> /
+            <strong>{{ kpi.users.new_1y }}</strong></li>
+        </ul>
       </div>
     </div>
   </div>
 
-  <!-- Catalog KPI -->
+  <!-- Catalog -->
   <div class="col-lg-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 text-muted mb-2">Catalog</div>
-        <div class="d-flex justify-content-between">
-          <div>Shops</div><div class="fw-semibold">{{ kpi.catalog.shops }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Products</div><div class="fw-semibold">{{ kpi.catalog.products }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Active products</div><div class="fw-semibold">{{ kpi.catalog.active_products }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Inactive products</div><div class="fw-semibold">{{ kpi.catalog.inactive_products }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>New reviews (7d)</div><div class="fw-semibold">{{ kpi.catalog.reviews_7d }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>New reviews (30d)</div><div class="fw-semibold">{{ kpi.catalog.reviews_30d }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>New reviews (1y)</div><div class="fw-semibold">{{ kpi.catalog.reviews_1y }}</div>
-        </div>
+        <div class="h6 mb-3">Catalog</div>
+        <ul class="list-unstyled mb-0">
+          <li>Shops: <strong>{{ kpi.catalog.shops }}</strong></li>
+          <li>Products: <strong>{{ kpi.catalog.products }}</strong></li>
+          <li>Active products: <strong>{{ kpi.catalog.active_products }}</strong></li>
+          <li>Inactive products: <strong>{{ kpi.catalog.inactive_products }}</strong></li>
+          <li class="mt-2 text-muted small">Reviews (range): <strong>{{ kpi.catalog.reviews_range }}</strong></li>
+          <li class="text-muted small">Reviews (7d/30d/1y): <strong>{{ kpi.catalog.reviews_7d }}</strong> /
+            <strong>{{ kpi.catalog.reviews_30d }}</strong> /
+            <strong>{{ kpi.catalog.reviews_1y }}</strong></li>
+        </ul>
       </div>
     </div>
   </div>
 
-  <!-- Sales KPI -->
+  <!-- Sales -->
   <div class="col-lg-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 text-muted mb-2">Sales</div>
-        <div class="d-flex justify-content-between">
-          <div>Paid orders</div><div class="fw-semibold">{{ kpi.sales.orders }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Gross revenue</div>
-          <div class="fw-semibold">£{{ kpi.sales.gross_revenue|floatformat:2 }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>Orders (7d)</div><div class="fw-semibold">{{ kpi.sales.orders_7d }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Revenue (7d)</div>
-          <div class="fw-semibold">£{{ kpi.sales.revenue_7d|floatformat:2 }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>Orders (30d)</div><div class="fw-semibold">{{ kpi.sales.orders_30d }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Revenue (30d)</div>
-          <div class="fw-semibold">£{{ kpi.sales.revenue_30d|floatformat:2 }}</div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-          <div>Orders (1y)</div><div class="fw-semibold">{{ kpi.sales.orders_1y }}</div>
-        </div>
-        <div class="d-flex justify-content-between">
-          <div>Revenue (1y)</div>
-          <div class="fw-semibold">£{{ kpi.sales.revenue_1y|floatformat:2 }}</div>
-        </div>
+        <div class="h6 mb-3">Sales</div>
+        <ul class="list-unstyled mb-0">
+            <li>Paid orders (all time): <strong>{{ kpi.sales.orders }}</strong></li>
+            <li>Gross revenue (all time): <strong>£{{ kpi.sales.gross_revenue|floatformat:2 }}</strong></li>
+            <li class="mt-2">Orders (range): <strong>{{ kpi.sales.orders_range }}</strong></li>
+            <li>Revenue (range): <strong>£{{ kpi.sales.revenue_range|floatformat:2 }}</strong></li>
+            <li class="mt-2 text-muted small">Orders (7d/30d/1y):
+                <strong>{{ kpi.sales.orders_7d }}</strong> /
+                <strong>{{ kpi.sales.orders_30d }}</strong> /
+                <strong>{{ kpi.sales.orders_1y }}</strong>
+            </li>
+            <li class="text-muted small">Revenue (7 days):
+                <strong>£{{ kpi.sales.revenue_7d|floatformat:2 }}</strong>
+            </li>
+            <li class="text-muted small">Revenue (30 days):
+                <strong>£{{ kpi.sales.revenue_30d|floatformat:2 }}</strong>
+            </li>
+            <li class="text-muted small">Revenue (1 year):
+                <strong>£{{ kpi.sales.revenue_1y|floatformat:2 }}</strong>
+            </li>
+        </ul>
       </div>
     </div>
   </div>
