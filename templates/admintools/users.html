@@ -1,4 +1,5 @@
 {% extends "admintools/base.html" %}
+
 {% block admintools_content %}
 <form method="get" class="row g-2 align-items-center mb-3">
   <div class="col-sm-8">
@@ -11,16 +12,70 @@
   </div>
 </form>
 
+{% if messages %}
+  <div class="mb-3">
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+
 <div class="table-responsive">
   <table class="table align-middle">
     <thead>
       <tr class="text-muted small">
-        <th>User</th>
-        <th>Email</th>
-        <th>Joined</th>
-        <th>Active</th>
-        <th>Staff</th>
+        <th>
+          {# Username sortable header #}
+          {% if request.GET.sort == 'username' %}
+            <a href="?q={{ request.GET.q }}&sort=-username" class="text-decoration-none">User ▲</a>
+          {% elif request.GET.sort == '-username' %}
+            <a href="?q={{ request.GET.q }}&sort=username" class="text-decoration-none">User ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&sort=username" class="text-decoration-none">User</a>
+          {% endif %}
+        </th>
+        <th>
+          {# Email sortable header #}
+          {% if request.GET.sort == 'email' %}
+            <a href="?q={{ request.GET.q }}&sort=-email" class="text-decoration-none">Email ▲</a>
+          {% elif request.GET.sort == '-email' %}
+            <a href="?q={{ request.GET.q }}&sort=email" class="text-decoration-none">Email ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&sort=email" class="text-decoration-none">Email</a>
+          {% endif %}
+        </th>
+        <th>
+          {# Joined sortable header #}
+          {% if request.GET.sort == 'date_joined' %}
+            <a href="?q={{ request.GET.q }}&sort=-date_joined" class="text-decoration-none">Joined ▲</a>
+          {% elif request.GET.sort == '-date_joined' %}
+            <a href="?q={{ request.GET.q }}&sort=date_joined" class="text-decoration-none">Joined ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&sort=-date_joined" class="text-decoration-none">Joined</a>
+          {% endif %}
+        </th>
+        <th>
+          {# Staff sortable header #}
+          {% if request.GET.sort == 'is_staff' %}
+            <a href="?q={{ request.GET.q }}&sort=-is_staff" class="text-decoration-none">Staff ▲</a>
+          {% elif request.GET.sort == '-is_staff' %}
+            <a href="?q={{ request.GET.q }}&sort=is_staff" class="text-decoration-none">Staff ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&sort=-is_staff" class="text-decoration-none">Staff</a>
+          {% endif %}
+        </th>
+        <th>
+          {# Suspended (is_active == False) — we sort by is_active underneath #}
+          {% if request.GET.sort == 'is_active' %}
+            <a href="?q={{ request.GET.q }}&sort=-is_active" class="text-decoration-none">Suspended ▲</a>
+          {% elif request.GET.sort == '-is_active' %}
+            <a href="?q={{ request.GET.q }}&sort=is_active" class="text-decoration-none">Suspended ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&sort=-is_active" class="text-decoration-none">Suspended</a>
+          {% endif %}
+        </th>
         <th>Superuser</th>
+        <th class="text-end">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -32,12 +87,48 @@
           </td>
           <td>{{ u.email }}</td>
           <td>{{ u.date_joined|date:"Y-m-d H:i" }}</td>
-          <td>{{ u.is_active|yesno:"Yes,No" }}</td>
-          <td>{{ u.is_staff|yesno:"Yes,No" }}</td>
+          <td>
+            <span class="badge text-bg-{{ u.is_staff|yesno:'success,secondary' }}">
+              {{ u.is_staff|yesno:"Yes,No" }}
+            </span>
+          </td>
+          <td>
+            {# Suspended if NOT active #}
+            {% if u.is_active %}
+              <span class="badge text-bg-secondary">No</span>
+            {% else %}
+              <span class="badge text-bg-danger">Yes</span>
+            {% endif %}
+          </td>
           <td>{{ u.is_superuser|yesno:"Yes,No" }}</td>
+          <td class="text-end">
+            {# Toggle Staff button — disabled for self or any superuser #}
+            <form method="post" action="{% url 'admintools:user_toggle_staff' pk=u.id %}" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button
+                class="btn btn-sm btn-outline-primary"
+                {% if u.is_superuser or u.id == request.user.id %}disabled{% endif %}
+                title="Toggle staff">
+                {% if u.is_staff %}Make Non-staff{% else %}Make Staff{% endif %}
+              </button>
+            </form>
+
+            {# Toggle Suspend button — disabled for self or any superuser #}
+            <form method="post" action="{% url 'admintools:user_toggle_suspend' pk=u.id %}" class="d-inline ms-1">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button
+                class="btn btn-sm btn-outline-warning"
+                {% if u.is_superuser or u.id == request.user.id %}disabled{% endif %}
+                title="Suspend/Unsuspend">
+                {% if u.is_active %}Suspend{% else %}Unsuspend{% endif %}
+              </button>
+            </form>
+          </td>
         </tr>
       {% empty %}
-        <tr><td colspan="6" class="text-muted">No users found.</td></tr>
+        <tr><td colspan="7" class="text-muted">No users found.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -46,13 +137,21 @@
 <nav aria-label="Pagination">
   <ul class="pagination">
     {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}">Prev</a></li>
+      <li class="page-item">
+        <a class="page-link" href="?q={{ request.GET.q }}&sort={{ request.GET.sort }}&page={{ page_obj.previous_page_number }}">Prev</a>
+      </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">Prev</span></li>
     {% endif %}
-    <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    </li>
+
     {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}">Next</a></li>
+      <li class="page-item">
+        <a class="page-link" href="?q={{ request.GET.q }}&sort={{ request.GET.sort }}&page={{ page_obj.next_page_number }}">Next</a>
+      </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">Next</span></li>
     {% endif %}

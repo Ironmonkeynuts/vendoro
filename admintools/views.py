@@ -41,8 +41,6 @@ class UserListView(SuperuserRequiredMixin, ListView):
         "-is_staff": "-is_staff",
         "is_active": "is_active",
         "-is_active": "-is_active",
-        "id": "id",
-        "-id": "-id",
     }
 
     def get_queryset(self):
@@ -51,10 +49,10 @@ class UserListView(SuperuserRequiredMixin, ListView):
         q = self.request.GET.get("q", "").strip()
         if q:
             qs = qs.filter(
-                Q(username__icontains=q)
-                | Q(email__icontains=q)
-                | Q(first_name__icontains=q)
-                | Q(last_name__icontains=q)
+                Q(username__icontains=q)|
+                Q(email__icontains=q)|
+                Q(first_name__icontains=q)|
+                Q(last_name__icontains=q)
             )
         sort = (self.request.GET.get("sort") or "").strip()
         order_by = self.SORT_MAP.get(sort, self.ordering)
