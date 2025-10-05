@@ -1,0 +1,106 @@
+{% extends "admintools/base.html" %}
+{% block admintools_content %}
+<h1 class="h4 mb-3">Reports</h1>
+
+<div class="row g-3">
+  <!-- Users KPI -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="h6 text-muted mb-2">Users</div>
+        <div class="d-flex justify-content-between">
+          <div>Total</div><div class="fw-semibold">{{ kpi.users.total }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Active</div><div class="fw-semibold">{{ kpi.users.active }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Suspended</div><div class="fw-semibold">{{ kpi.users.suspended }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Staff</div><div class="fw-semibold">{{ kpi.users.staff }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Superusers</div><div class="fw-semibold">{{ kpi.users.superusers }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>New (7d)</div><div class="fw-semibold">{{ kpi.users.new_7d }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>New (30d)</div><div class="fw-semibold">{{ kpi.users.new_30d }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>New (1y)</div><div class="fw-semibold">{{ kpi.users.new_1y }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Catalog KPI -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="h6 text-muted mb-2">Catalog</div>
+        <div class="d-flex justify-content-between">
+          <div>Shops</div><div class="fw-semibold">{{ kpi.catalog.shops }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Products</div><div class="fw-semibold">{{ kpi.catalog.products }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Active products</div><div class="fw-semibold">{{ kpi.catalog.active_products }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Inactive products</div><div class="fw-semibold">{{ kpi.catalog.inactive_products }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>New reviews (7d)</div><div class="fw-semibold">{{ kpi.catalog.reviews_7d }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>New reviews (30d)</div><div class="fw-semibold">{{ kpi.catalog.reviews_30d }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>New reviews (1y)</div><div class="fw-semibold">{{ kpi.catalog.reviews_1y }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales KPI -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="h6 text-muted mb-2">Sales</div>
+        <div class="d-flex justify-content-between">
+          <div>Paid orders</div><div class="fw-semibold">{{ kpi.sales.orders }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Gross revenue</div>
+          <div class="fw-semibold">£{{ kpi.sales.gross_revenue|floatformat:2 }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>Orders (7d)</div><div class="fw-semibold">{{ kpi.sales.orders_7d }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Revenue (7d)</div>
+          <div class="fw-semibold">£{{ kpi.sales.revenue_7d|floatformat:2 }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>Orders (30d)</div><div class="fw-semibold">{{ kpi.sales.orders_30d }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Revenue (30d)</div>
+          <div class="fw-semibold">£{{ kpi.sales.revenue_30d|floatformat:2 }}</div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div>Orders (1y)</div><div class="fw-semibold">{{ kpi.sales.orders_1y }}</div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <div>Revenue (1y)</div>
+          <div class="fw-semibold">£{{ kpi.sales.revenue_1y|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

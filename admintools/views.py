@@ -4,11 +4,16 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import (
     Q, F, Count, Avg, Sum, Prefetch, DecimalField, ExpressionWrapper
 )
-from marketplace.models import Shop, Product
+from django.db.models.functions import Coalesce
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, ListView
 from django.utils.http import url_has_allowed_host_and_scheme
+from decimal import Decimal
+
+from marketplace.models import Shop, Product, ProductReview
+from orders.models import Order, OrderItem
 
 User = get_user_model()
 
@@ -226,4 +231,132 @@ class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
         )
 
         ctx["shops"] = shops
+        return ctx
+
+
+class ReportsView(SuperuserRequiredMixin, TemplateView):
+    """Site-wide reports dashboard (initial KPIs)."""
+    template_name = "admintools/reports.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # Users
+        total_users = User.objects.count()
+        active_users = User.objects.filter(is_active=True).count()
+        suspended_users = total_users - active_users
+        staff_users = User.objects.filter(is_staff=True).count()
+        superusers = User.objects.filter(is_superuser=True).count()
+
+        # Shops & Products
+        total_shops = Shop.objects.count()
+        total_products = Product.objects.count()
+        active_products = Product.objects.filter(is_active=True).count()
+        inactive_products = total_products - active_products
+
+        # Orders & Revenue
+        # Treat "paid" as completed payment
+        paid_orders = Order.objects.filter(status="paid")
+        total_orders = paid_orders.count()
+
+        # Revenue = sum of qty * unit_price from paid orders
+        line_amount_expr = ExpressionWrapper(
+            F("quantity") * F("unit_price"),
+            output_field=OrderItem._meta.get_field("unit_price")
+        )
+        gross_revenue = (
+            OrderItem.objects.filter(order__status="paid")
+            .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
+        )["total"] or Decimal("0")
+
+        # Recent windows
+        now = timezone.now()
+        last_7_days = now - timezone.timedelta(days=7)
+        last_30_days = now - timezone.timedelta(days=30)
+        last_1_year = now - timezone.timedelta(days=365)
+
+        # 7-day stats
+        orders_7d = paid_orders.filter(created_at__gte=last_7_days).count()
+        revenue_7d = (
+            OrderItem.objects.filter(
+                order__status="paid",
+                order__created_at__gte=last_7_days
+            ).aggregate(
+                total=Coalesce(Sum(line_amount_expr), Decimal("0"))
+            )
+        )["total"] or Decimal("0")
+
+        new_users_7d = User.objects.filter(date_joined__gte=last_7_days).count()
+        new_reviews_7d = (
+            ProductReview.objects.filter(created_at__gte=last_7_days).count()
+        )
+
+        # 30-day stats
+        orders_30d = paid_orders.filter(created_at__gte=last_30_days).count()
+        revenue_30d = (
+            OrderItem.objects.filter(
+                order__status="paid", order__created_at__gte=last_30_days)
+            .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
+        )["total"] or Decimal("0")
+
+        new_users_30d = (
+            User.objects.filter(date_joined__gte=last_30_days).count()
+        )
+        new_reviews_30d = (
+            ProductReview.objects.filter(created_at__gte=last_30_days)
+            .count()
+        )
+
+        # 1-year stats
+        last_1_year = now - timezone.timedelta(days=365)
+        orders_1y = paid_orders.filter(created_at__gte=last_1_year).count()
+        revenue_1y = (
+            OrderItem.objects.filter(
+                order__status="paid", order__created_at__gte=last_1_year)
+            .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
+        )["total"] or Decimal("0")
+
+        new_users_1y = (
+            User.objects.filter(date_joined__gte=last_1_year).count()
+        )
+        new_reviews_1y = (
+            ProductReview.objects.filter(created_at__gte=last_1_year)
+            .count()
+        )
+
+        ctx.update(
+            {
+                "kpi": {
+                    "users": {
+                        "total": total_users,
+                        "active": active_users,
+                        "suspended": suspended_users,
+                        "staff": staff_users,
+                        "superusers": superusers,
+                        "new_7d": new_users_7d,
+                        "new_30d": new_users_30d,
+                        "new_1y": new_users_1y,
+                    },
+                    "catalog": {
+                        "shops": total_shops,
+                        "products": total_products,
+                        "active_products": active_products,
+                        "inactive_products": inactive_products,
+                        "reviews_7d": new_reviews_7d,
+                        "reviews_30d": new_reviews_30d,
+                        "reviews_1y": new_reviews_1y,
+                    },
+                    "sales": {
+                        "orders": total_orders,
+                        "gross_revenue": gross_revenue,
+                        "orders_7d": orders_7d,
+                        "revenue_7d": revenue_7d,
+                        "orders_30d": orders_30d,
+                        "revenue_30d": revenue_30d,
+                        "orders_1y": orders_1y,
+                        "revenue_1y": revenue_1y,
+                    },
+                },
+            }
+        )
         return ctx
