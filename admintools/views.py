@@ -144,3 +144,55 @@ def user_toggle_suspend(request, pk: int):
         f"{target.username}."
     )
     return _safe_redirect_next(request)
+
+
+class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
+    """
+    Admin-only page that lists all shops with expandable rows
+    showing owner details and all products + per-product stats.
+    """
+    template_name = "admintools/shops_products.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+
+        # Per-product stat annotations (efficiently reused via Prefetch)
+        revenue_expr = ExpressionWrapper(
+            F("orderitem__unit_price") * F("orderitem__quantity"),
+            output_field=DecimalField(max_digits=12, decimal_places=2),
+        )
+        products_qs = (
+            Product.objects.select_related("shop", "category")
+            .annotate(
+                review_count=Count("reviews", distinct=True),
+                review_avg=Avg("reviews__rating"),
+                items_sold=Sum("orderitem__quantity"),
+                revenue=Sum(revenue_expr),
+            )
+            .order_by("title")
+        )
+
+        # Prefetch the annotated products to each shop as "adm_products"
+        products_prefetch = Prefetch("products", queryset=products_qs, to_attr="adm_products")
+
+        # Per-shop rollups
+        shop_revenue_expr = ExpressionWrapper(
+            F("products__orderitem__unit_price") * F("products__orderitem__quantity"),
+            output_field=DecimalField(max_digits=12, decimal_places=2),
+        )
+
+        shops = (
+            Shop.objects.select_related("owner")
+            .prefetch_related(products_prefetch)
+            .annotate(
+                product_count=Count("products", distinct=True),
+                total_reviews=Count("products__reviews", distinct=True),
+                avg_rating=Avg("products__reviews__rating"),
+                items_sold=Sum("products__orderitem__quantity"),
+                gross_revenue=Sum(shop_revenue_expr),
+            )
+            .order_by("name")
+        )
+
+        ctx["shops"] = shops
+        return ctx
