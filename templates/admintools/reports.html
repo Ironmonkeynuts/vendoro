@@ -198,4 +198,91 @@
   </div>
 </div>
 
+<hr class="my-4">
+<h2 class="h6 mb-3">Recent activity (in selected range)</h2>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-orders" type="button" role="tab">Orders</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reviews" type="button" role="tab">Reviews</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-signups" type="button" role="tab">Signups</button>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <!-- Orders -->
+  <div id="tab-orders" class="tab-pane fade show active" role="tabpanel">
+    {% if activity.orders %}
+      <div class="vstack gap-2">
+        {% for o in activity.orders %}
+          <div class="border rounded p-2 d-flex justify-content-between align-items-center">
+            <div>
+                <div class="small text-muted">{{ o.created_at|date:"Y-m-d H:i" }}</div>
+                <div>Order #{{ o.id }} — {{ o.user }}</div>
+                <div class="small">Items: {{ o.items_count_calc }} · Total: £{{ o.total_amount_calc|floatformat:2 }}</div>
+                <div class="small text-muted">Status: {{ o.get_status_display }} · Fulfillment: {{ o.get_fulfillment_status_display }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No paid orders in this range.</p>
+    {% endif %}
+  </div>
+
+  <!-- Reviews -->
+  <div id="tab-reviews" class="tab-pane fade" role="tabpanel">
+    {% if activity.reviews %}
+      <div class="vstack gap-2">
+        {% for r in activity.reviews %}
+          <div class="border rounded p-2">
+            <div class="d-flex justify-content-between">
+              <div>
+                <div class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</div>
+                <div>
+                  <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
+                    {{ r.product.title }}
+                  </a>
+                  <span class="text-muted small">· {{ r.product.shop.name }}</span>
+                </div>
+              </div>
+              <div>⭐ {{ r.rating }}/5</div>
+            </div>
+            {% if r.comment %}<div class="mt-1">{{ r.comment }}</div>{% endif %}
+            <div class="small text-muted">by {{ r.user.username }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No reviews in this range.</p>
+    {% endif %}
+  </div>
+
+  <!-- Signups -->
+  <div id="tab-signups" class="tab-pane fade" role="tabpanel">
+    {% if activity.signups %}
+      <div class="vstack gap-2">
+        {% for u in activity.signups %}
+          <div class="border rounded p-2 d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">{{ u.get_full_name|default:u.username }}</div>
+              <div class="small text-muted">@{{ u.username }} · {{ u.email }}</div>
+              <div class="small text-muted">Joined: {{ u.date_joined|date:"Y-m-d H:i" }}</div>
+              {% if not u.is_active %}<span class="badge text-bg-secondary">Suspended</span>{% endif %}
+              {% if u.is_staff %}<span class="badge text-bg-info">Staff</span>{% endif %}
+              {% if u.is_superuser %}<span class="badge text-bg-warning">Superuser</span>{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No signups in this range.</p>
+    {% endif %}
+  </div>
+</div>
+
 {% endblock %}

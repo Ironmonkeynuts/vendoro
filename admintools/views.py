@@ -330,7 +330,9 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                 total=Coalesce(Sum(line_amount_expr), Decimal("0"))
             )
         )["total"] or Decimal("0")
-        new_users_7d = User.objects.filter(date_joined__gte=last_7_days).count()
+        new_users_7d = (
+            User.objects.filter(date_joined__gte=last_7_days).count()
+        )
         new_reviews_7d = (
             ProductReview.objects.filter(created_at__gte=last_7_days)
             .count()
@@ -360,7 +362,9 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                 order__created_at__gte=last_1_year
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-        new_users_1y = User.objects.filter(date_joined__gte=last_1_year).count()
+        new_users_1y = User.objects.filter(
+            date_joined__gte=last_1_year
+        ).count()
         new_reviews_1y = (
             ProductReview.objects.filter(created_at__gte=last_1_year)
             .count()
@@ -451,6 +455,49 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
         ctx["leaders"] = {
             "products": list(product_leaders_qs),
             "shops": list(shop_leaders_qs),
+        }
+
+        # For orders list, compute a quick total amount per order
+        order_line_amount = ExpressionWrapper(
+            F("items__quantity") * F("items__unit_price"),
+            output_field=OrderItem._meta.get_field("unit_price"),
+        )
+
+        recent_orders = (
+            Order.objects.filter(
+                status="paid",
+                created_at__gte=start,
+                created_at__lte=end,
+            )
+            .select_related("user")
+            .annotate(
+                items_count_calc=Coalesce(Sum("items__quantity"), 0),
+                total_amount_calc=Coalesce(Sum(order_line_amount), Decimal("0")),
+            )
+            .order_by("-created_at")[:20]
+        )
+
+        recent_reviews = (
+            ProductReview.objects.filter(
+                created_at__gte=start,
+                created_at__lte=end,
+            )
+            .select_related("product", "product__shop", "user")
+            .order_by("-created_at")[:20]
+        )
+
+        recent_signups = (
+            User.objects.filter(
+                date_joined__gte=start,
+                date_joined__lte=end,
+            )
+            .order_by("-date_joined")[:20]
+        )
+
+        ctx["activity"] = {
+            "orders": recent_orders,
+            "reviews": recent_reviews,
+            "signups": recent_signups,
         }
 
         return ctx
