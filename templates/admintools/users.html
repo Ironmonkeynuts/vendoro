@@ -15,14 +15,6 @@
   </div>
 </form>
 
-{% if messages %}
-  <div class="mb-3">
-    {% for m in messages %}
-      <div class="alert alert-{{ m.tags }}">{{ m }}</div>
-    {% endfor %}
-  </div>
-{% endif %}
-
 <div class="table-responsive">
   <table class="table align-middle">
     <thead>
