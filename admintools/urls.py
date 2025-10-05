@@ -16,4 +16,5 @@ urlpatterns = [
         views.user_toggle_suspend,
         name="user_toggle_suspend"
     ),
+    path("shops/", views.ShopsProductsView.as_view(), name="shops_products"),
 ]
