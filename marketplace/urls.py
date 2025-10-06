@@ -10,6 +10,16 @@ urlpatterns = [
         name="seller"
     ),
     path(
+        "seller/export/timeseries/",
+        views.seller_export_timeseries,
+        name="seller_export_timeseries"
+    ),
+    path(
+        "seller/export/products/",
+        views.seller_export_products,
+        name="seller_export_products"
+    ),
+    path(
         "seller/reviews/<int:review_id>/reply/",
         views.review_reply,
         name="review_reply"
@@ -24,14 +34,15 @@ urlpatterns = [
         views.shop_settings,
         name="shop_settings"
     ),
-        path(
+    path(
         "shops/<slug:slug>/banner/update/",
         views.update_shop_banner,
         name="shop_banner_update"
     ),
-    path("shops/<slug:slug>/products/new/",
-         views.product_create,
-         name="product_create"
+    path(
+        "shops/<slug:slug>/products/new/",
+        views.product_create,
+        name="product_create"
     ),
     # Shop details
     path(

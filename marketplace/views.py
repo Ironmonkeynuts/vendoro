@@ -1,4 +1,5 @@
 import json
+import csv
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -6,18 +7,24 @@ from django.db import IntegrityError
 from django.db.models import (
     Avg, Count, Q, F, Sum, DecimalField, ExpressionWrapper
 )
+from django.db.models.functions import Coalesce, TruncDate
 from django.http import (
+    HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
     JsonResponse
 )
 from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.views.decorators.http import (
     require_POST, require_http_methods
 )
 from django.views.generic import ListView
 from cloudinary.utils import api_sign_request
 from cloudinary.uploader import destroy as cl_destroy
+from decimal import Decimal
+from datetime import datetime, time
 from .models import (
     Shop,
     Product,
@@ -27,6 +34,127 @@ from .models import (
 )
 from orders.models import OrderItem
 from .forms import ProductForm, ShopForm, ProductReviewForm
+
+
+# --- shared range parser (seller-side) ---
+def _parse_range(request, default_days: int = 7):
+    """
+    Parse ?range=7|30|90|custom&start=YYYY-MM-DD&end=YYYY-MM-DD
+    Return (start_dt_aware, end_dt_aware).
+    """
+    now = timezone.now()
+    rng = (request.GET.get("range") or str(default_days)).strip()
+    start_param = request.GET.get("start")
+    end_param = request.GET.get("end")
+
+    if rng in {"7", "30", "90"}:
+        start = now - timezone.timedelta(days=int(rng))
+        end = now
+        label = rng
+    else:
+        sd = parse_date(start_param) if start_param else None
+        ed = parse_date(end_param) if end_param else None
+        start = (
+            timezone.make_aware(datetime.combine(sd, time.min))
+            if sd else now - timezone.timedelta(days=default_days)
+        )
+        end = (
+            timezone.make_aware(datetime.combine(ed, time.max))
+            if ed else now
+        )
+        label = "custom"
+
+    return start, end, label
+
+
+@login_required
+def seller_export_timeseries(request):
+    """
+    CSV: per-day orders/items/revenue for THIS seller across their shops
+    respecting the selected range.
+    """
+    start, end, _ = _parse_range(request)
+
+    # only the seller's items (paid orders)
+    line_amount = ExpressionWrapper(
+        F("quantity") * F("unit_price"),
+        output_field=DecimalField(max_digits=12, decimal_places=2),
+    )
+
+    daily = (
+        OrderItem.objects.filter(
+            product__shop__owner=request.user,
+            order__status="paid",
+            order__created_at__gte=start,
+            order__created_at__lte=end,
+        )
+        .annotate(day=TruncDate("order__created_at"))
+        .values("day")
+        .annotate(
+            orders=Count("order_id", distinct=True),
+            items=Coalesce(Sum("quantity"), 0),
+            revenue=Coalesce(Sum(line_amount), Decimal("0")),
+        )
+        .order_by("day")
+    )
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="seller_timeseries_{start.date()}_{end.date()}.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["date", "orders", "items", "revenue"])
+    for row in daily:
+        writer.writerow([row["day"].isoformat(), row["orders"], int(row["items"] or 0), f'{row["revenue"]:.2f}'])
+    return response
+
+
+@login_required
+def seller_export_products(request):
+    """
+    CSV: orders/items/revenue by product for THIS seller for the selected range.
+    """
+    start, end, _ = _parse_range(request)
+
+    line_amount = ExpressionWrapper(
+        F("quantity") * F("unit_price"),
+        output_field=DecimalField(max_digits=12, decimal_places=2),
+    )
+
+    qs = (
+        OrderItem.objects.filter(
+            product__shop__owner=request.user,
+            order__status="paid",
+            order__created_at__gte=start,
+            order__created_at__lte=end,
+        )
+        .values(
+            "product_id",
+            "product__title",
+            "product__slug",
+            "product__shop__name",
+            "product__shop__slug",
+        )
+        .annotate(
+            orders=Count("order_id", distinct=True),
+            items_sold=Coalesce(Sum("quantity"), 0),
+            revenue=Coalesce(Sum(line_amount), Decimal("0")),
+        )
+        .order_by("-revenue", "-items_sold", "-orders")
+    )
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="seller_products_{start.date()}_{end.date()}.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["product_id", "product_title", "shop_name", "orders", "items_sold", "revenue"])
+    for row in qs:
+        writer.writerow([
+            row["product_id"],
+            row["product__title"],
+            row["product__shop__name"],
+            row["orders"],
+            int(row["items_sold"] or 0),
+            f'{row["revenue"]:.2f}',
+        ])
+    return response
 
 
 class ProductList(ListView):
@@ -451,15 +579,16 @@ def review_add(request, shop_slug, product_slug):
 @login_required
 def seller_dashboard(request):
     """
-    Display a dashboard for the seller with their shops and products.
-    Shell with tabs. Requires the user to own a shop.
+    Seller dashboard with tabs:
+    - Inventory (unchanged)
+    - Alerts (recent transactions & reviews; unchanged)
+    - Stats (now range-aware + CSV export support)
     """
     has_shop = Shop.objects.filter(owner=request.user).exists()
     if not has_shop:
-        # nudge them to create a shop first
         return redirect("marketplace:shop_create")
 
-    # Prefetch products and annotate review stats
+    # INVENTORY
     products = (
         Product.objects
         .filter(shop__owner=request.user, is_active=True)
@@ -470,19 +599,17 @@ def seller_dashboard(request):
         )
         .order_by("shop__name", "-created_at")
     )
-
-    # group by shop id in memory for simple rendering
     by_shop = {}
     for p in products:
         by_shop.setdefault(p.shop, []).append(p)
 
+    # ALERTS
     recent_items = (
         OrderItem.objects
         .filter(product__shop__owner=request.user)
         .select_related("order", "product", "product__shop", "order__user")
         .order_by("-order__created_at")[:20]
     )
-
     new_reviews = (
         ProductReview.objects
         .filter(product__shop__owner=request.user)
@@ -490,12 +617,18 @@ def seller_dashboard(request):
         .order_by("-created_at")[:20]
     )
 
-    sale_statuses = ["paid", "completed"]  # adjust if your enum differs
+    # STATS (range-aware)
+    start, end, label = _parse_range(request, default_days=7)
+    range_ctx = {"label": label, "start": start.date(), "end": end.date()}
+
+    sale_statuses = ["paid", "completed"]
     items_qs = (
         OrderItem.objects
         .filter(
             product__shop__owner=request.user,
-            order__status__in=sale_statuses
+            order__status__in=sale_statuses,
+            order__created_at__gte=start,
+            order__created_at__lte=end,
         )
         .select_related("product", "product__shop")
     )
@@ -509,21 +642,18 @@ def seller_dashboard(request):
         items_qs
         .values(
             "product_id", "product__title", "product__slug",
-            "product__shop_id", "product__shop__name",
-            "product__shop__slug"
+            "product__shop_id", "product__shop__name", "product__shop__slug"
         )
         .annotate(
-            qty_sold=Sum("quantity"),
-            revenue=Sum(revenue_expr),
+            qty_sold=Coalesce(Sum("quantity"), 0),
+            revenue=Coalesce(Sum(revenue_expr), Decimal("0")),
         )
-        .order_by("-qty_sold", "-revenue")
+        .order_by("-revenue", "-qty_sold")
     )
 
-    # Top and bottom slices
     top_5 = list(per_product[:5])
-    lowest_5 = list(per_product.order_by("qty_sold", "revenue")[:5])
+    lowest_5 = list(per_product.order_by("revenue", "qty_sold")[:5])
 
-    # Group by shop for the main stats table
     stats_by_shop = {}
     for row in per_product:
         key = (
@@ -540,7 +670,12 @@ def seller_dashboard(request):
         "stats_by_shop": stats_by_shop,
         "top_5": top_5,
         "lowest_5": lowest_5,
+        "range": range_ctx,
     }
+
+    active_tab = (request.GET.get("tab") or "inventory").strip()
+    context["active_tab"] = active_tab
+
     return render(request, "marketplace/seller_dashboard.html", context)
 
 

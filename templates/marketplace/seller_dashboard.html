@@ -6,218 +6,303 @@
 
 <ul class="nav nav-tabs mb-3" role="tablist">
   <li class="nav-item" role="presentation">
-    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-inventory" type="button" role="tab">Inventory</button>
+    <button class="nav-link {% if active_tab == 'inventory' or not active_tab %}active{% endif %}"
+            data-bs-toggle="tab" data-bs-target="#tab-inventory" type="button" role="tab">
+      Inventory
+    </button>
   </li>
   <li class="nav-item" role="presentation">
-    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-alerts" type="button" role="tab">Alerts</button>
+    <button class="nav-link {% if active_tab == 'alerts' %}active{% endif %}"
+            data-bs-toggle="tab" data-bs-target="#tab-alerts" type="button" role="tab">
+      Alerts
+    </button>
   </li>
   <li class="nav-item" role="presentation">
-    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-stats" type="button" role="tab">Stats</button>
+    <button class="nav-link {% if active_tab == 'stats' %}active{% endif %}"
+            data-bs-toggle="tab" data-bs-target="#tab-stats" type="button" role="tab">
+      Stats
+    </button>
   </li>
 </ul>
 
 <div class="tab-content">
-    <div id="tab-inventory" class="tab-pane fade show active" role="tabpanel">
+  {# INVENTORY #}
+  <div id="tab-inventory" class="tab-pane fade {% if active_tab == 'inventory' or not active_tab %}show active{% endif %}" role="tabpanel">
     {% if inventory_by_shop %}
-        {% for shop, plist in inventory_by_shop.items %}
+      {% for shop, plist in inventory_by_shop.items %}
         <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex justify-content-between align-items-center mb-2">
             <h2 class="h6 mb-0">{{ shop.name }}</h2>
             <a class="btn btn-sm btn-outline-primary" href="{% url 'marketplace:product_create' slug=shop.slug %}">Add product</a>
-            </div>
-            <div class="table-responsive">
+          </div>
+          <div class="table-responsive">
             <table class="table align-middle">
-                <thead>
+              <thead>
                 <tr>
-                    <th>Product</th>
-                    <th class="text-end">Price</th>
-                    <th class="text-center">Reviews</th>
-                    <th>Created</th>
-                    <th></th>
+                  <th>Product</th>
+                  <th class="text-end">Price</th>
+                  <th class="text-center">Reviews</th>
+                  <th>Created</th>
+                  <th></th>
                 </tr>
-                </thead>
-                <tbody>
+              </thead>
+              <tbody>
                 {% for p in plist %}
-                    <tr>
+                  <tr>
                     <td>
-                        <a href="{% url 'marketplace:product_detail' shop_slug=p.shop.slug product_slug=p.slug %}">{{ p.title }}</a>
-                        {% if p.category %}<div class="text-muted small">{{ p.category.name }}</div>{% endif %}
+                      <a href="{% url 'marketplace:product_detail' shop_slug=p.shop.slug product_slug=p.slug %}">{{ p.title }}</a>
+                      {% if p.category %}<div class="text-muted small">{{ p.category.name }}</div>{% endif %}
                     </td>
                     <td class="text-end">£{{ p.price|floatformat:2 }}</td>
                     <td class="text-center">
-                        {% if p.review_count %}
+                      {% if p.review_count %}
                         {{ p.review_avg|floatformat:1 }}/5 ({{ p.review_count }})
-                        {% else %}
+                      {% else %}
                         <span class="text-muted">—</span>
-                        {% endif %}
+                      {% endif %}
                     </td>
                     <td>{{ p.created_at|date:"Y-m-d" }}</td>
                     <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'marketplace:product_edit' pk=p.id %}">Edit</a>
+                      <a class="btn btn-sm btn-outline-secondary" href="{% url 'marketplace:product_edit' pk=p.id %}">Edit</a>
                     </td>
-                    </tr>
+                  </tr>
                 {% endfor %}
-                </tbody>
+              </tbody>
             </table>
-            </div>
+          </div>
         </div>
-        {% endfor %}
+      {% endfor %}
     {% else %}
-        <p class="text-muted">No active products yet.</p>
+      <p class="text-muted">No active products yet.</p>
     {% endif %}
-    </div>
+  </div>
 
-    <div id="tab-alerts" class="tab-pane fade" role="tabpanel">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <h2 class="h6">Recent transactions</h2>
-                {% if recent_items %}
-                    <div class="vstack gap-2">
-                        {% for it in recent_items %}
-                            <div class="border rounded p-2 d-flex justify-content-between">
-                                <div class="me-3">
-                                    <div class="small text-muted">{{ it.order.created_at|date:"Y-m-d H:i" }}</div>
-                                    <div>
-                                        <a href="{% url 'marketplace:product_detail' shop_slug=it.product.shop.slug product_slug=it.product.slug %}">
-                                            {{ it.product.title }}
-                                        </a>
-                                    </div>
-                                    <div class="small">Qty {{ it.quantity }} · £{{ it.unit_price|floatformat:2 }}</div>
-                                    <div class="small text-muted">Order #{{ it.order_id }} by {{ it.order.user }}</div>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge text-bg-secondary">{{ it.order.get_status_display }}</span>
-                                    <span class="badge text-bg-secondary">{{ it.order.get_fulfillment_status_display }}</span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">No recent transactions.</p>
-                {% endif %}
-            </div>
-
-            <div class="col-lg-6">
-                <h2 class="h6">New reviews</h2>
-                {% if new_reviews %}
-                    <div class="vstack gap-2">
-                        {% for r in new_reviews %}
-                            <div class="border rounded p-2">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
-                                            {{ r.product.title }}
-                                        </a>
-                                        <div class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</div>
-                                    </div>
-                                    <div>⭐ {{ r.rating }}/5</div>
-                                </div>
-
-                                {% if r.comment %}<p class="mb-1">{{ r.comment }}</p>{% endif %}
-                                <div class="small text-muted">by {{ r.user.username }}</div>
-
-                                {% if r.reply %}
-                                    <div class="mt-2 p-2 bg-light border rounded">
-                                        <div class="small text-muted">Your reply ({{ r.reply.created_at|date:"Y-m-d H:i" }}):</div>
-                                        <div>{{ r.reply.body }}</div>
-                                    </div>
-                                {% else %}
-                                    <form class="mt-2" method="post" action="{% url 'marketplace:review_reply' review_id=r.id %}">
-                                        {% csrf_token %}
-                                        <div class="input-group">
-                                            <textarea class="form-control" name="body" rows="1" placeholder="Reply to this review..." required></textarea>
-                                            <button class="btn btn-outline-primary">Reply</button>
-                                        </div>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">No recent reviews.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div id="tab-stats" class="tab-pane fade" role="tabpanel">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <h2 class="h6">Top 5 products</h2>
-                {% if top_5 %}
-                    <ol class="mb-0">
-                        {% for r in top_5 %}
-                            <li class="mb-1">
-                                <a href="{% url 'marketplace:product_detail' shop_slug=r.product__shop__slug product_slug=r.product__slug %}">
-                                    {{ r.product__title }}
-                                </a>
-                                <span class="text-muted">· {{ r.qty_sold|default:0 }} sold · £{{ r.revenue|default:"0.00" }}</span>
-                            </li>
-                        {% endfor %}
-                    </ol>
-                {% else %}
-                    <p class="text-muted">No sales yet.</p>
-                {% endif %}
-            </div>
-
-            <div class="col-lg-6">
-                <h2 class="h6">Lowest 5 products</h2>
-                {% if lowest_5 %}
-                    <ol class="mb-0">
-                        {% for r in lowest_5 %}
-                            <li class="mb-1">
-                                <a href="{% url 'marketplace:product_detail' shop_slug=r.product__shop__slug product_slug=r.product__slug %}">
-                                    {{ r.product__title }}
-                                </a>
-                                <span class="text-muted">· {{ r.qty_sold|default:0 }} sold · £{{ r.revenue|default:"0.00" }}</span>
-                            </li>
-                        {% endfor %}
-                    </ol>
-                {% else %}
-                    <p class="text-muted">No sales yet.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <hr class="my-4">
-
-        <h2 class="h6">Sales by shop</h2>
-        {% if stats_by_shop %}
-            {% for key, rows in stats_by_shop.items %}
-                {% with shop_id=key.0 shop_name=key.1 shop_slug=key.2 %}
-                    <div class="mb-3">
-                        <h3 class="h6"><a href="{% url 'marketplace:shop_detail' slug=shop_slug %}">{{ shop_name }}</a></h3>
-                        <div class="table-responsive">
-                            <table class="table align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th class="text-center">Qty sold</th>
-                                        <th class="text-end">Revenue</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for r in rows %}
-                                        <tr>
-                                            <td>
-                                                <a href="{% url 'marketplace:product_detail' shop_slug=r.product__shop__slug product_slug=r.product__slug %}">
-                                                    {{ r.product__title }}
-                                                </a>
-                                            </td>
-                                            <td class="text-center">{{ r.qty_sold|default:0 }}</td>
-                                            <td class="text-end">£{{ r.revenue|default:"0.00" }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                {% endwith %}
+  {# ALERTS #}
+  <div id="tab-alerts" class="tab-pane fade {% if active_tab == 'alerts' %}show active{% endif %}" role="tabpanel">
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <h2 class="h6">Recent transactions</h2>
+        {% if recent_items %}
+          <div class="vstack gap-2">
+            {% for it in recent_items %}
+              <div class="border rounded p-2 d-flex justify-content-between">
+                <div class="me-3">
+                  <div class="small text-muted">{{ it.order.created_at|date:"Y-m-d H:i" }}</div>
+                  <div>
+                    <a href="{% url 'marketplace:product_detail' shop_slug=it.product.shop.slug product_slug=it.product.slug %}">
+                      {{ it.product.title }}
+                    </a>
+                  </div>
+                  <div class="small">Qty {{ it.quantity }} · £{{ it.unit_price|floatformat:2 }}</div>
+                  <div class="small text-muted">Order #{{ it.order_id }} by {{ it.order.user }}</div>
+                </div>
+                <div class="text-end">
+                  <span class="badge text-bg-secondary">{{ it.order.get_status_display }}</span>
+                  <span class="badge text-bg-secondary">{{ it.order.get_fulfillment_status_display }}</span>
+                </div>
+              </div>
             {% endfor %}
+          </div>
         {% else %}
-            <p class="text-muted">No sales data yet.</p>
+          <p class="text-muted">No recent transactions.</p>
         {% endif %}
+      </div>
+
+      <div class="col-lg-6">
+        <h2 class="h6">New reviews</h2>
+        {% if new_reviews %}
+          <div class="vstack gap-2">
+            {% for r in new_reviews %}
+              <div class="border rounded p-2">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
+                      {{ r.product.title }}
+                    </a>
+                    <div class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</div>
+                  </div>
+                  <div>⭐ {{ r.rating }}/5</div>
+                </div>
+
+                {% if r.comment %}<p class="mb-1">{{ r.comment }}</p>{% endif %}
+                <div class="small text-muted">by {{ r.user.username }}</div>
+
+                {% if r.reply %}
+                  <div class="mt-2 p-2 bg-light border rounded">
+                    <div class="small text-muted">Your reply ({{ r.reply.created_at|date:"Y-m-d H:i" }}):</div>
+                    <div>{{ r.reply.body }}</div>
+                  </div>
+                {% else %}
+                  <form class="mt-2" method="post" action="{% url 'marketplace:review_reply' review_id=r.id %}">
+                    {% csrf_token %}
+                    <div class="input-group">
+                      <textarea class="form-control" name="body" rows="1" placeholder="Reply to this review..." required></textarea>
+                      <button class="btn btn-outline-primary">Reply</button>
+                    </div>
+                  </form>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">No recent reviews.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# STATS #}
+  <div id="tab-stats" class="tab-pane fade {% if active_tab == 'stats' %}show active{% endif %}" role="tabpanel">
+    {# Toolbar: range + optional start/end + Apply (left), CSV (right) #}
+    <form method="get" class="row g-2 align-items-end justify-content-between mb-3">
+      {# keep Stats active after submit #}
+      <input type="hidden" name="tab" value="stats">
+
+      <div class="col-auto d-flex align-items-end flex-wrap gap-2">
+        <div>
+          <label class="form-label small text-muted d-block mb-1">Range</label>
+          <select id="range" name="range" class="form-select form-select-sm" style="width:auto; min-width: 140px;">
+            <option value="7" {% if range.label == "7" %}selected{% endif %}>Last 7 days</option>
+            <option value="30" {% if range.label == "30" %}selected{% endif %}>Last 30 days</option>
+            <option value="90" {% if range.label == "90" %}selected{% endif %}>Last 90 days</option>
+            <option value="custom" {% if range.label == "custom" %}selected{% endif %}>Custom</option>
+          </select>
+        </div>
+
+        <div id="range-start" class="{% if range.label != 'custom' %}d-none{% endif %}">
+          <label class="form-label small text-muted d-block mb-1">Start</label>
+          <input type="date" name="start" value="{{ range.start|date:'Y-m-d' }}" class="form-control form-control-sm" style="width:auto;">
+        </div>
+
+        <div id="range-end" class="{% if range.label != 'custom' %}d-none{% endif %}">
+          <label class="form-label small text-muted d-block mb-1">End</label>
+          <input type="date" name="end" value="{{ range.end|date:'Y-m-d' }}" class="form-control form-control-sm" style="width:auto;">
+        </div>
+
+        <div>
+          <label class="form-label d-block mb-1 invisible">Apply</label>
+          <button class="btn btn-sm btn-primary">Apply</button>
+        </div>
+      </div>
+
+      <div class="col-auto text-end">
+        <a class="btn btn-sm btn-outline-secondary me-1"
+           href="{% url 'marketplace:seller_export_timeseries' %}{% if request.GET %}?{{ request.GET.urlencode }}&tab=stats{% else %}?tab=stats{% endif %}">
+          CSV (Daily)
+        </a>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="{% url 'marketplace:seller_export_products' %}{% if request.GET %}?{{ request.GET.urlencode }}&tab=stats{% else %}?tab=stats{% endif %}">
+          CSV (Products)
+        </a>
+      </div>
+    </form>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <h2 class="h6">Top 5 products</h2>
+        {% if top_5 %}
+          <ol class="mb-0">
+            {% for r in top_5 %}
+              <li class="mb-1">
+                <a href="{% url 'marketplace:product_detail' shop_slug=r.product__shop__slug product_slug=r.product__slug %}">
+                  {{ r.product__title }}
+                </a>
+                <span class="text-muted">· {{ r.qty_sold|default:0 }} sold · £{{ r.revenue|default:"0.00" }}</span>
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p class="text-muted">No sales yet.</p>
+        {% endif %}
+      </div>
+
+      <div class="col-lg-6">
+        <h2 class="h6">Lowest 5 products</h2>
+        {% if lowest_5 %}
+          <ol class="mb-0">
+            {% for r in lowest_5 %}
+              <li class="mb-1">
+                <a href="{% url 'marketplace:product_detail' shop_slug=r.product__shop__slug product_slug=r.product__slug %}">
+                  {{ r.product__title }}
+                </a>
+                <span class="text-muted">· {{ r.qty_sold|default:0 }} sold · £{{ r.revenue|default:"0.00" }}</span>
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p class="text-muted">No sales yet.</p>
+        {% endif %}
+      </div>
     </div>
 
+    <hr class="my-4">
+
+    <h2 class="h6">Sales by shop</h2>
+    {% if stats_by_shop %}
+      {% for key, rows in stats_by_shop.items %}
+        {% with shop_id=key.0 shop_name=key.1 shop_slug=key.2 %}
+          <div class="mb-3">
+            <h3 class="h6"><a href="{% url 'marketplace:shop_detail' slug=shop_slug %}">{{ shop_name }}</a></h3>
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th class="text-center">Qty sold</th>
+                    <th class="text-end">Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in rows %}
+                    <tr>
+                      <td>
+                        <a href="{% url 'marketplace:product_detail' shop_slug=r.product__shop__slug product_slug=r.product__slug %}">
+                          {{ r.product__title }}
+                        </a>
+                      </td>
+                      <td class="text-center">{{ r.qty_sold|default:0 }}</td>
+                      <td class="text-end">£{{ r.revenue|default:"0.00" }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endwith %}
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">No sales data yet.</p>
+    {% endif %}
+  </div>
 </div>
+
+<script>
+  (function () {
+    // Show/hide custom date inputs
+    const rangeSel = document.getElementById('range');
+    const startWrap = document.getElementById('range-start');
+    const endWrap   = document.getElementById('range-end');
+    function sync() {
+      const show = rangeSel.value === 'custom';
+      startWrap.classList.toggle('d-none', !show);
+      endWrap.classList.toggle('d-none', !show);
+    }
+    if (rangeSel) {
+      rangeSel.addEventListener('change', sync);
+      sync();
+    }
+
+    // Optional: keep hash in sync with the active tab (nice UX)
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+      btn.addEventListener('shown.bs.tab', e => {
+        const id = e.target.getAttribute('data-bs-target');
+        history.replaceState(null, '', id);
+      });
+    });
+    if (window.location.hash) {
+      const trigger = document.querySelector(`[data-bs-target="${window.location.hash}"]`);
+      if (trigger) new bootstrap.Tab(trigger).show();
+    }
+  }());
+</script>
 {% endblock %}
