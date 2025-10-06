@@ -197,6 +197,51 @@
       </div>
     </form>
 
+    <!-- KPI cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-3 h-100">
+                <div class="small text-muted">Orders</div>
+                <div class="fs-5 fw-semibold">{{ kpi.orders|default:0 }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-3 h-100">
+                <div class="small text-muted">Items sold</div>
+                <div class="fs-5 fw-semibold">{{ kpi.items|default:0 }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-3 h-100">
+                <div class="small text-muted">Revenue</div>
+                <div class="fs-5 fw-semibold">£{{ kpi.revenue|floatformat:2 }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-3 h-100">
+                <div class="small text-muted">Avg order value</div>
+                <div class="fs-5 fw-semibold">£{{ kpi.aov|floatformat:2 }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-3 h-100">
+                <div class="small text-muted">New reviews</div>
+                <div class="fs-5 fw-semibold">{{ kpi.reviews|default:0 }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-3 h-100">
+                <div class="small text-muted">Active products</div>
+                <div class="fs-5 fw-semibold">{{ kpi.active_products|default:0 }}</div>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-4">
       <div class="col-lg-6">
         <h2 class="h6">Top 5 products</h2>

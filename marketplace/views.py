@@ -99,18 +99,27 @@ def seller_export_timeseries(request):
     )
 
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="seller_timeseries_{start.date()}_{end.date()}.csv"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="seller_timeseries_{start.date()}_'
+        f'{end.date()}.csv"'
+    )
     writer = csv.writer(response)
     writer.writerow(["date", "orders", "items", "revenue"])
     for row in daily:
-        writer.writerow([row["day"].isoformat(), row["orders"], int(row["items"] or 0), f'{row["revenue"]:.2f}'])
+        writer.writerow([
+            row["day"].isoformat(),
+            row["orders"],
+            int(row["items"] or 0),
+            f'{row["revenue"]:.2f}'
+        ])
     return response
 
 
 @login_required
 def seller_export_products(request):
     """
-    CSV: orders/items/revenue by product for THIS seller for the selected range.
+    CSV: orders/items/revenue by product for THIS seller
+    for the selected range.
     """
     start, end, _ = _parse_range(request)
 
@@ -142,9 +151,17 @@ def seller_export_products(request):
     )
 
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="seller_products_{start.date()}_{end.date()}.csv"'
+    response["Content-Disposition"] = (
+        (
+            f'attachment; filename="seller_products_{start.date()}_'
+            f'{end.date()}.csv"'
+        )
+    )
     writer = csv.writer(response)
-    writer.writerow(["product_id", "product_title", "shop_name", "orders", "items_sold", "revenue"])
+    writer.writerow([
+        "product_id", "product_title", "shop_name",
+        "orders", "items_sold", "revenue"
+    ])
     for row in qs:
         writer.writerow([
             row["product_id"],
@@ -587,6 +604,8 @@ def seller_dashboard(request):
     has_shop = Shop.objects.filter(owner=request.user).exists()
     if not has_shop:
         return redirect("marketplace:shop_create")
+    
+    start, end, label = _parse_range(request)
 
     # INVENTORY
     products = (
@@ -618,9 +637,6 @@ def seller_dashboard(request):
     )
 
     # STATS (range-aware)
-    start, end, label = _parse_range(request, default_days=7)
-    range_ctx = {"label": label, "start": start.date(), "end": end.date()}
-
     sale_statuses = ["paid", "completed"]
     items_qs = (
         OrderItem.objects
@@ -633,10 +649,38 @@ def seller_dashboard(request):
         .select_related("product", "product__shop")
     )
 
+    # KPI calculations
     revenue_expr = ExpressionWrapper(
         F("unit_price") * F("quantity"),
         output_field=DecimalField(max_digits=12, decimal_places=2),
     )
+
+    agg = items_qs.aggregate(
+        orders=Count("order_id", distinct=True),
+        items=Coalesce(Sum("quantity"), 0),
+        revenue=Coalesce(Sum(revenue_expr), Decimal("0")),
+    )
+
+    reviews_in_range = ProductReview.objects.filter(
+        product__shop__owner=request.user,
+        created_at__gte=start,
+        created_at__lte=end,
+    ).count()
+
+    active_products = Product.objects.filter(
+        shop__owner=request.user, is_active=True
+    ).count()
+
+    aov = (agg["revenue"] / agg["orders"]) if agg["orders"] else Decimal("0")
+
+    kpi = {
+        "orders": agg["orders"] or 0,
+        "items": int(agg["items"] or 0),
+        "revenue": agg["revenue"] or Decimal("0"),
+        "reviews": reviews_in_range,
+        "active_products": active_products,
+        "aov": aov,
+    }
 
     per_product = (
         items_qs
@@ -663,6 +707,8 @@ def seller_dashboard(request):
         )
         stats_by_shop.setdefault(key, []).append(row)
 
+    active_tab = (request.GET.get("tab") or "inventory").strip()
+
     context = {
         "inventory_by_shop": by_shop,
         "recent_items": recent_items,
@@ -670,11 +716,11 @@ def seller_dashboard(request):
         "stats_by_shop": stats_by_shop,
         "top_5": top_5,
         "lowest_5": lowest_5,
-        "range": range_ctx,
+        # pass range + kpis to the Stats tab
+        "range": {"label": label, "start": start.date(), "end": end.date()},
+        "kpi": kpi,
+        "active_tab": active_tab,
     }
-
-    active_tab = (request.GET.get("tab") or "inventory").strip()
-    context["active_tab"] = active_tab
 
     return render(request, "marketplace/seller_dashboard.html", context)
 
