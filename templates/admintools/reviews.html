@@ -56,82 +56,78 @@
   </div>
 </form>
 
+{# Bulk form (separate; not wrapping the table) #}
+<form id="bulk-form" method="post" action="{% url 'admintools:review_bulk_action' %}" class="mb-2">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <label class="me-1 small text-muted">Bulk actions:</label>
+    <select name="action" class="form-select form-select-sm" style="width:auto; min-width:160px;">
+      <option value="hide">Hide selected</option>
+      <option value="show">Show selected</option>
+      <option value="export_csv">Export selected (CSV)</option>
+    </select>
+    <button class="btn btn-sm btn-primary">Apply</button>
+    <span id="sel-count" class="badge text-bg-secondary ms-1">0</span>
+  </div>
+</form>
+
 <div class="table-responsive">
   <table class="table align-middle">
     <thead>
       <tr class="text-muted small">
-        {# helper to flip sort #}
-        {% with flip=sort|default:'' %}
-        <th>
-          {% if sort == 'product' %}
-            <a href="?{% if q %}q={{q}}&{% endif %}{% if rating %}rating={{rating}}&{% endif %}{% if vis %}vis={{vis}}&{% endif %}{% if range %}range={{range}}&{% endif %}{% if start %}start={{start}}&{% endif %}{% if end %}end={{end}}&{% endif %}sort=-product">Product ▲</a>
-          {% elif sort == '-product' %}
-            <a href="?{% if q %}q={{q}}&{% endif %}{% if rating %}rating={{rating}}&{% endif %}{% if vis %}vis={{vis}}&{% endif %}{% if range %}range={{range}}&{% endif %}{% if start %}start={{start}}&{% endif %}{% if end %}end={{end}}&{% endif %}sort=product">Product ▼</a>
-          {% else %}
-            <a href="?{% if q %}q={{q}}&{% endif %}{% if rating %}rating={{rating}}&{% endif %}{% if vis %}vis={{vis}}&{% endif %}{% if range %}range={{range}}&{% endif %}{% if start %}start={{start}}&{% endif %}{% if end %}end={{end}}&{% endif %}sort=-product">Product</a>
-          {% endif %}
-        </th>
+        <th style="width:32px;"><input type="checkbox" id="check-all"></th>
+        <th>Review</th>
+        <th>Rating</th>
+        <th>Product</th>
         <th>Shop</th>
         <th>User</th>
-        <th class="text-center">
-          {% if sort == 'rating' %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-rating'|cut:'rating' }}{% if request.GET %}&{% endif %}sort=-rating">Rating ▲</a>
-          {% elif sort == '-rating' %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-rating'|cut:'rating' }}{% if request.GET %}&{% endif %}sort=rating">Rating ▼</a>
-          {% else %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-rating'|cut:'rating' }}{% if request.GET %}&{% endif %}sort=-rating">Rating</a>
-          {% endif %}
-        </th>
-        <th>Excerpt</th>
-        <th class="text-center">
-          {% if sort == 'is_public' %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-is_public'|cut:'is_public' }}{% if request.GET %}&{% endif %}sort=-is_public">Public ▲</a>
-          {% elif sort == '-is_public' %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-is_public'|cut:'is_public' }}{% if request.GET %}&{% endif %}sort=is_public">Public ▼</a>
-          {% else %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-is_public'|cut:'is_public' }}{% if request.GET %}&{% endif %}sort=-is_public">Public</a>
-          {% endif %}
-        </th>
-        <th class="text-nowrap">
-          {% if sort == 'created_at' %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-created_at'|cut:'created_at' }}{% if request.GET %}&{% endif %}sort=-created_at">Created ▲</a>
-          {% elif sort == '-created_at' %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-created_at'|cut:'created_at' }}{% if request.GET %}&{% endif %}sort=created_at">Created ▼</a>
-          {% else %}
-            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-created_at'|cut:'created_at' }}{% if request.GET %}&{% endif %}sort=-created_at">Created</a>
-          {% endif %}
-        </th>
+        <th>Visible</th>
+        <th>Created</th>
         <th class="text-end">Actions</th>
-        {% endwith %}
       </tr>
     </thead>
     <tbody>
-      {% for r in object_list %}
+      {% for r in page_obj %}
         <tr>
-          <td class="align-middle">
-            <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
-              {{ r.product.title }}
-            </a>
+          <td>
+            {# Associate with bulk form without nesting #}
+            <input type="checkbox" class="row-check" name="ids" value="{{ r.id }}" form="bulk-form">
           </td>
-          <td class="align-middle">{{ r.product.shop.name }}</td>
-          <td class="align-middle">@{{ r.user.username }}</td>
-          <td class="text-center align-middle">{{ r.rating }}★</td>
-          <td class="align-middle">
-            {% if r.comment %}
-              {{ r.comment|truncatechars:80 }}
+          <td class="text-break" style="max-width:380px;">
+            {{ r.comment|default:"—" }}
+          </td>
+          <td>
+            {% if r.rating %}{{ r.rating }}/5{% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td>
+            {% if r.product %}
+              <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
+                {{ r.product.title }}
+              </a>
             {% else %}
               <span class="text-muted">—</span>
             {% endif %}
           </td>
-          <td class="text-center align-middle">
+          <td>
+            {% if r.product and r.product.shop %}
+              {{ r.product.shop.name }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if r.user %}@{{ r.user.username }}{% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td class="text-center">
             {% if r.is_public %}
               <span class="badge text-bg-success">Yes</span>
             {% else %}
               <span class="badge text-bg-secondary">No</span>
             {% endif %}
           </td>
-          <td class="text-nowrap align-middle">{{ r.created_at|date:"Y-m-d H:i" }}</td>
-          <td class="text-end align-middle">
+          <td class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+          <td class="text-end">
             <form method="post" action="{% url 'admintools:review_toggle_visibility' pk=r.id %}">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -140,15 +136,11 @@
               {% else %}
                 <button class="btn btn-sm btn-outline-success">Show</button>
               {% endif %}
-              <a class="btn btn-sm btn-outline-primary ms-1"
-                 href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
-                View
-              </a>
             </form>
           </td>
         </tr>
       {% empty %}
-        <tr><td colspan="8" class="text-muted">No reviews found.</td></tr>
+        <tr><td colspan="9" class="text-muted">No reviews found.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -157,7 +149,9 @@
 <nav aria-label="Pagination">
   <ul class="pagination">
     {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Prev</a></li>
+      <li class="page-item">
+        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Prev</a>
+      </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">Prev</span></li>
     {% endif %}
@@ -167,7 +161,9 @@
     </li>
 
     {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next</a></li>
+      <li class="page-item">
+        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next</a>
+      </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">Next</span></li>
     {% endif %}
@@ -187,6 +183,34 @@
     rangeSel.addEventListener('change', sync);
     sync();
   }());
+</script>
+
+<script>
+  // Select all + counter
+  (function () {
+    const checkAll = document.getElementById('check-all');
+    const rows = document.querySelectorAll('.row-check');
+    const badge = document.getElementById('sel-count');
+
+    function refresh() {
+      let n = 0;
+      rows.forEach(cb => { if (cb.checked) n++; });
+      if (badge) badge.textContent = n;
+      if (checkAll) {
+        checkAll.indeterminate = (n > 0 && n < rows.length);
+        checkAll.checked = (n === rows.length && rows.length > 0);
+      }
+    }
+
+    if (checkAll) {
+      checkAll.addEventListener('change', function () {
+        rows.forEach(cb => { cb.checked = checkAll.checked; });
+        refresh();
+      });
+    }
+    rows.forEach(cb => cb.addEventListener('change', refresh));
+    refresh();
+  })();
 </script>
 
 {% endblock %}

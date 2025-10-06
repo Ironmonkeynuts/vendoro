@@ -9,6 +9,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, ListView
+from django.urls import reverse
+from django.utils.encoding import smart_str
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -729,3 +731,77 @@ def review_toggle_visibility(request, pk: int):
         f"@{review.user.username} on “{review.product.title}”."
     )
     return _safe_redirect_next(request, fallback_name="admintools:reviews")
+
+
+@require_POST
+def review_bulk_action(request):
+    """Bulk hide/show selected reviews or export selected to CSV."""
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        messages.error(request, "You do not have permission to do that.")
+        return redirect("account_login")
+
+    action = (request.POST.get("action") or "").strip()
+    ids = request.POST.getlist("ids")
+    next_url = request.POST.get("next") or reverse("admintools:reviews")
+
+    if not ids:
+        messages.warning(request, "No reviews selected.")
+        return redirect(next_url)
+
+    qs = (
+        ProductReview.objects
+        .select_related("product", "product__shop", "user")
+        .filter(pk__in=ids)
+    )
+
+    if action == "hide":
+        updated = qs.update(is_public=False)
+        messages.success(request, f"Hidden {updated} review(s).")
+        return redirect(next_url)
+
+    if action == "show":
+        updated = qs.update(is_public=True)
+        messages.success(request, f"Published {updated} review(s).")
+        return redirect(next_url)
+
+    if action == "export_csv":
+        # Build CSV of the selected reviews
+        import csv
+        from django.http import HttpResponse
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            'attachment; filename="reviews_selected.csv"'
+        )
+        writer = csv.writer(response)
+        writer.writerow([
+            "id",
+            "created_at",
+            "is_public",
+            "rating",
+            "comment",
+            "product_id",
+            "product_title",
+            "shop_name",
+            "user_id",
+            "username",
+            "user_email",
+        ])
+        for r in qs:
+            writer.writerow([
+                r.id,
+                r.created_at.isoformat(timespec="seconds"),
+                "yes" if r.is_public else "no",
+                (r.rating or ""),
+                smart_str(r.comment or ""),
+                getattr(r.product, "id", r.product_id),
+                smart_str(getattr(r.product, "title", "")),
+                smart_str(getattr(getattr(r.product, "shop", None), "name", "")),
+                getattr(r.user, "id", r.user_id),
+                getattr(r.user, "username", ""),
+                getattr(r.user, "email", ""),
+            ])
+        return response
+
+    messages.error(request, "Unknown action.")
+    return redirect(next_url)

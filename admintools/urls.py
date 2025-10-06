@@ -9,6 +9,7 @@ urlpatterns = [
     path("shops/", views.ShopsProductsView.as_view(), name="shops_products"),
     path("reports/", views.ReportsView.as_view(), name="reports"),
     path("reviews/", views.ReviewsListView.as_view(), name="reviews"),
+    path("reviews/bulk/", views.review_bulk_action, name="review_bulk_action"),
     path(
         "reviews/<int:pk>/toggle/",
         views.review_toggle_visibility,
