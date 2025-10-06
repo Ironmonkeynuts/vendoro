@@ -1,21 +1,26 @@
+# admintools/views.py
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import (
     Q, F, Count, Avg, Sum, Prefetch, DecimalField, ExpressionWrapper
 )
-from django.db.models.functions import Coalesce
-from django.utils import timezone
+from django.db.models.functions import Coalesce, TruncDate
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, ListView
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.utils.http import url_has_allowed_host_and_scheme
 from decimal import Decimal
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from marketplace.models import Shop, Product, ProductReview
 from orders.models import Order, OrderItem
+
+import csv
 
 User = get_user_model()
 
@@ -59,10 +64,10 @@ class UserListView(SuperuserRequiredMixin, ListView):
         q = self.request.GET.get("q", "").strip()
         if q:
             qs = qs.filter(
-                Q(username__icontains=q) |
-                Q(email__icontains=q) |
-                Q(first_name__icontains=q) |
-                Q(last_name__icontains=q)
+                Q(username__icontains=q)
+                | Q(email__icontains=q)
+                | Q(first_name__icontains=q)
+                | Q(last_name__icontains=q)
             )
         sort = (self.request.GET.get("sort") or "").strip()
         order_by = self.SORT_MAP.get(sort, self.ordering)
@@ -236,73 +241,75 @@ class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
         return ctx
 
 
+def _parse_range(request):
+    """
+    Shared date range parser for reports.
+    Returns (start, end, label) as timezone-aware datetimes.
+    """
+    now = timezone.now()
+    rng = (request.GET.get("range") or "7").strip()
+    start_param = request.GET.get("start")
+    end_param = request.GET.get("end")
+
+    if rng in {"7", "30", "90"}:
+        start = now - timedelta(days=int(rng))
+        end = now
+        label = rng
+    else:
+        sd = parse_date(start_param) if start_param else None
+        ed = parse_date(end_param) if end_param else None
+        start = (
+            timezone.make_aware(datetime.combine(sd, time.min))
+            if sd else now - timedelta(days=7)
+        )
+        end = (
+            timezone.make_aware(datetime.combine(ed, time.max))
+            if ed else now
+        )
+        label = "custom"
+    return start, end, label
+
+
 class ReportsView(SuperuserRequiredMixin, TemplateView):
-    """Site-wide reports dashboard (initial KPIs)."""
+    """Site-wide reports dashboard (KPIs, range, leaders, recent activity)."""
     template_name = "admintools/reports.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        # Users
+        # ---------- Basic tallies ----------
         total_users = User.objects.count()
         active_users = User.objects.filter(is_active=True).count()
         suspended_users = total_users - active_users
         staff_users = User.objects.filter(is_staff=True).count()
         superusers = User.objects.filter(is_superuser=True).count()
 
-        # Shops & Products
         total_shops = Shop.objects.count()
         total_products = Product.objects.count()
         active_products = Product.objects.filter(is_active=True).count()
         inactive_products = total_products - active_products
 
-        # Orders & Revenue
         paid_orders = Order.objects.filter(status="paid")
         total_orders = paid_orders.count()
 
-        # Revenue = sum of qty * unit_price from paid orders
+        # amount per OrderItem
         line_amount_expr = ExpressionWrapper(
             F("quantity") * F("unit_price"),
-            output_field=OrderItem._meta.get_field("unit_price")
+            output_field=OrderItem._meta.get_field("unit_price"),
         )
         gross_revenue = (
             OrderItem.objects.filter(order__status="paid")
             .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
 
-        # Range parsing
-        now = timezone.now()
-        rng = (self.request.GET.get("range") or "7").strip()
-        start_param = self.request.GET.get("start")
-        end_param = self.request.GET.get("end")
-
-        if rng in {"7", "30", "90"}:
-            start = now - timezone.timedelta(days=int(rng))
-            end = now
-            range_label = rng
-        else:
-            # custom
-            sd = parse_date(start_param) if start_param else None
-            ed = parse_date(end_param) if end_param else None
-            start = timezone.make_aware(
-                datetime.combine(sd, time.min)
-            ) if sd else now - timezone.timedelta(days=7)
-            end = timezone.make_aware(
-                datetime.combine(ed, time.max)
-            ) if ed else now
-            range_label = "custom"
-
+        # ---------- Range parsing ----------
+        start, end, range_label = _parse_range(self.request)
         ctx["range"] = {"label": range_label, "start": start, "end": end}
+        now = timezone.now()
 
-        # Recent windows (fixed)
-        last_7_days = now - timezone.timedelta(days=7)
-        last_30_days = now - timezone.timedelta(days=30)
-        last_1_year = now - timezone.timedelta(days=365)
-
-        # Range-scoped stats
+        # ---------- Range-scoped stats ----------
         orders_range = paid_orders.filter(
-            created_at__gte=start,
-            created_at__lte=end
+            created_at__gte=start, created_at__lte=end
         ).count()
         revenue_range = (
             OrderItem.objects.filter(
@@ -312,63 +319,55 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
         new_users_range = User.objects.filter(
-            date_joined__gte=start,
-            date_joined__lte=end
+            date_joined__gte=start, date_joined__lte=end
         ).count()
         new_reviews_range = ProductReview.objects.filter(
-            created_at__gte=start,
-            created_at__lte=end
+            created_at__gte=start, created_at__lte=end
         ).count()
 
-        # 7-day stats
+        # ---------- Fixed windows ----------
+        last_7_days = now - timedelta(days=7)
+        last_30_days = now - timedelta(days=30)
+        last_1_year = now - timedelta(days=365)
+
         orders_7d = paid_orders.filter(created_at__gte=last_7_days).count()
         revenue_7d = (
             OrderItem.objects.filter(
-                order__status="paid",
-                order__created_at__gte=last_7_days
-            ).aggregate(
-                total=Coalesce(Sum(line_amount_expr), Decimal("0"))
-            )
+                order__status="paid", order__created_at__gte=last_7_days
+            ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
         new_users_7d = (
             User.objects.filter(date_joined__gte=last_7_days).count()
         )
-        new_reviews_7d = (
-            ProductReview.objects.filter(created_at__gte=last_7_days)
-            .count()
-        )
+        new_reviews_7d = ProductReview.objects.filter(
+            created_at__gte=last_7_days
+        ).count()
 
-        # 30-day stats
         orders_30d = paid_orders.filter(created_at__gte=last_30_days).count()
         revenue_30d = (
             OrderItem.objects.filter(
-                order__status="paid",
-                order__created_at__gte=last_30_days
+                order__status="paid", order__created_at__gte=last_30_days
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
         new_users_30d = User.objects.filter(
             date_joined__gte=last_30_days
         ).count()
-        new_reviews_30d = (
-            ProductReview.objects.filter(created_at__gte=last_30_days)
-            .count()
-        )
+        new_reviews_30d = ProductReview.objects.filter(
+            created_at__gte=last_30_days
+        ).count()
 
-        # 1-year stats
         orders_1y = paid_orders.filter(created_at__gte=last_1_year).count()
         revenue_1y = (
             OrderItem.objects.filter(
-                order__status="paid",
-                order__created_at__gte=last_1_year
+                order__status="paid", order__created_at__gte=last_1_year
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
         new_users_1y = User.objects.filter(
             date_joined__gte=last_1_year
         ).count()
-        new_reviews_1y = (
-            ProductReview.objects.filter(created_at__gte=last_1_year)
-            .count()
-        )
+        new_reviews_1y = ProductReview.objects.filter(
+            created_at__gte=last_1_year
+        ).count()
 
         ctx.update(
             {
@@ -410,14 +409,13 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             }
         )
 
-        # Common filters for the selected range
+        # ---------- Leaders (selected range) ----------
         range_filters = {
             "order__status": "paid",
             "order__created_at__gte": start,
             "order__created_at__lte": end,
         }
 
-        # Top PRODUCTS (by revenue, then items, then orders)
         product_leaders_qs = (
             OrderItem.objects.filter(**range_filters)
             .values(
@@ -435,7 +433,6 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             .order_by("-revenue", "-items_sold", "-orders")[:10]
         )
 
-        # Top SHOPS (by revenue, then items, then orders)
         shop_leaders_qs = (
             OrderItem.objects.filter(**range_filters)
             .values(
@@ -457,7 +454,7 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             "shops": list(shop_leaders_qs),
         }
 
-        # For orders list, compute a quick total amount per order
+        # ---------- Recent activity (selected range) ----------
         order_line_amount = ExpressionWrapper(
             F("items__quantity") * F("items__unit_price"),
             output_field=OrderItem._meta.get_field("unit_price"),
@@ -472,7 +469,10 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             .select_related("user")
             .annotate(
                 items_count_calc=Coalesce(Sum("items__quantity"), 0),
-                total_amount_calc=Coalesce(Sum(order_line_amount), Decimal("0")),
+                total_amount_calc=Coalesce(
+                    Sum(order_line_amount),
+                    Decimal("0"),
+                ),
             )
             .order_by("-created_at")[:20]
         )
@@ -501,3 +501,112 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
         }
 
         return ctx
+
+
+def reports_export_csv(request):
+    """
+    Superuser-only CSV export of daily
+    Orders / Items / Revenue for the selected range.
+    """
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        return redirect("account_login")
+
+    start, end, _ = _parse_range(request)
+
+    line_amount_expr = ExpressionWrapper(
+        F("quantity") * F("unit_price"),
+        output_field=OrderItem._meta.get_field("unit_price"),
+    )
+
+    daily = (
+        OrderItem.objects.filter(
+            order__status="paid",
+            order__created_at__gte=start,
+            order__created_at__lte=end,
+        )
+        .annotate(day=TruncDate("order__created_at"))
+        .values("day")
+        .annotate(
+            orders=Count("order_id", distinct=True),
+            items=Coalesce(Sum("quantity"), 0),
+            revenue=Coalesce(Sum(line_amount_expr), Decimal("0")),
+        )
+        .order_by("day")
+    )
+
+    # Build CSV
+    response = HttpResponse(content_type="text/csv")
+    filename = f"reports_timeseries_{start.date()}_{end.date()}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    writer = csv.writer(response)
+    writer.writerow(["date", "orders", "items", "revenue"])
+    for row in daily:
+        writer.writerow([
+            row["day"].isoformat(),
+            row["orders"],
+            row["items"],
+            f"{row['revenue']:.2f}",
+        ])
+    return response
+
+
+def reports_export_products_csv(request):
+    """
+    Superuser-only CSV export of orders & revenue by product for the selected
+    range. Columns: product_id, product_title, shop_name, orders,
+    items_sold, revenue
+    """
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        return redirect("account_login")
+
+    start, end, _ = _parse_range(request)
+
+    line_amount_expr = ExpressionWrapper(
+        F("quantity") * F("unit_price"),
+        output_field=OrderItem._meta.get_field("unit_price"),
+    )
+
+    qs = (
+        OrderItem.objects.filter(
+            order__status="paid",
+            order__created_at__gte=start,
+            order__created_at__lte=end,
+        )
+        .values(
+            "product_id",
+            "product__title",
+            "product__shop__name",
+            "product__slug",
+            "product__shop__slug",
+        )
+        .annotate(
+            orders=Count("order_id", distinct=True),
+            items_sold=Coalesce(Sum("quantity"), 0),
+            revenue=Coalesce(Sum(line_amount_expr), Decimal("0")),
+        )
+        .order_by("-revenue", "-items_sold", "-orders")
+    )
+
+    response = HttpResponse(content_type="text/csv")
+    filename = f"product_summary_{start.date()}_{end.date()}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "product_id",
+        "product_title",
+        "shop_name",
+        "orders",
+        "items_sold",
+        "revenue"
+    ])
+    for row in qs:
+        writer.writerow([
+            row["product_id"],
+            row["product__title"],
+            row["product__shop__name"],
+            row["orders"],
+            int(row["items_sold"] or 0),
+            f"{row['revenue']:.2f}",
+        ])
+    return response

@@ -1,288 +1,342 @@
 {% extends "admintools/base.html" %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+  .range-toolbar .btn { padding-top:.375rem; padding-bottom:.375rem; line-height:1.5; }
+</style>
+{% endblock %}
+
 {% block admintools_content %}
+
 <h1 class="h4 mb-3">Reports</h1>
 
-<!-- Range bar -->
-<form method="get" class="row g-2 align-items-end mb-4">
-  <div class="col-auto">
-    <label class="form-label small mb-1">Quick range</label>
-    <div class="btn-group" role="group" aria-label="Range">
-      {% with curr=request.GET.range|default:"7" %}
-        <a class="btn btn-outline-primary {% if curr == '7' %}active{% endif %}"
-           href="?range=7">7d</a>
-        <a class="btn btn-outline-primary {% if curr == '30' %}active{% endif %}"
-           href="?range=30">30d</a>
-        <a class="btn btn-outline-primary {% if curr == '90' %}active{% endif %}"
-           href="?range=90">90d</a>
-        <a class="btn btn-outline-primary {% if curr == 'custom' %}active{% endif %}"
-           href="?range=custom&start={{ request.GET.start }}&end={{ request.GET.end }}">Custom</a>
-      {% endwith %}
+<form method="get"
+      class="range-toolbar d-flex flex-wrap flex-md-nowrap align-items-center gap-2 mb-3">
+
+  <!-- LEFT: range, (conditional) start/end, apply -->
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <select name="range" id="rangeSelect" class="form-select w-auto">
+      <option value="7"  {% if range.label == "7" %}selected{% endif %}>Last 7 days</option>
+      <option value="30" {% if range.label == "30" %}selected{% endif %}>Last 30 days</option>
+      <option value="90" {% if range.label == "90" %}selected{% endif %}>Last 90 days</option>
+      <option value="custom" {% if range.label == "custom" %}selected{% endif %}>Custom</option>
+    </select>
+
+    <div id="customDates"
+         class="d-flex align-items-center gap-2 {% if range.label != 'custom' %}d-none{% endif %}">
+      <input type="date" name="start" value="{{ range.start|date:'Y-m-d' }}"
+             class="form-control w-auto" style="width: 10.5rem;">
+      <input type="date" name="end" value="{{ range.end|date:'Y-m-d' }}"
+             class="form-control w-auto" style="width: 10.5rem;">
     </div>
+
+    <button class="btn btn-primary" type="submit">Apply</button>
   </div>
 
-  <div class="col-auto">
-    <label for="start" class="form-label small mb-1">Start</label>
-    <input type="date" id="start" name="start" value="{{ request.GET.start }}" class="form-control">
-  </div>
-  <div class="col-auto">
-    <label for="end" class="form-label small mb-1">End</label>
-    <input type="date" id="end" name="end" value="{{ request.GET.end }}" class="form-control">
-  </div>
+  <!-- RIGHT: CSV buttons -->
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <a class="btn btn-outline-secondary text-nowrap"
+       href="{% url 'admintools:reports_export_csv' %}?range={{ range.label }}&start={{ range.start|date:'Y-m-d' }}&end={{ range.end|date:'Y-m-d' }}">
+      Export Daily CSV
+    </a>
 
-  <div class="col-auto">
-    <input type="hidden" name="range" value="{{ request.GET.range|default:'custom' }}">
-    <button class="btn btn-primary">Apply</button>
-    <a class="btn btn-outline-secondary" href="{% url 'admintools:reports' %}">Reset</a>
+    <a class="btn btn-outline-secondary text-nowrap"
+       href="{% url 'admintools:reports_export_products_csv' %}?range={{ range.label }}&start={{ range.start|date:'Y-m-d' }}&end={{ range.end|date:'Y-m-d' }}">
+      Export Product CSV
+    </a>
   </div>
-
-  {% if range %}
-    <div class="col-12 small text-muted mt-1">
-      Showing <strong>{{ range.label }}</strong>:
-      {{ range.start|date:"Y-m-d H:i" }} → {{ range.end|date:"Y-m-d H:i" }}
-    </div>
-  {% endif %}
 </form>
 
-<div class="row g-3">
-  <!-- Users -->
+{# KPI CARDS #}
+<div class="row g-3 mb-4">
   <div class="col-lg-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 mb-3">Users</div>
-        <ul class="list-unstyled mb-0">
-          <li>Total: <strong>{{ kpi.users.total }}</strong></li>
-          <li>Active: <strong>{{ kpi.users.active }}</strong></li>
-          <li>Suspended: <strong>{{ kpi.users.suspended }}</strong></li>
-          <li>Staff: <strong>{{ kpi.users.staff }}</strong></li>
-          <li>Superusers: <strong>{{ kpi.users.superusers }}</strong></li>
-          <li class="mt-2 text-muted small">New (range): <strong>{{ kpi.users.new_range }}</strong></li>
-          <li class="text-muted small">New (7d/30d/1y): <strong>{{ kpi.users.new_7d }}</strong> /
-            <strong>{{ kpi.users.new_30d }}</strong> /
-            <strong>{{ kpi.users.new_1y }}</strong></li>
-        </ul>
+        <div class="h6 text-muted mb-2">Users</div>
+        <div class="d-flex flex-wrap gap-3">
+          <div><div class="fw-semibold">{{ kpi.users.total|intcomma }}</div><div class="text-muted small">Total</div></div>
+          <div><div class="fw-semibold">{{ kpi.users.active|intcomma }}</div><div class="text-muted small">Active</div></div>
+          <div><div class="fw-semibold">{{ kpi.users.suspended|intcomma }}</div><div class="text-muted small">Suspended</div></div>
+          <div><div class="fw-semibold">{{ kpi.users.staff|intcomma }}</div><div class="text-muted small">Staff</div></div>
+          <div><div class="fw-semibold">{{ kpi.users.superusers|intcomma }}</div><div class="text-muted small">Superusers</div></div>
+        </div>
+        <hr>
+        <div class="small">New in range: <span class="fw-semibold">{{ kpi.users.new_range|intcomma }}</span></div>
+        <div class="small text-muted">7d: {{ kpi.users.new_7d|intcomma }} · 30d: {{ kpi.users.new_30d|intcomma }} · 1y: {{ kpi.users.new_1y|intcomma }}</div>
       </div>
     </div>
   </div>
 
-  <!-- Catalog -->
   <div class="col-lg-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 mb-3">Catalog</div>
-        <ul class="list-unstyled mb-0">
-          <li>Shops: <strong>{{ kpi.catalog.shops }}</strong></li>
-          <li>Products: <strong>{{ kpi.catalog.products }}</strong></li>
-          <li>Active products: <strong>{{ kpi.catalog.active_products }}</strong></li>
-          <li>Inactive products: <strong>{{ kpi.catalog.inactive_products }}</strong></li>
-          <li class="mt-2 text-muted small">Reviews (range): <strong>{{ kpi.catalog.reviews_range }}</strong></li>
-          <li class="text-muted small">Reviews (7d/30d/1y): <strong>{{ kpi.catalog.reviews_7d }}</strong> /
-            <strong>{{ kpi.catalog.reviews_30d }}</strong> /
-            <strong>{{ kpi.catalog.reviews_1y }}</strong></li>
-        </ul>
+        <div class="h6 text-muted mb-2">Catalog</div>
+        <div class="d-flex flex-wrap gap-3">
+          <div><div class="fw-semibold">{{ kpi.catalog.shops|intcomma }}</div><div class="text-muted small">Shops</div></div>
+          <div><div class="fw-semibold">{{ kpi.catalog.products|intcomma }}</div><div class="text-muted small">Products</div></div>
+          <div><div class="fw-semibold">{{ kpi.catalog.active_products|intcomma }}</div><div class="text-muted small">Active</div></div>
+          <div><div class="fw-semibold">{{ kpi.catalog.inactive_products|intcomma }}</div><div class="text-muted small">Inactive</div></div>
+        </div>
+        <hr>
+        <div class="small">Reviews in range: <span class="fw-semibold">{{ kpi.catalog.reviews_range|intcomma }}</span></div>
+        <div class="small text-muted">7d: {{ kpi.catalog.reviews_7d|intcomma }} · 30d: {{ kpi.catalog.reviews_30d|intcomma }} · 1y: {{ kpi.catalog.reviews_1y|intcomma }}</div>
       </div>
     </div>
   </div>
 
-  <!-- Sales -->
   <div class="col-lg-4">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 mb-3">Sales</div>
-        <ul class="list-unstyled mb-0">
-            <li>Paid orders (all time): <strong>{{ kpi.sales.orders }}</strong></li>
-            <li>Gross revenue (all time): <strong>£{{ kpi.sales.gross_revenue|floatformat:2 }}</strong></li>
-            <li class="mt-2">Orders (range): <strong>{{ kpi.sales.orders_range }}</strong></li>
-            <li>Revenue (range): <strong>£{{ kpi.sales.revenue_range|floatformat:2 }}</strong></li>
-            <li class="mt-2 text-muted small">Orders (7d/30d/1y):
-                <strong>{{ kpi.sales.orders_7d }}</strong> /
-                <strong>{{ kpi.sales.orders_30d }}</strong> /
-                <strong>{{ kpi.sales.orders_1y }}</strong>
-            </li>
-            <li class="text-muted small">Revenue (7 days):
-                <strong>£{{ kpi.sales.revenue_7d|floatformat:2 }}</strong>
-            </li>
-            <li class="text-muted small">Revenue (30 days):
-                <strong>£{{ kpi.sales.revenue_30d|floatformat:2 }}</strong>
-            </li>
-            <li class="text-muted small">Revenue (1 year):
-                <strong>£{{ kpi.sales.revenue_1y|floatformat:2 }}</strong>
-            </li>
-        </ul>
+        <div class="h6 text-muted mb-2">Sales</div>
+        <div class="d-flex flex-wrap gap-3">
+          <div><div class="fw-semibold">{{ kpi.sales.orders|intcomma }}</div><div class="text-muted small">Total Orders</div></div>
+          <div><div class="fw-semibold">£{{ kpi.sales.gross_revenue|floatformat:2 }}</div><div class="text-muted small">Gross Revenue</div></div>
+        </div>
+        <hr>
+        <div class="small">In range: <span class="fw-semibold">{{ kpi.sales.orders_range|intcomma }}</span> orders · <span class="fw-semibold">£{{ kpi.sales.revenue_range|floatformat:2 }}</span></div>
+        <div class="small text-muted">7d: £{{ kpi.sales.revenue_7d|floatformat:2 }} · 30d: £{{ kpi.sales.revenue_30d|floatformat:2 }} · 1y: £{{ kpi.sales.revenue_1y|floatformat:2 }}</div>
       </div>
     </div>
   </div>
 </div>
 
-<hr class="my-4">
-
-<h2 class="h5 mb-3">Top performers (selected range)</h2>
-<div class="row g-3">
-  <!-- Top Shops -->
+{# LEADERS #}
+<div class="row g-3 mb-4">
   <div class="col-lg-6">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 mb-3">Top Shops by Revenue</div>
-        {% if leaders.shops %}
-          <div class="table-responsive">
-            <table class="table align-middle">
-              <thead>
-                <tr class="text-muted small">
-                  <th>Shop</th>
-                  <th class="text-end">Orders</th>
-                  <th class="text-end">Items</th>
-                  <th class="text-end">Revenue</th>
+        <div class="h6 mb-3">Top Products ({{ range.start|date:"Y-m-d" }} → {{ range.end|date:"Y-m-d" }})</div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="small text-muted">
+              <tr>
+                <th>Product</th>
+                <th class="text-end">Orders</th>
+                <th class="text-end">Items</th>
+                <th class="text-end">Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in leaders.products %}
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ p.product__title }}</div>
+                    <div class="small text-muted">{{ p.product__shop__name }}</div>
+                  </td>
+                  <td class="text-end">{{ p.orders|intcomma }}</td>
+                  <td class="text-end">{{ p.items_sold|intcomma }}</td>
+                  <td class="text-end">£{{ p.revenue|floatformat:2 }}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {% for s in leaders.shops %}
-                  <tr>
-                    <td>
-                      <a href="{% url 'marketplace:shop_detail' slug=s.product__shop__slug %}">
-                        {{ s.product__shop__name }}
-                      </a>
-                      <div class="small text-muted">@{{ s.product__shop__owner__username }}</div>
-                    </td>
-                    <td class="text-end">{{ s.orders }}</td>
-                    <td class="text-end">{{ s.items_sold }}</td>
-                    <td class="text-end">£{{ s.revenue|floatformat:2 }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="text-muted mb-0">No paid orders in this range.</p>
-        {% endif %}
+              {% empty %}
+                <tr><td colspan="4" class="text-muted">No product sales in this range.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Top Products -->
   <div class="col-lg-6">
     <div class="card h-100">
       <div class="card-body">
-        <div class="h6 mb-3">Top Products by Revenue</div>
-        {% if leaders.products %}
-          <div class="table-responsive">
-            <table class="table align-middle">
-              <thead>
-                <tr class="text-muted small">
-                  <th>Product</th>
-                  <th class="text-end">Orders</th>
-                  <th class="text-end">Items</th>
-                  <th class="text-end">Revenue</th>
+        <div class="h6 mb-3">Top Shops ({{ range.start|date:"Y-m-d" }} → {{ range.end|date:"Y-m-d" }})</div>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="small text-muted">
+              <tr>
+                <th>Shop</th>
+                <th class="text-end">Orders</th>
+                <th class="text-end">Items</th>
+                <th class="text-end">Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in leaders.shops %}
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ s.product__shop__name }}</div>
+                    <div class="small text-muted">@{{ s.product__shop__owner__username }}</div>
+                  </td>
+                  <td class="text-end">{{ s.orders|intcomma }}</td>
+                  <td class="text-end">{{ s.items_sold|intcomma }}</td>
+                  <td class="text-end">£{{ s.revenue|floatformat:2 }}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {% for p in leaders.products %}
-                  <tr>
-                    <td>
-                      <a href="{% url 'marketplace:product_detail' shop_slug=p.product__shop__slug product_slug=p.product__slug %}">
-                        {{ p.product__title }}
-                      </a>
-                      <div class="small text-muted">{{ p.product__shop__name }}</div>
-                    </td>
-                    <td class="text-end">{{ p.orders }}</td>
-                    <td class="text-end">{{ p.items_sold }}</td>
-                    <td class="text-end">£{{ p.revenue|floatformat:2 }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="text-muted mb-0">No paid orders in this range.</p>
-        {% endif %}
+              {% empty %}
+                <tr><td colspan="4" class="text-muted">No shop sales in this range.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<hr class="my-4">
-<h2 class="h6 mb-3">Recent activity (in selected range)</h2>
+{# STEP 4 — RECENT ACTIVITY #}
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="h6 mb-3">Recent Activity ({{ range.start|date:"Y-m-d" }} → {{ range.end|date:"Y-m-d" }})</div>
 
-<ul class="nav nav-tabs mb-3" role="tablist">
-  <li class="nav-item" role="presentation">
-    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-orders" type="button" role="tab">Orders</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reviews" type="button" role="tab">Reviews</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-signups" type="button" role="tab">Signups</button>
-  </li>
-</ul>
-
-<div class="tab-content">
-  <!-- Orders -->
-  <div id="tab-orders" class="tab-pane fade show active" role="tabpanel">
-    {% if activity.orders %}
-      <div class="vstack gap-2">
-        {% for o in activity.orders %}
-          <div class="border rounded p-2 d-flex justify-content-between align-items-center">
-            <div>
-                <div class="small text-muted">{{ o.created_at|date:"Y-m-d H:i" }}</div>
-                <div>Order #{{ o.id }} — {{ o.user }}</div>
-                <div class="small">Items: {{ o.items_count_calc }} · Total: £{{ o.total_amount_calc|floatformat:2 }}</div>
-                <div class="small text-muted">Status: {{ o.get_status_display }} · Fulfillment: {{ o.get_fulfillment_status_display }}</div>
+    <div class="accordion" id="activityAcc">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="acc-orders-h">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#acc-orders-c" aria-expanded="true" aria-controls="acc-orders-c">
+            Latest Paid Orders
+          </button>
+        </h2>
+        <div id="acc-orders-c" class="accordion-collapse collapse show" aria-labelledby="acc-orders-h" data-bs-parent="#activityAcc">
+          <div class="accordion-body">
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead class="small text-muted">
+                  <tr>
+                    <th>When</th>
+                    <th>Buyer</th>
+                    <th class="text-end">Items</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for o in activity.orders %}
+                    <tr>
+                      <td class="small text-muted">{{ o.created_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        {% if o.user %}
+                          <div class="fw-semibold">{{ o.user.get_full_name|default:o.user.username }}</div>
+                          <div class="small text-muted">@{{ o.user.username }}</div>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-end">{{ o.items_count_calc|intcomma }}</td>
+                      <td class="text-end">£{{ o.total_amount_calc|floatformat:2 }}</td>
+                    </tr>
+                  {% empty %}
+                    <tr><td colspan="4" class="text-muted">No paid orders in this range.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
-        {% endfor %}
+        </div>
       </div>
-    {% else %}
-      <p class="text-muted">No paid orders in this range.</p>
-    {% endif %}
-  </div>
 
-  <!-- Reviews -->
-  <div id="tab-reviews" class="tab-pane fade" role="tabpanel">
-    {% if activity.reviews %}
-      <div class="vstack gap-2">
-        {% for r in activity.reviews %}
-          <div class="border rounded p-2">
-            <div class="d-flex justify-content-between">
-              <div>
-                <div class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</div>
-                <div>
-                  <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
-                    {{ r.product.title }}
-                  </a>
-                  <span class="text-muted small">· {{ r.product.shop.name }}</span>
-                </div>
-              </div>
-              <div>⭐ {{ r.rating }}/5</div>
-            </div>
-            {% if r.comment %}<div class="mt-1">{{ r.comment }}</div>{% endif %}
-            <div class="small text-muted">by {{ r.user.username }}</div>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="text-muted">No reviews in this range.</p>
-    {% endif %}
-  </div>
-
-  <!-- Signups -->
-  <div id="tab-signups" class="tab-pane fade" role="tabpanel">
-    {% if activity.signups %}
-      <div class="vstack gap-2">
-        {% for u in activity.signups %}
-          <div class="border rounded p-2 d-flex justify-content-between align-items-center">
-            <div>
-              <div class="fw-semibold">{{ u.get_full_name|default:u.username }}</div>
-              <div class="small text-muted">@{{ u.username }} · {{ u.email }}</div>
-              <div class="small text-muted">Joined: {{ u.date_joined|date:"Y-m-d H:i" }}</div>
-              {% if not u.is_active %}<span class="badge text-bg-secondary">Suspended</span>{% endif %}
-              {% if u.is_staff %}<span class="badge text-bg-info">Staff</span>{% endif %}
-              {% if u.is_superuser %}<span class="badge text-bg-warning">Superuser</span>{% endif %}
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="acc-reviews-h">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#acc-reviews-c" aria-expanded="false" aria-controls="acc-reviews-c">
+            Latest Reviews
+          </button>
+        </h2>
+        <div id="acc-reviews-c" class="accordion-collapse collapse" aria-labelledby="acc-reviews-h" data-bs-parent="#activityAcc">
+          <div class="accordion-body">
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead class="small text-muted">
+                  <tr>
+                    <th>When</th>
+                    <th>User</th>
+                    <th>Product</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in activity.reviews %}
+                    <tr>
+                      <td class="small text-muted">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        {% if r.user %}
+                          <div class="fw-semibold">{{ r.user.get_full_name|default:r.user.username }}</div>
+                          <div class="small text-muted">@{{ r.user.username }}</div>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div class="fw-semibold">{{ r.product.title }}</div>
+                        <div class="small text-muted">{{ r.product.shop.name }}</div>
+                      </td>
+                      <td>{{ r.rating }}/5</td>
+                      <td class="small text-muted">{{ r.comment|truncatechars:80 }}</td>
+                    </tr>
+                  {% empty %}
+                    <tr><td colspan="5" class="text-muted">No reviews in this range.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
-        {% endfor %}
+        </div>
       </div>
-    {% else %}
-      <p class="text-muted">No signups in this range.</p>
-    {% endif %}
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="acc-signups-h">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#acc-signups-c" aria-expanded="false" aria-controls="acc-signups-c">
+            Latest Signups
+          </button>
+        </h2>
+        <div id="acc-signups-c" class="accordion-collapse collapse" aria-labelledby="acc-signups-h" data-bs-parent="#activityAcc">
+          <div class="accordion-body">
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead class="small text-muted">
+                  <tr>
+                    <th>When</th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for u in activity.signups %}
+                    <tr>
+                      <td class="small text-muted">{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        <div class="fw-semibold">{{ u.get_full_name|default:u.username }}</div>
+                        <div class="small text-muted">@{{ u.username }}</div>
+                      </td>
+                      <td class="small">{{ u.email }}</td>
+                      <td>
+                        {% if u.is_active %}
+                          <span class="badge text-bg-success">Active</span>
+                        {% else %}
+                          <span class="badge text-bg-secondary">Inactive</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr><td colspan="4" class="text-muted">No signups in this range.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> {# /accordion #}
   </div>
 </div>
+
+<script>
+  (function () {
+    const range = document.getElementById('rangeSelect');
+    const dates = document.getElementById('customDates');
+    if (!range || !dates) return;
+
+    function toggleDates() {
+      if (range.value === 'custom') {
+        dates.classList.remove('d-none');
+      } else {
+        dates.classList.add('d-none');
+      }
+    }
+    range.addEventListener('change', toggleDates);
+    // ensure correct initial state if turbo/htmx/partial loads
+    toggleDates();
+  })();
+</script>
 
 {% endblock %}

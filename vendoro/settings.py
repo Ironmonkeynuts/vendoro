@@ -66,12 +66,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.humanize',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'cloudinary',
     'cloudinary_storage',
+
     # Apps
     'home',
     'users',

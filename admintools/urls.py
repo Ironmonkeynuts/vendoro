@@ -9,6 +9,16 @@ urlpatterns = [
     path("shops/", views.ShopsProductsView.as_view(), name="shops_products"),
     path("reports/", views.ReportsView.as_view(), name="reports"),
     path(
+        "reports/export.csv",
+        views.reports_export_csv,
+        name="reports_export_csv"
+    ),
+    path(
+        "reports/export-products.csv",
+        views.reports_export_products_csv,
+        name="reports_export_products_csv"
+    ),
+    path(
         "users/<int:pk>/toggle-staff/",
         views.user_toggle_staff,
         name="user_toggle_staff"
