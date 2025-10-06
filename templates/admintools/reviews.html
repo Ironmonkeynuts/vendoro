@@ -1,0 +1,192 @@
+{% extends "admintools/base.html" %}
+{% load static %}
+{% block admintools_content %}
+
+<h1 class="h4 mb-3">Reviews</h1>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-md-4">
+    <label class="form-label small text-muted">Search</label>
+    <input type="text" name="q" value="{{ q }}" class="form-control"
+           placeholder="Text, product, shop, user">
+  </div>
+
+  <div class="col-md-2 col-6">
+    <label class="form-label small text-muted">Rating</label>
+    <select name="rating" class="form-select">
+      <option value="">All</option>
+      {% for r in "12345" %}
+        <option value="{{ r }}" {% if rating == r %}selected{% endif %}>{{ r }}★</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-md-2 col-6">
+    <label class="form-label small text-muted">Visibility</label>
+    <select name="vis" class="form-select">
+      <option value="all" {% if vis == "all" %}selected{% endif %}>All</option>
+      <option value="public" {% if vis == "public" %}selected{% endif %}>Public</option>
+      <option value="hidden" {% if vis == "hidden" %}selected{% endif %}>Hidden</option>
+    </select>
+  </div>
+
+  <div class="col-md-2 col-6">
+    <label class="form-label small text-muted">Range</label>
+    <select id="range" name="range" class="form-select">
+      <option value="" {% if not range %}selected{% endif %}>Any time</option>
+      <option value="7" {% if range == "7" %}selected{% endif %}>Last 7 days</option>
+      <option value="30" {% if range == "30" %}selected{% endif %}>Last 30 days</option>
+      <option value="90" {% if range == "90" %}selected{% endif %}>Last 90 days</option>
+      <option value="custom" {% if range == "custom" %}selected{% endif %}>Custom</option>
+    </select>
+  </div>
+
+  <div id="custom-range" class="col-md-2 col-6 {% if range != 'custom' %}d-none{% endif %}">
+    <label class="form-label small text-muted">Start</label>
+    <input type="date" name="start" value="{{ start }}" class="form-control">
+  </div>
+  <div id="custom-range-2" class="col-md-2 col-6 {% if range != 'custom' %}d-none{% endif %}">
+    <label class="form-label small text-muted">End</label>
+    <input type="date" name="end" value="{{ end }}" class="form-control">
+  </div>
+
+  <div class="col-md-auto">
+    <button class="btn btn-primary px-3">Apply</button>
+    <a class="btn btn-outline-secondary ms-1" href="{% url 'admintools:reviews' %}">Reset</a>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr class="text-muted small">
+        {# helper to flip sort #}
+        {% with flip=sort|default:'' %}
+        <th>
+          {% if sort == 'product' %}
+            <a href="?{% if q %}q={{q}}&{% endif %}{% if rating %}rating={{rating}}&{% endif %}{% if vis %}vis={{vis}}&{% endif %}{% if range %}range={{range}}&{% endif %}{% if start %}start={{start}}&{% endif %}{% if end %}end={{end}}&{% endif %}sort=-product">Product ▲</a>
+          {% elif sort == '-product' %}
+            <a href="?{% if q %}q={{q}}&{% endif %}{% if rating %}rating={{rating}}&{% endif %}{% if vis %}vis={{vis}}&{% endif %}{% if range %}range={{range}}&{% endif %}{% if start %}start={{start}}&{% endif %}{% if end %}end={{end}}&{% endif %}sort=product">Product ▼</a>
+          {% else %}
+            <a href="?{% if q %}q={{q}}&{% endif %}{% if rating %}rating={{rating}}&{% endif %}{% if vis %}vis={{vis}}&{% endif %}{% if range %}range={{range}}&{% endif %}{% if start %}start={{start}}&{% endif %}{% if end %}end={{end}}&{% endif %}sort=-product">Product</a>
+          {% endif %}
+        </th>
+        <th>Shop</th>
+        <th>User</th>
+        <th class="text-center">
+          {% if sort == 'rating' %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-rating'|cut:'rating' }}{% if request.GET %}&{% endif %}sort=-rating">Rating ▲</a>
+          {% elif sort == '-rating' %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-rating'|cut:'rating' }}{% if request.GET %}&{% endif %}sort=rating">Rating ▼</a>
+          {% else %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-rating'|cut:'rating' }}{% if request.GET %}&{% endif %}sort=-rating">Rating</a>
+          {% endif %}
+        </th>
+        <th>Excerpt</th>
+        <th class="text-center">
+          {% if sort == 'is_public' %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-is_public'|cut:'is_public' }}{% if request.GET %}&{% endif %}sort=-is_public">Public ▲</a>
+          {% elif sort == '-is_public' %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-is_public'|cut:'is_public' }}{% if request.GET %}&{% endif %}sort=is_public">Public ▼</a>
+          {% else %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-is_public'|cut:'is_public' }}{% if request.GET %}&{% endif %}sort=-is_public">Public</a>
+          {% endif %}
+        </th>
+        <th class="text-nowrap">
+          {% if sort == 'created_at' %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-created_at'|cut:'created_at' }}{% if request.GET %}&{% endif %}sort=-created_at">Created ▲</a>
+          {% elif sort == '-created_at' %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-created_at'|cut:'created_at' }}{% if request.GET %}&{% endif %}sort=created_at">Created ▼</a>
+          {% else %}
+            <a href="?{{ request.GET.urlencode|safe|cut:'sort='|cut:'-created_at'|cut:'created_at' }}{% if request.GET %}&{% endif %}sort=-created_at">Created</a>
+          {% endif %}
+        </th>
+        <th class="text-end">Actions</th>
+        {% endwith %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in object_list %}
+        <tr>
+          <td class="align-middle">
+            <a href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
+              {{ r.product.title }}
+            </a>
+          </td>
+          <td class="align-middle">{{ r.product.shop.name }}</td>
+          <td class="align-middle">@{{ r.user.username }}</td>
+          <td class="text-center align-middle">{{ r.rating }}★</td>
+          <td class="align-middle">
+            {% if r.comment %}
+              {{ r.comment|truncatechars:80 }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td class="text-center align-middle">
+            {% if r.is_public %}
+              <span class="badge text-bg-success">Yes</span>
+            {% else %}
+              <span class="badge text-bg-secondary">No</span>
+            {% endif %}
+          </td>
+          <td class="text-nowrap align-middle">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+          <td class="text-end align-middle">
+            <form method="post" action="{% url 'admintools:review_toggle_visibility' pk=r.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              {% if r.is_public %}
+                <button class="btn btn-sm btn-outline-danger">Hide</button>
+              {% else %}
+                <button class="btn btn-sm btn-outline-success">Show</button>
+              {% endif %}
+              <a class="btn btn-sm btn-outline-primary ms-1"
+                 href="{% url 'marketplace:product_detail' shop_slug=r.product.shop.slug product_slug=r.product.slug %}">
+                View
+              </a>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="text-muted">No reviews found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<nav aria-label="Pagination">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Prev</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Prev</span></li>
+    {% endif %}
+
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    </li>
+
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Next</span></li>
+    {% endif %}
+  </ul>
+</nav>
+
+<script>
+  (function () {
+    const rangeSel = document.getElementById('range');
+    const c1 = document.getElementById('custom-range');
+    const c2 = document.getElementById('custom-range-2');
+    function sync() {
+      const show = rangeSel.value === 'custom';
+      c1.classList.toggle('d-none', !show);
+      c2.classList.toggle('d-none', !show);
+    }
+    rangeSel.addEventListener('change', sync);
+    sync();
+  }());
+</script>
+
+{% endblock %}

@@ -172,6 +172,8 @@ class ProductReview(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    is_public = models.BooleanField(default=True)
+
     class Meta:
         ordering = ["-created_at"]
 

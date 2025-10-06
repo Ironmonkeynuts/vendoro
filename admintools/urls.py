@@ -8,6 +8,12 @@ urlpatterns = [
     path("users/", views.UserListView.as_view(), name="users"),
     path("shops/", views.ShopsProductsView.as_view(), name="shops_products"),
     path("reports/", views.ReportsView.as_view(), name="reports"),
+    path("reviews/", views.ReviewsListView.as_view(), name="reviews"),
+    path(
+        "reviews/<int:pk>/toggle/",
+        views.review_toggle_visibility,
+        name="review_toggle_visibility"
+    ),
     path(
         "reports/export.csv",
         views.reports_export_csv,

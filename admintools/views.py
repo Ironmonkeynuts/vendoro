@@ -1,5 +1,3 @@
-# admintools/views.py
-
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -610,3 +608,124 @@ def reports_export_products_csv(request):
             f"{row['revenue']:.2f}",
         ])
     return response
+
+
+class ReviewsListView(SuperuserRequiredMixin, ListView):
+    """Admin: list & moderate product reviews."""
+    template_name = "admintools/reviews.html"
+    model = ProductReview
+    paginate_by = 25
+    ordering = "-created_at"
+
+    SORT_MAP = {
+        "created_at": "created_at",
+        "-created_at": "-created_at",
+        "rating": "rating",
+        "-rating": "-rating",
+        "is_public": "is_public",
+        "-is_public": "-is_public",
+        "user": "user__username",
+        "-user": "-user__username",
+        "product": "product__title",
+        "-product": "-product__title",
+        "shop": "product__shop__name",
+        "-shop": "-product__shop__name",
+    }
+
+    def get_queryset(self):
+        qs = (
+            ProductReview.objects
+            .select_related("product", "product__shop", "user")
+        )
+
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(
+                Q(comment__icontains=q) |
+                Q(user__username__icontains=q) |
+                Q(product__title__icontains=q) |
+                Q(product__shop__name__icontains=q)
+            )
+
+        # rating filter (exact)
+        rating = (self.request.GET.get("rating") or "").strip()
+        if rating.isdigit():
+            qs = qs.filter(rating=int(rating))
+
+        # visibility filter: all | public | hidden
+        vis = (self.request.GET.get("vis") or "all").strip()
+        if vis == "public":
+            qs = qs.filter(is_public=True)
+        elif vis == "hidden":
+            qs = qs.filter(is_public=False)
+
+        # date range (reuse your existing short range style)
+        from django.utils.dateparse import parse_date
+        from datetime import datetime, time
+        from django.utils import timezone
+
+        # "", "7","30","90","custom"
+        rng = (self.request.GET.get("range") or "").strip()
+        start_param = self.request.GET.get("start")
+        end_param = self.request.GET.get("end")
+        now = timezone.now()
+
+        if rng in {"7", "30", "90"}:
+            start = now - timezone.timedelta(days=int(rng))
+            end = now
+        elif rng == "custom":
+            sd = parse_date(start_param) if start_param else None
+            ed = parse_date(end_param) if end_param else None
+            start = (
+                timezone.make_aware(datetime.combine(sd, time.min))
+                if sd else None
+            )
+            end = (
+                timezone.make_aware(datetime.combine(ed, time.max))
+                if ed else None
+            )
+        else:
+            start = end = None
+
+        if start:
+            qs = qs.filter(created_at__gte=start)
+        if end:
+            qs = qs.filter(created_at__lte=end)
+
+        # sorting
+        sort = (self.request.GET.get("sort") or "").strip()
+        order_by = self.SORT_MAP.get(sort, self.ordering)
+        return qs.order_by(order_by)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["q"] = (self.request.GET.get("q") or "").strip()
+        ctx["rating"] = (self.request.GET.get("rating") or "").strip()
+        ctx["vis"] = (self.request.GET.get("vis") or "all").strip()
+        ctx["sort"] = (self.request.GET.get("sort") or "").strip()
+        ctx["range"] = (self.request.GET.get("range") or "").strip()
+        ctx["start"] = (self.request.GET.get("start") or "").strip()
+        ctx["end"] = (self.request.GET.get("end") or "").strip()
+        return ctx
+
+
+@require_POST
+def review_toggle_visibility(request, pk: int):
+    """Hide/Show a review (toggles is_public)."""
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        messages.error(request, "You do not have permission to do that.")
+        return _safe_redirect_next(request, fallback_name="admintools:reviews")
+
+    review = get_object_or_404(
+        ProductReview.objects.select_related("product", "user"),
+        pk=pk
+    )
+    review.is_public = not getattr(review, "is_public", True)
+    review.save(update_fields=["is_public"])
+
+    messages.success(
+        request,
+        f"{'Published' if review.is_public else 'Hidden'} review by "
+        f"@{review.user.username} on “{review.product.title}”."
+    )
+    return _safe_redirect_next(request, fallback_name="admintools:reviews")
