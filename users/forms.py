@@ -8,7 +8,10 @@ class RoleSignupForm(SignupForm):
         (User.UserType.BUYER, "Buyer"),
         (User.UserType.SELLER, "Seller"),
     ]
-    role = forms.ChoiceField(choices=ROLE_CHOICES, label="Account type")
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES,
+        label="Account type (Primary role)"
+    )
 
     def save(self, request):
         user = super().save(request)
