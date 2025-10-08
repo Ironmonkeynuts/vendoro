@@ -1,4 +1,4 @@
-# [vendoro](https://imn-vendoro-55af0b986025.herokuapp.com)
+# [![screenshot](documentation/vendoro.png)](https://imn-vendoro-55af0b986025.herokuapp.com)
 
 Developer: David Doyle-Owen ([Ironmonkeynuts](https://www.github.com/Ironmonkeynuts))
 
@@ -7,32 +7,34 @@ Developer: David Doyle-Owen ([Ironmonkeynuts](https://www.github.com/Ironmonkeyn
 [![GitHub repo size](https://img.shields.io/github/repo-size/Ironmonkeynuts/vendoro)](https://www.github.com/Ironmonkeynuts/vendoro)
 [![badge](https://img.shields.io/badge/deployment-Heroku-purple)](https://imn-vendoro-55af0b986025.herokuapp.com)
 
-⚠️ PROJECT INTRODUCTION AND RATIONALE⚠️
+## Project Introduction & Rationale
+Vendoro is a lightweight, modern marketplace web application that helps small retailers and indie makers sell products online without the overhead of a full-blown e-commerce suite. The project aims to make listing, managing, and analysing product performance simple for shop owners, while offering shoppers a clean, trustworthy browsing and checkout experience. At its core, Vendoro removes busywork—so sellers can focus on their products, not their tooling.
 
-In this section, include a few paragraphs providing an overview of your project. Essentially, this part is your "sales pitch". Describe what the project hopes to accomplish, who it is intended to target, and how it will be useful to the target audience. Also, assessors lately have been asking that students explain "why" they opted to do a project about this particular topic/subject, so be sure to explain what made you choose this particular theme/concept/subject/idea. This is the project "rationale".
+Today, many small sellers bounce between spreadsheets, social media DMs, and heavyweight platforms that are either too limited or too complex. Vendoro bridges that gap with a focused feature set: shop and product management, image handling, inventory tracking, customer reviews with replies, and a seller dashboard that surfaces sales, revenue, and review trends over time. It’s opinionated where it matters (clear flows, sensible defaults) and flexible where it counts (multi-shop support, CSV exports, and range-based reporting).
 
-⚠️ --- END --- ⚠️
+The primary audience is independent sellers and small shops—people who need professional tooling but don’t have a dedicated tech team. For them, Vendoro provides:
 
-🛑 README NOTES 🛑
+An easy way to create a branded shop and add products quickly.
 
-Do not add a **Table of Contents** to your Markdown files. GitHub has these built-in automatically using the headers/hashtags.
+Built-in reviews that foster trust and drive conversions.
 
-Don't add screenshots for the README/TESTING into your `assets` or `static` folders. Create a new folder at the root-level called `documentation`. Consider creating sub-directories within `documentation` to handle things like `wireframes`, `features`, `validation`, `responsiveness`, etc.
+A dashboard with KPIs (orders, items sold, revenue, AOV, new reviews) and time-range reports to make data-driven decisions.
 
-Learn about Markdown Alerts (aka Callouts), a fairly new feature for GitHub Markdown files.
-https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
-Note: these are not visible within your README Previewer, and are only visible once you push the code to GitHub.
+CSV exports for accounting, fulfilment, or deeper analysis.
 
-**Site Mockups**
-*([amiresponsive](https://ui.dev/amiresponsive?url=https://imn-vendoro-55af0b986025.herokuapp.com), [techsini](https://techsini.com/multi-mockup), etc.)*
-Having issues generating site mockups? This is likely due to security policies with your deployed site.
-If you open up your DevTools, there may be an error referencing `X-Frame-Options`.
+A secondary audience is learners and developers who want a well-structured, production-minded Django project to study. The codebase demonstrates practical patterns: clean URL design, secure media handling with Cloudinary, owner-scoped permissions, PRG flows, Django Allauth integration for auth, and query optimization with annotations and aggregates.
 
-For Chrome users, head over to http://bit.ly/3iRPn4u and install the extension within your browser. Once installed, navigate back to the mockup site of your choice. You should find your site rendering in the various devices now.
+Vendoro will be useful to sellers because it eliminates friction at every step: creating a shop, uploading images, tracking stock, responding to reviews, and understanding performance without leaving the app. By exposing clear KPIs and time-series trends, it turns raw transactions into insight—highlighting best-sellers, underperformers, and seasonal patterns. This clarity supports decisions like re-stocking, pricing adjustments, or targeted promotions.
 
-Alternatively, open your project in Gitpod and run the server. Once the site is running, click the `Ports` tab from your Gitpod Terminal. Click the padlock on the appropriate port for your project (`Flask: 5000`, `Django: 8000`). This will make your local page public temporarily. Now, copy the URL of your live-preview page into the responsive tool above. You should find your site rendering in the various devices.
+### Rationale — Why this project?
 
-🛑 --- END ---- 🛑
+I chose this topic because marketplaces sit at the intersection of product design, data modelling, security, and real business value. Building Vendoro lets me explore challenges that matter in the real world: ensuring unique, human-friendly URLs; handling user-generated content and moderation; protecting owner-only actions; integrating third-party services like Stripe and Cloudinary; and presenting analytics that are accurate, explainable, and fast. It’s a rich, end-to-end problem space that tests architectural judgment, not just CRUD.
+
+There’s also a clear needs gap: many small sellers either outgrow simple link-in-bio tools or feel overwhelmed by enterprise platforms. I wanted to create something approachable that still feels “professional”—the kind of tool a solo shop can adopt in an afternoon and keep using as they grow.
+
+Finally, the project is a great vehicle for personal learning goals: strengthening Django best practices; refining UX for data-heavy screens; implementing secure auth flows with email verification and password reset; and practicing performance-minded ORM usage (aggregations, annotations, and selective prefetching). The end result is both a useful product for non-technical users and a portfolio-quality codebase that demonstrates thoughtful engineering.
+
+In short, Vendoro is my attempt to build the right-sized marketplace: powerful enough to run a small business, simple enough to love using, and robust enough to be a credible foundation for future features like coupons, shipping labels, or vendor-to-vendor collaborations.
 
 ![screenshot](documentation/mockup.png)
 
@@ -51,17 +53,17 @@ source: [vendoro amiresponsive](https://ui.dev/amiresponsive?url=https://imn-ven
 
 **Purpose**
 - Provide a seamless and intuitive e-commerce experience for customers to browse, filter, and purchase products.
-- Empower site owners to manage the store's inventory and customer orders efficiently.
+- Empower shop owners to manage their shop's inventory and customer orders efficiently.
 
 **Primary User Needs**
 - Guest users need to browse products and checkout with ease.
 - Registered customers need a streamlined shopping experience with account and order history features.
-- Site owners need robust tools for inventory and order management.
+- Shop owners need robust tools for inventory and order management.
 
 **Business Goals**
 - Drive sales by providing a user-friendly shopping experience.
 - Build customer loyalty through personalized and efficient account features.
-- Maintain an organized and up-to-date store inventory.
+- Maintain an organized and up-to-date shop inventory.
 
 #### 2. Scope
 
@@ -772,7 +774,7 @@ Eventually you'll want to learn how to use Git branches. Here's a helpful tutori
 | [Chris Beams](https://chris.beams.io/posts/git-commit) | "How to Write a Git Commit Message" |
 | [Boutique Ado](https://codeinstitute.net) | Code Institute walkthrough project inspiration |
 | [Bootstrap](https://getbootstrap.com) | Various components / responsive front-end framework |
-| [AWS S3](https://aws.amazon.com/s3) | Cloud storage for static/media files |
+| [Cloudinary]() | Cloud storage for static/media files |
 | [Whitenoise](https://whitenoise.readthedocs.io) | Static file service |
 | [Stripe](https://docs.stripe.com/payments/elements) | Online payment services |
 | [Gmail API](https://developers.google.com/gmail/api/guides) | Sending payment confirmation emails |
