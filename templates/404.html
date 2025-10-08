@@ -16,11 +16,11 @@
         <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
           <a href="javascript:history.back()" class="btn btn-outline-secondary">Go back</a>
           <a href="{% url 'home' %}" class="btn btn-primary">Go to homepage</a>
-          <a href="{% url 'marketplace:product_list' %}" class="btn btn-outline-primary">Browse products</a>
+          <a href="{% url 'marketplace:browse' %}" class="btn btn-outline-primary">Browse products</a>
           <a href="{% url 'marketplace:shop_detail' slug='' %}" class="d-none"></a>
         </div>
 
-        <form action="{% url 'marketplace:product_list' %}" method="get" class="mx-auto" style="max-width: 520px;">
+        <form action="{% url 'marketplace:browse' %}" method="get" class="mx-auto" style="max-width: 520px;">
           <label for="q" class="visually-hidden">Search products</label>
           <div class="input-group">
             <input id="q" name="q" type="search" class="form-control" placeholder="Search products, shops, categories…">

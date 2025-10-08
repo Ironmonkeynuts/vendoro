@@ -15,8 +15,8 @@
       <p class="lead mb-3">What would you like to do today?</p>
 
       <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn-outline-primary" href="/browse/">Browse products</a>
-        <a class="btn btn-outline-secondary" href="/orders/myorders/">My orders</a>
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:browse' %}">Browse products</a>
+        <a class="btn btn-outline-secondary" href="{% url 'orders:my_orders' %}">My orders</a>
 
         {# Inline seller shortcuts if user owns at least one shop #}
         {% if user.shops.exists %}

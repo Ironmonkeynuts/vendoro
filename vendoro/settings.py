@@ -25,7 +25,10 @@ def env_csv(key: str, default: str = "") -> list[str]:
 
 
 def env_bool(key: str, default: str = "0") -> bool:
-    return os.environ.get(key, default).strip() in {"1", "true", "True", "yes", "YES"}
+    return (
+        os.environ.get(key, default).strip()
+        in {"1", "true", "True", "yes", "YES"}
+    )
 
 
 def env_int(key: str, default: int) -> int:
@@ -44,19 +47,36 @@ ALLOWED_HOSTS = env_csv(
     "imn-vendoro-55af0b986025.herokuapp.com,localhost,127.0.0.1"
 )
 
-CSRF_TRUSTED_ORIGINS = env_csv(
-    "CSRF_TRUSTED_ORIGINS",
-    "https://imn-vendoro-55af0b986025.herokuapp.com"
-)
-
 # Heroku proxy/HTTPS
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = os.getenv(
-    "SECURE_SSL_REDIRECT", "1") == "1" and not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SAMESITE = "Lax"
+
+# In dev: no HTTPS enforcement
+if DEBUG:
+    SECURE_SSL_REDIRECT = False
+    SECURE_PROXY_SSL_HEADER = None
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
+    # Make form posts from local origins work smoothly
+    CSRF_TRUSTED_ORIGINS = env_csv(
+        "CSRF_TRUSTED_ORIGINS",
+        "http://localhost,http://localhost:8000",
+    )
+else:
+    SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "1") == "1"
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+    CSRF_TRUSTED_ORIGINS = env_csv(
+        "CSRF_TRUSTED_ORIGINS",
+        "https://imn-vendoro-55af0b986025.herokuapp.com",
+    )
+    # HSTS (recommended for production)
+    SECURE_HSTS_SECONDS = env_int("SECURE_HSTS_SECONDS", 31536000)  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool(
+        "SECURE_HSTS_INCLUDE_SUBDOMAINS", "1"
+    )
+    SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", "1")
 
 # Application definition
 INSTALLED_APPS = [
@@ -114,7 +134,6 @@ ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https" if not DEBUG else "http"
 ACCOUNT_FORMS = {
     "signup": "users.forms.RoleSignupForm",
 }
@@ -140,18 +159,6 @@ else:
         EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
         EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASS")
         EMAIL_TIMEOUT = env_int("EMAIL_TIMEOUT", 20)
-
-
-# Email backend: console in dev, SMTP in prod
-# if DEBUG:
-#    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-# else:
-#    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-#    EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.sendgrid.net")
-#    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
-#    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "apikey")
-#    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-#    EMAIL_USE_TLS = True
 
 # Middleware
 MIDDLEWARE = [
@@ -270,7 +277,9 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", default="")
 STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", default="gbp")
 
 # Logging
-DEBUG_PROPAGATE_EXCEPTIONS = True  # TEMP: so 500s print a stacktrace in logs
+DEBUG_PROPAGATE_EXCEPTIONS = os.getenv(
+    "DEBUG_PROPAGATE_EXCEPTIONS", "1" if DEBUG else "0"
+) in {"1", "true", "True"}
 
 LOGGING = {
     "version": 1,
