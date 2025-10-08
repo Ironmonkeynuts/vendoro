@@ -84,7 +84,7 @@
                         {% if cart_count %}
                         <li class="nav-item me-2">
                             <!-- Update href to your real cart URL if different -->
-                            <a class="btn btn-outline-secondary position-relative" href="/orders/cart/">
+                            <a class="btn btn-outline-secondary position-relative" href="{% url 'orders:cart_detail' %}">
                             Cart
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
                                 {{ cart_count }}
