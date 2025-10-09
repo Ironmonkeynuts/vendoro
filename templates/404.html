@@ -1,35 +1,31 @@
+{# templates/404.html #}
 {% extends "base.html" %}
-{% block title %}Page not found — Vendoro{% endblock %}
+{% block title %}Page not found – Vendoro{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
-      <div class="text-center">
-        <div class="display-4 fw-bold mb-1">404</div>
-        <h1 class="h4 mb-3">We can’t find that page</h1>
-        <p class="text-muted mb-4">
-          The link may be broken or the page might have been removed.
-          Try going back, searching, or exploring the marketplace.
-        </p>
-
-        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
-          <a href="javascript:history.back()" class="btn btn-outline-secondary">Go back</a>
-          <a href="{% url 'home' %}" class="btn btn-primary">Go to homepage</a>
-          <a href="{% url 'marketplace:browse' %}" class="btn btn-outline-primary">Browse products</a>
-          <a href="{% url 'marketplace:shop_detail' slug='' %}" class="d-none"></a>
-        </div>
-
-        <form action="{% url 'marketplace:browse' %}" method="get" class="mx-auto" style="max-width: 520px;">
-          <label for="q" class="visually-hidden">Search products</label>
-          <div class="input-group">
-            <input id="q" name="q" type="search" class="form-control" placeholder="Search products, shops, categories…">
-            <button class="btn btn-outline-secondary" type="submit">Search</button>
-          </div>
-        </form>
-
-        <div class="mt-5 small text-muted">
-          If you think this is a mistake, please <a href="mailto:{{ DEFAULT_FROM_EMAIL|default:'support@vendoro.app' }}">contact support</a>.
+  <div class="row align-items-center">
+    <div class="col-lg-6">
+      <h1 class="display-5 fw-bold">Page not found</h1>
+      <p class="lead text-muted">We couldn’t find the page you asked for. It may have moved or the link is incorrect.</p>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
+        <a href="{% url 'marketplace:browse' %}" class="btn btn-outline-secondary">Browse products</a>
+        {% url 'orders:cart_detail' as cart_url %}
+        {% if cart_url %}
+          <a href="{{ cart_url }}" class="btn btn-outline-secondary">View cart</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-5 offset-lg-1 mt-4 mt-lg-0">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Helpful tips</h5>
+          <ul class="mb-0">
+            <li>Check the URL for typos.</li>
+            <li>Use the navigation to find what you need.</li>
+            <li>If you believe this is an error, please let us know.</li>
+          </ul>
         </div>
       </div>
     </div>

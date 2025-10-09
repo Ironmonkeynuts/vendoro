@@ -1,11 +1,14 @@
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.defaults import page_not_found as django_page_not_found
 from django.views.generic import RedirectView
 from home.views import index
 from allauth.account.decorators import verified_email_required
 from django.http import HttpResponse
+
+handler404 = "home.views.error_404"
 
 
 @verified_email_required
@@ -55,4 +58,24 @@ urlpatterns = [
             namespace="admintools"
         )
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )
+
+    def dev_only_show_404(request):
+        return django_page_not_found(
+            request,
+            Exception("dev"),
+            template_name="404.html"
+        )
+
+    urlpatterns += [
+        re_path(
+            r"^__show404__$",
+            dev_only_show_404,
+            name="dev_show_404",
+        ),
+    ]
