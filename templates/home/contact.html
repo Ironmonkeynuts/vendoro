@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Contact • Vendoro{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h3 mb-3">{% trans "Contact us" %}</h1>
+        <p class="text-muted mb-4">
+          {% trans "Have a question, found a bug, or need a hand getting started? Send us a message below." %}
+        </p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.name.id_for_label }}">{% trans "Name" %}</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors|join:", " }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.email.id_for_label }}">{% trans "Email" %}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors|join:", " }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.subject.id_for_label }}">{% trans "Subject" %}</label>
+            {{ form.subject }}
+            {% if form.subject.errors %}<div class="text-danger small">{{ form.subject.errors|join:", " }}</div>{% endif %}
+          </div>
+
+          {{ form.website }} {# honeypot #}
+
+          <div class="mb-4">
+            <label class="form-label" for="{{ form.message.id_for_label }}">{% trans "Message" %}</label>
+            {{ form.message }}
+            {% if form.message.errors %}<div class="text-danger small">{{ form.message.errors|join:", " }}</div>{% endif %}
+          </div>
+
+          <button class="btn btn-primary px-4" type="submit">{% trans "Send message" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4">
+        <h2 class="h5 mb-3">{% trans "Other ways to reach us" %}</h2>
+        <ul class="list-unstyled mb-4">
+          <li class="mb-2">
+            <strong>{% trans "Email" %}:</strong>
+            <a href="mailto:contact@vendoro.app">contact@vendoro.app</a>
+            <!-- <a href="mailto:{{ support_email }}">{{ support_email }}</a> -->
+          </li>
+          <li class="mb-2"><strong>{% trans "Docs & FAQ" %}:</strong> <a href="{% url 'marketplace:browse' %}">Browse help topics</a></li>
+        </ul>
+        <p class="text-muted small mb-0">
+          {% trans "We typically reply within 3 business days." %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

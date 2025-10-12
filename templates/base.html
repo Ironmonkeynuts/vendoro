@@ -45,7 +45,9 @@
                 <a class="nav-link" href="{{ browse_url }}">Browse</a>
               {% endif %}
             </li>
-
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+            </li>
             {# CASE A: On a product page and the current user owns the shop #}
             {% if user.is_authenticated and product and product.shop and product.shop.owner_id == user.id %}
               {% url 'marketplace:product_edit' product.id as product_edit_url %}

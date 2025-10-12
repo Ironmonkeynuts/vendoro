@@ -145,6 +145,7 @@ DEFAULT_FROM_EMAIL = (
     or "no-reply@vendoro.app"
 )
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", DEFAULT_FROM_EMAIL)
 
 if os.environ.get("EMAIL_BACKEND"):
     EMAIL_BACKEND = os.environ["EMAIL_BACKEND"]

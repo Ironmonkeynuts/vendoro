@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from django.urls import path, include, re_path
 from django.views.defaults import page_not_found as django_page_not_found
 from django.views.generic import RedirectView
-from home.views import index
+from home.views import index, contact
 from allauth.account.decorators import verified_email_required
 from django.http import HttpResponse
 
@@ -22,6 +22,7 @@ urlpatterns = [
     path("protected/", verified, name="verified"),
     path("", index, name="home"),
     path("home/", index, name="home_alt"),
+    path("contact/", contact, name="contact"),
     path(
         "browse/",
         include(
