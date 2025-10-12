@@ -13,7 +13,7 @@ from .models import NewsletterSubscription
 def index(request):
     is_subscribed = False
     if request.user.is_authenticated:
-        email = (request.user.email or "").strip().lower()
+        email = _normalized_email(request.user.email)
         if email:
             is_subscribed = NewsletterSubscription.objects.filter(
                 email__iexact=email, is_active=True
@@ -185,7 +185,7 @@ def newsletter_subscribe(request):
             if not sub.is_active:
                 sub.is_active = True
                 changed_fields.append("is_active")
-            if request.user.is_authenticated and sub.user is None:
+            if request.user.is_authenticated and not sub.user_id:
                 sub.user = request.user
                 changed_fields.append("user")
             if changed_fields:
