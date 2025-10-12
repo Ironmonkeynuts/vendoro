@@ -183,6 +183,7 @@
                   {% if logout_url %}
                     <li><a class="dropdown-item" href="{{ logout_url }}">Log out</a></li>
                   {% endif %}
+                  <li><a class="dropdown-item" href="{% url 'newsletter_manage' %}">Email preferences</a></li>
                 </ul>
               </li>
             {% else %}

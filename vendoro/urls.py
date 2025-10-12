@@ -7,6 +7,7 @@ from django.views.generic import RedirectView
 from home.views import index, contact
 from allauth.account.decorators import verified_email_required
 from django.http import HttpResponse
+from home import views as home_views
 
 handler404 = "home.views.error_404"
 
@@ -58,6 +59,16 @@ urlpatterns = [
             ("admintools.urls", "admintools"),
             namespace="admintools"
         )
+    ),
+        path(
+        "newsletter/",
+        home_views.newsletter_manage,
+        name="newsletter_manage"
+    ),
+    path(
+        "newsletter/subscribe/",
+        home_views.newsletter_subscribe,
+        name="newsletter_subscribe"
     ),
 ]
 

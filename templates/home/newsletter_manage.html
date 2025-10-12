@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Email preferences" %} · Vendoro{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h1 class="h3 mb-3">{% trans "Email preferences" %}</h1>
+    <p class="text-muted">
+      {% trans "Manage your newsletter subscription for" %} <strong>{{ email|default:"(no email)" }}</strong>.
+    </p>
+
+    <div class="card">
+      <div class="card-body">
+        {% if subscription and subscription.is_active %}
+          <p class="mb-3">You’re currently <strong>subscribed</strong> to the Vendoro newsletter.</p>
+          <form method="post" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="unsubscribe">
+            <button class="btn btn-outline-secondary" type="submit">{% trans "Unsubscribe" %}</button>
+          </form>
+        {% else %}
+          <p class="mb-3">You’re currently <strong>not subscribed</strong> to the Vendoro newsletter.</p>
+          <form method="post" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="subscribe">
+            <button class="btn btn-primary" type="submit">{% trans "Subscribe" %}</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
