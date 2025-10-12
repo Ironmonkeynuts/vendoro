@@ -148,20 +148,29 @@ I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wirefram
 
 | Page | Mobile | Tablet | Desktop |
 | --- | --- | --- | --- |
-| Register | ![screenshot](documentation/wireframes/mobile-register.png) | ![screenshot](documentation/wireframes/tablet-register.png) | ![screenshot](documentation/wireframes/desktop-register.png) |
-| Login | ![screenshot](documentation/wireframes/mobile-login.png) | ![screenshot](documentation/wireframes/tablet-login.png) | ![screenshot](documentation/wireframes/desktop-login.png) |
-| Profile | ![screenshot](documentation/wireframes/mobile-profile.png) | ![screenshot](documentation/wireframes/tablet-profile.png) | ![screenshot](documentation/wireframes/desktop-profile.png) |
-| Home | ![screenshot](documentation/wireframes/mobile-home.png) | ![screenshot](documentation/wireframes/tablet-home.png) | ![screenshot](documentation/wireframes/desktop-home.png) |
-| Products | ![screenshot](documentation/wireframes/mobile-products.png) | ![screenshot](documentation/wireframes/tablet-products.png) | ![screenshot](documentation/wireframes/desktop-products.png) |
-| Product Details | ![screenshot](documentation/wireframes/mobile-product-details.png) | ![screenshot](documentation/wireframes/tablet-product-details.png) | ![screenshot](documentation/wireframes/desktop-product-details.png) |
-| Bag | ![screenshot](documentation/wireframes/mobile-bag.png) | ![screenshot](documentation/wireframes/tablet-bag.png) | ![screenshot](documentation/wireframes/desktop-bag.png) |
-| Checkout | ![screenshot](documentation/wireframes/mobile-checkout.png) | ![screenshot](documentation/wireframes/tablet-checkout.png) | ![screenshot](documentation/wireframes/desktop-checkout.png) |
+| Register | ![screenshot](documentation/wireframes/register-mobile.png) | ![screenshot](documentation/wireframes/register-tablet.png) | ![screenshot](documentation/wireframes/register-desktop.png) |
+| Login | ![screenshot](documentation/wireframes/login-mobile.png) | ![screenshot](documentation/wireframes/login-tablet.png) | ![screenshot](documentation/wireframes/login-desktop.png) |
+| Profile | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Home | ![screenshot](documentation/wireframes/home-mobile.png) | ![screenshot](documentation/wireframes/home-tablet.png) | ![screenshot](documentation/wireframes/home-desktop.png) |
+| Product Lists | ![screenshot](documentation/wireframes/browse-mobile.png) | ![screenshot](documentation/wireframes/browse-tablet.png) | ![screenshot](documentation/wireframes/browse-desktop.png) |
+| Product Details | ![screenshot](documentation/wireframes/product-mobile.png) | ![screenshot](documentation/wireframes/product-tablet.png) | ![screenshot](documentation/wireframes/product-desktop.png) |
+| Cart | ![screenshot](documentation/wireframes/cart-mobile.png) | ![screenshot](documentation/wireframes/cart-tablet.png) | ![screenshot](documentation/wireframes/cart-desktop.png) |
+| Checkout | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
 | Checkout Success | ![screenshot](documentation/wireframes/mobile-checkout-success.png) | ![screenshot](documentation/wireframes/tablet-checkout-success.png) | ![screenshot](documentation/wireframes/desktop-checkout-success.png) |
-| Add Product | ![screenshot](documentation/wireframes/mobile-add-product.png) | ![screenshot](documentation/wireframes/tablet-add-product.png) | ![screenshot](documentation/wireframes/desktop-add-product.png) |
-| Edit Product | ![screenshot](documentation/wireframes/mobile-edit-product.png) | ![screenshot](documentation/wireframes/tablet-edit-product.png) | ![screenshot](documentation/wireframes/desktop-edit-product.png) |
-| Newsletter | ![screenshot](documentation/wireframes/mobile-newsletter.png) | ![screenshot](documentation/wireframes/tablet-newsletter.png) | ![screenshot](documentation/wireframes/desktop-newsletter.png) |
-| Contact | ![screenshot](documentation/wireframes/mobile-contact.png) | ![screenshot](documentation/wireframes/tablet-contact.png) | ![screenshot](documentation/wireframes/desktop-contact.png) |
-| 404 | ![screenshot](documentation/wireframes/mobile-404.png) | ![screenshot](documentation/wireframes/tablet-404.png) | ![screenshot](documentation/wireframes/desktop-404.png) |
+| Order History | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Shop View | ![screenshot](documentation/wireframes/shop-mobile.png) | ![screenshot](documentation/wireframes/shop-tablet.png) | ![screenshot](documentation/wireframes/shop-desktop.png) |
+| Shop Settings | ![screenshot](documentation/wireframes/shop-settings-mobile.png) | ![screenshot](documentation/wireframes/shop-settings-tablet.png) | ![screenshot](documentation/wireframes/shop-settings-desktop.png) |
+| Add Product | ![screenshot](documentation/wireframes/add-product-mobile.png) | ![screenshot](documentation/wireframes/add-product-tablet.png) | ![screenshot](documentation/wireframes/add-product-desktop.png) |
+| Edit Product | ![screenshot](documentation/wireframes/edit-product-mobile.png) | ![screenshot](documentation/wireframes/edit-product-tablet.png) | ![screenshot](documentation/wireframes/edit-product-desktop.png) |
+| Seller Inventory | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Seller Alerts | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Seller Stats | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Admin Users | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Admin Reviews | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Admin Shops & Products | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Newsletter | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Contact | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| 404 | ![screenshot](documentation/wireframes/404-mobile.png) | ![screenshot](documentation/wireframes/404-tablet.png) | ![screenshot](documentation/wireframes/404-desktop.png) |
 
 ## User Stories
 
