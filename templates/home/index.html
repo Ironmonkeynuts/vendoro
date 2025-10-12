@@ -48,6 +48,8 @@
   </div>
 </section>
 
+{# Show newsletter subscribe form only if NOT subscribed (or not logged in) #}
+{% if not user.is_authenticated or not newsletter_subscribed %}
 <section class="py-5">
   <div class="container">
     <div class="row align-items-center g-4">
@@ -79,6 +81,5 @@
     </div>
   </div>
 </section>
-
+{% endif %}
 {% endblock %}
-
