@@ -123,6 +123,13 @@ class Order(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    stripe_checkout_session_id = models.CharField(
+        max_length=255, blank=True, null=True, db_index=True
+    )
+    stripe_payment_intent = models.CharField(
+        max_length=255, blank=True, null=True, db_index=True
+    )
+
     def __str__(self):
         return f"Order #{self.id} for {self.user or 'guest'}"
 
