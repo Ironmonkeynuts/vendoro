@@ -1,28 +1,52 @@
 {% extends "base.html" %}
+
+{% block title %}{{ shop.name }} — Shop{% endblock %}
+
 {% block content %}
-    <div class="p-3 mb-3 rounded" style="background: {{ shop.primary_color }}; color: #fff;">
-        <h2 class="m-0">{{ shop.name }}</h2>
-        <small style="color: {{ shop.highlight_color }}">{{ shop.tagline }}</small>
-    </div>
-    {% if request.user.is_authenticated and request.user.id == shop.owner_id %}
-        <a class="btn btn-primary btn-sm" href="{% url 'marketplace:product_create' shop.slug %}">
-            + Add product
-        </a>
+  {# Banner from prebuilt URL #}
+  {% if banner_url %}
+    <img
+      src="{{ banner_url }}"
+      alt="{{ shop.name }}"
+      class="w-100 d-block rounded object-fit-cover mb-3"
+      style="max-height:420px;"
+    >
+  {% endif %}
+
+  {# Brand header (keeps your colors visible even with/without banner) #}
+  <div class="p-3 mb-3 rounded"
+       style="background: {{ shop.primary_color|default:'#2b2b2b' }}; color: #fff;">
+    <h2 class="m-0">{{ shop.name }}</h2>
+    {% if shop.tagline %}
+      <small style="color: {{ shop.highlight_color|default:'#ffd24d' }}">
+        {{ shop.tagline }}
+      </small>
     {% endif %}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-        {% for p in products %}
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ p.title }}</h5>
-                        <p class="card-text">£{{ p.price }}</p>
-                        <a class="btn btn-sm btn-outline-primary" href="{% url 'marketplace:product_detail' shop_slug=shop.slug product_slug=p.slug %}">View</a>
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-            <p>No products yet.</p>
-        {% endfor %}
-    </div>
-    </div>
+  </div>
+
+  {% if request.user.is_authenticated and request.user.id == shop.owner_id %}
+    <a class="btn btn-primary btn-sm mb-3"
+       href="{% url 'marketplace:product_create' shop.slug %}">
+      + Add product
+    </a>
+  {% endif %}
+
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    {% for p in products %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ p.title }}</h5>
+            <p class="card-text">£{{ p.price }}</p>
+            <a class="btn btn-sm btn-outline-primary"
+               href="{% url 'marketplace:product_detail' shop_slug=shop.slug product_slug=p.slug %}">
+              View
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No products yet.</p>
+    {% endfor %}
+  </div>
 {% endblock %}

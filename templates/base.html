@@ -81,6 +81,8 @@
                   Sell
                 </a>
                 <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="{% url 'marketplace:seller_profile' %}">Seller Profile (Business & tax)</a></li>
+                  <li><hr class="dropdown-divider"></li>
                   {% if my_shops %}
                     {% url 'marketplace:seller' as seller_dash_url %}
                     {% if seller_dash_url %}

@@ -1,73 +1,151 @@
 {% extends "base.html" %}
-{% load cloudinary %}
+{% load cloudinary form_extras %}
+
+{% block title %}Shop Settings — {{ shop.name }}{% endblock %}
 
 {% block content %}
 <div class="container py-3" style="max-width: 980px;">
-  <h1 class="h4 mb-3">Shop Settings — {{ shop.name }}</h1>
+  <h1 class="h4 mb-4">Shop Settings — {{ shop.name }}</h1>
 
-  <form method="post" class="mb-4">
+  <form method="post" novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary">Save</button>
-    <a class="btn btn-outline-secondary" href="{% url 'marketplace:shop_detail' shop.slug %}">View</a>
+    {{ form.media }}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger mb-3">{{ form.non_field_errors }}</div>
+    {% endif %}
+    {% for h in form.hidden_fields %}{{ h }}{% endfor %}
+
+    {# BASIC INFO #}
+    <div class="card mb-3">
+      <div class="card-header bg-light"><strong>Basic info</strong></div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% if form.name %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.name.id_for_label }}">Name</label>
+            {{ form.name|add_class:"form-control" }}
+            {% for e in form.name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if form.tagline %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.tagline.id_for_label }}">Tagline</label>
+            {{ form.tagline|add_class:"form-control" }}
+            {% for e in form.tagline.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# BRANDING #}
+    <div class="card mb-3">
+      <div class="card-header bg-light"><strong>Branding</strong></div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% if form.primary_color %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.primary_color.id_for_label }}">Primary color</label>
+            {{ form.primary_color|add_class:"form-control" }}
+            {% for e in form.primary_color.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if form.highlight_color %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.highlight_color.id_for_label }}">Highlight color</label>
+            {{ form.highlight_color|add_class:"form-control" }}
+            {% for e in form.highlight_color.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if form.banner %}
+          <div class="col-12">
+            <label class="form-label" for="{{ form.banner.id_for_label }}">Banner</label>
+            {{ form.banner|add_class:"form-control" }}
+            <div class="form-text">Upload/choose a new banner. Recommended 1600×500 or larger.</div>
+            {% for e in form.banner.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# BUSINESS & TAX (OVERRIDES) #}
+    <div class="card mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <strong>Business &amp; tax (overrides)</strong>
+        <span class="text-muted small">Leave blank to use seller defaults</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% if form.legal_name_override %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.legal_name_override.id_for_label }}">Legal name</label>
+            {{ form.legal_name_override|add_class:"form-control" }}
+            {% if not shop.legal_name_override %}
+              <div class="form-text">Using seller defaults. Effective: <em>{{ shop.effective_legal_name }}</em></div>
+            {% endif %}
+            {% for e in form.legal_name_override.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if form.tax_id_override %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.tax_id_override.id_for_label }}">Tax ID</label>
+            {{ form.tax_id_override|add_class:"form-control" }}
+            {% if not shop.tax_id_override %}
+              <div class="form-text">Using seller defaults. Effective: <em>{{ shop.effective_tax_id }}</em></div>
+            {% endif %}
+            {% for e in form.tax_id_override.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if form.contact_email_override %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.contact_email_override.id_for_label }}">Contact email</label>
+            {{ form.contact_email_override|add_class:"form-control" }}
+            {% if not shop.contact_email_override %}
+              <div class="form-text">Using seller defaults. Effective: <em>{{ shop.effective_contact_email }}</em></div>
+            {% endif %}
+            {% for e in form.contact_email_override.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if form.contact_telephone_override %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.contact_telephone_override.id_for_label }}">Contact telephone</label>
+            {{ form.contact_telephone_override|add_class:"form-control" }}
+            {% if not shop.contact_telephone_override %}
+              <div class="form-text">Using seller defaults. Effective: <em>{{ shop.effective_contact_telephone }}</em></div>
+            {% endif %}
+            {% for e in form.contact_telephone_override.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-4">
+      <button class="btn btn-primary" type="submit">Save changes</button>
+      <a class="btn btn-outline-secondary" href="{% url 'marketplace:shop_detail' shop.slug %}">View shop</a>
+      <a class="btn btn-outline-secondary" href="{% url 'marketplace:seller' %}">Seller dashboard</a>
+    </div>
   </form>
 
-  <hr class="my-4"/>
-
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h2 class="h5 m-0">Banner</h2>
-    <button id="btn-banner" class="btn btn-outline-primary">Upload / Replace</button>
-  </div>
-
-  <div class="mb-3">
-    {% if shop.banner %}
-      {% cloudinary shop.banner width=1200 height=375 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=shop.name %}
-    {% else %}
-      <div class="alert alert-info">No banner yet. Upload one above.</div>
-    {% endif %}
+  {# CURRENT BANNER PREVIEW (responsive) #}
+  <div class="card">
+    <div class="card-header bg-light"><strong>Current banner</strong></div>
+    <div class="card-body">
+      {% if shop.banner %}
+        {# Responsive preview: fills container width; height scales automatically #}
+        {% cloudinary shop.banner width=1600 crop="fill" gravity="auto" fetch_format="auto" quality="auto" class="img-fluid w-100 rounded border" alt=shop.name %}
+        <div class="form-text mt-2">Shown full-width; recommended source ratio ~3.2:1 (e.g. 1600×500).</div>
+      {% else %}
+        <div class="alert alert-info mb-0">No banner set yet. Use the Banner field above to add one.</div>
+      {% endif %}
+    </div>
   </div>
 </div>
-
-{# If not already included in base.html, include once here #}
-<script src="https://widget.cloudinary.com/v2.0/global/all.js" defer></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const cloudName = "{{ CLOUDINARY_CLOUD_NAME }}";
-  const apiKey = "{{ CLOUDINARY_API_KEY }}";
-  const signUrl = "{% url 'marketplace:cloudinary_sign' %}";
-  const updateUrl = "{% url 'marketplace:shop_banner_update' shop.slug %}";
-
-  function getCookie(name){
-    const m=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
-    return m?m.pop():'';
-  }
-
-  const widget = cloudinary.createUploadWidget({
-    cloudName,
-    apiKey,
-    uploadSignature: async (cb, params) => {
-      const res = await fetch(`${signUrl}?` + new URLSearchParams(params), { credentials:'same-origin' });
-      cb((await res.json()).signature);
-    },
-    folder: 'vendoro/shop_banners',
-    multiple: false,
-    clientAllowedFormats: ['png','jpg','jpeg','webp'],
-    maxFileSize: 8_000_000
-  }, async (error, result) => {
-    if (!error && result && result.event === 'success') {
-      const info = result.info;
-      await fetch(updateUrl, {
-        method: 'POST',
-        headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type':'application/json'},
-        body: JSON.stringify({ public_id: info.public_id })
-      });
-      location.reload();
-    }
-  });
-
-  const btn = document.getElementById('btn-banner');
-  if (btn) btn.addEventListener('click', () => widget.open());
-});
-</script>
 {% endblock %}

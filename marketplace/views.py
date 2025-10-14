@@ -317,6 +317,40 @@ def shop_create(request):
     return render(request, "marketplace/shop_create.html", {"form": form})
 
 
+def _shop_banner_url(shop, *, width=1600, height=420):
+    """
+    Return a transformed Cloudinary URL for the shop banner if possible.
+    Works with CloudinaryField (public_id) and django-cloudinary-storage (name).
+    Falls back to the storage URL if transformation isn't possible.
+    """
+    if not getattr(shop, "banner", None):
+        return None
+
+    # Try to get something we can hand to cloudinary_url
+    public_id = (
+        getattr(shop.banner, "public_id", None)  # CloudinaryField
+        or getattr(shop.banner, "name", None)    # django-cloudinary-storage path
+        or str(shop.banner)                       # last resort
+    )
+
+    try:
+        url, _ = cloudinary_url(
+            public_id,
+            width=width,
+            height=height,
+            crop="fill",
+            gravity="auto",
+            fetch_format="auto",
+            quality="auto",
+        )
+        return url
+    except Exception:
+        # Fallback to the raw file URL (no transforms)
+        try:
+            return shop.banner.url
+        except Exception:
+            return None
+
 
 def shop_detail(request, slug):
     """
