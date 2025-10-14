@@ -75,6 +75,8 @@ class StripeWH_Handler:
                 cart.active = False
                 cart.save(update_fields=["active"])
             except Cart.DoesNotExist:
-                logger.info("Webhook: cart %s not found (already cleared?)", cart_id)
-
+                logger.info(
+                    "Webhook: cart %s not found (already cleared?)", cart_id
+                )
+                
         return HttpResponse("OK", status=200)

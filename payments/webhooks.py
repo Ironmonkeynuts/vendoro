@@ -12,6 +12,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @require_POST
 @csrf_exempt
 def webhook(request):
@@ -22,7 +23,10 @@ def webhook(request):
         or getattr(settings, "STRIPE_WEBHOOK_SECRET", None)
     )
     if not wh_secret:
-        logger.error("Stripe webhook error: no signing secret set (STRIPE_WH_SECRET / STRIPE_WEBHOOK_SECRET).")
+        logger.error(
+            "Stripe webhook error: no signing secret set "
+            "(STRIPE_WH_SECRET / STRIPE_WEBHOOK_SECRET)."
+        )
         return HttpResponse("Server misconfigured", status=500)
 
     # Not strictly required for verification, but fine to set
@@ -40,7 +44,7 @@ def webhook(request):
         return HttpResponse("Invalid signature", status=400)
     except Exception as e:
         logger.exception("Webhook verification error")
-        return HttpResponse("Webhook error", status=400)
+        return HttpResponse("Webhook error", e, status=400)
 
     evt_type = event.get("type")
     evt_id = event.get("id")
@@ -48,11 +52,13 @@ def webhook(request):
 
     handler = StripeWH_Handler(request)
 
-    # Map the events you actually handle; everything else falls back to generic 200
     event_map = {
-        "checkout.session.completed": handler.handle_checkout_session_completed,
-        "payment_intent.succeeded": handler.handle_payment_intent_succeeded,
-        "payment_intent.payment_failed": handler.handle_payment_intent_payment_failed,
+        "checkout.session.completed":
+            handler.handle_checkout_session_completed,
+        "payment_intent.succeeded":
+            handler.handle_payment_intent_succeeded,
+        "payment_intent.payment_failed":
+            handler.handle_payment_intent_payment_failed,
     }
 
     event_handler = event_map.get(evt_type, handler.handle_event)
@@ -60,6 +66,13 @@ def webhook(request):
     try:
         return event_handler(event)
     except Exception:
-        # Never bubble exceptions to Stripe; log and return 200 so Stripe doesn't keep retrying forever
-        logger.exception("Exception while handling webhook type=%s id=%s", evt_type, evt_id)
-        return HttpResponse("Handled with internal error (see logs)", status=200)
+        # Never bubble exceptions to Stripe;
+        # log and return 200 so Stripe doesn't keep retrying forever
+        logger.exception(
+            "Exception while handling webhook type=%s id=%s",
+            evt_type,
+            evt_id,
+        )
+        return HttpResponse(
+            "Handled with internal error (see logs)", status=200
+        )
