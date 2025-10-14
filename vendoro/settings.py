@@ -272,10 +272,10 @@ cloudinary.config(
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Stripe settings
-STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", default="")
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", default="")
-STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", default="")
-STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", default="gbp")
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WH_SECRET = os.environ.get("STRIPE_WH_SECRET", "")
+STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", "gbp")
 
 # Logging
 DEBUG_PROPAGATE_EXCEPTIONS = os.getenv(
