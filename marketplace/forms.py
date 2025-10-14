@@ -2,6 +2,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import Product, Shop, ProductReview, ReviewReply
+from users.models import SellerProfile
 
 
 class ProductForm(forms.ModelForm):
@@ -45,7 +46,30 @@ class ShopForm(forms.ModelForm):
 
     class Meta:
         model = Shop
-        fields = ["name", "tagline", "primary_color", "highlight_color"]
+        fields = [
+            "name", "tagline", "primary_color", "highlight_color",
+            "legal_name_override", "tax_id_override", "contact_email_override",
+            "contact_telephone_override", "banner"
+        ]
+        widgets = {
+            "tagline": forms.TextInput(
+                attrs={"placeholder": "Best products online!"}
+            ),
+            "primary_color": forms.TextInput(attrs={"type": "color"}),
+            "highlight_color": forms.TextInput(attrs={"type": "color"}),
+            "legal_name_override": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+            "tax_id_override": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+            "contact_email_override": forms.EmailInput(
+                attrs={"class": "form-control"}
+            ),
+            "contact_telephone_override": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+        }
 
     def clean_name(self):
         name = (self.cleaned_data.get("name") or "").strip()
@@ -55,6 +79,20 @@ class ShopForm(forms.ModelForm):
         ).exclude(pk=self.instance.pk).exists():
             raise ValidationError("You already have a shop with this name.")
         return name
+
+
+class SellerProfileForm(forms.ModelForm):
+    class Meta:
+        model = SellerProfile
+        fields = ["legal_name", "tax_id", "contact_email", "contact_telephone"]
+        widgets = {
+            "legal_name": forms.TextInput(attrs={"class": "form-control"}),
+            "tax_id": forms.TextInput(attrs={"class": "form-control"}),
+            "contact_email": forms.EmailInput(attrs={"class": "form-control"}),
+            "contact_telephone": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+        }
 
 
 class ProductReviewForm(forms.ModelForm):

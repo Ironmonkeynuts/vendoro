@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Seller Profile — Vendoro{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 760px;">
+  <h1 class="h4 mb-3">Seller Profile (Business &amp; tax defaults)</h1>
+  <p class="text-muted">These act as defaults for your shops. You can override per shop in Shop Settings.</p>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="card">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Legal name</label>
+          {{ form.legal_name }}
+          {{ form.legal_name.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Tax ID</label>
+          {{ form.tax_id }}
+          {{ form.tax_id.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contact email</label>
+          {{ form.contact_email }}
+          {{ form.contact_email.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contact telephone</label>
+          {{ form.contact_telephone }}
+          {{ form.contact_telephone.errors }}
+        </div>
+      </div>
+      <div class="card-footer d-flex gap-2 justify-content-end">
+        <a class="btn btn-outline-secondary" href="{% url 'marketplace:seller' %}">Cancel</a>
+        <button class="btn btn-primary" type="submit">Save changes</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

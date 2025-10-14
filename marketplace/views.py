@@ -21,7 +21,7 @@ from django.views.decorators.http import (
     require_POST, require_http_methods
 )
 from django.views.generic import ListView
-from cloudinary.utils import api_sign_request
+from cloudinary.utils import api_sign_request, cloudinary_url
 from cloudinary.uploader import destroy as cl_destroy
 from decimal import Decimal
 from datetime import datetime, time
@@ -33,7 +33,8 @@ from .models import (
     Category
 )
 from orders.models import OrderItem
-from .forms import ProductForm, ShopForm, ProductReviewForm
+from users.models import SellerProfile
+from .forms import ProductForm, ShopForm, ProductReviewForm, SellerProfileForm
 
 
 # --- shared range parser (seller-side) ---
@@ -269,6 +270,24 @@ def product_detail(request, shop_slug, product_slug):
 
 
 @login_required
+def seller_profile(request):
+    # Ensure SellerProfile exists
+    sp, _ = SellerProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = SellerProfileForm(request.POST, instance=sp)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Seller profile updated.")
+            return redirect("marketplace:seller_profile")
+        messages.error(request, "Please correct the errors below.")
+    else:
+        form = SellerProfileForm(instance=sp)
+
+    return render(request, "marketplace/seller_profile.html", {"form": form})
+
+
+@login_required
 def shop_create(request):
     """
     Create a new shop (owner = request.user),
@@ -298,16 +317,24 @@ def shop_create(request):
     return render(request, "marketplace/shop_create.html", {"form": form})
 
 
+
 def shop_detail(request, slug):
     """
     Display the details of a specific shop.
     """
     shop = get_object_or_404(Shop, slug=slug)
-    # shop.products is the reverse ForeignKey from Product model
     products = shop.products.filter(is_active=True).order_by("-created_at")
+
+    banner_url = _shop_banner_url(shop)
+
     return render(
-        request, "marketplace/shop_detail.html",
-        {"shop": shop, "products": products}
+        request,
+        "marketplace/shop_detail.html",
+        {
+            "shop": shop,
+            "products": products,
+            "banner_url": banner_url,
+        },
     )
 
 

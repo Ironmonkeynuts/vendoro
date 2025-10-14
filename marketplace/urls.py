@@ -77,4 +77,5 @@ urlpatterns = [
         views.review_add,
         name="review_add",
     ),
+    path("seller/profile/", views.seller_profile, name="seller_profile"),
 ]
