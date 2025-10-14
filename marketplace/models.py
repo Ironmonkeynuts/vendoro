@@ -24,6 +24,43 @@ class Shop(models.Model):
         blank=True,
         null=True
     )
+    # overrides (all optional)
+    legal_name_override = models.CharField(max_length=200, blank=True)
+    tax_id_override = models.CharField(max_length=32, blank=True)
+    contact_email_override = models.EmailField(max_length=255, blank=True)
+    contact_telephone_override = models.CharField(max_length=32, blank=True)
+
+    @property
+    def effective_legal_name(self):
+        if self.legal_name_override:
+            return self.legal_name_override
+        sp = getattr(self.owner, "seller_profile", None)
+        return sp.legal_name if sp and sp.legal_name else ""
+
+    @property
+    def effective_tax_id(self):
+        if self.tax_id_override:
+            return self.tax_id_override
+        sp = getattr(self.owner, "seller_profile", None)
+        return sp.tax_id if sp and sp.tax_id else ""
+
+    @property
+    def effective_contact_email(self):
+        if self.contact_email_override:
+            return self.contact_email_override
+        sp = getattr(self.owner, "seller_profile", None)
+        return (
+            sp.contact_email
+            if sp and sp.contact_email
+            else self.owner.email
+        )
+
+    @property
+    def effective_contact_telephone(self):
+        if self.contact_telephone_override:
+            return self.contact_telephone_override
+        sp = getattr(self.owner, "seller_profile", None)
+        return sp.contact_telephone if sp and sp.contact_telephone else ""
 
     class Meta:
         unique_together = ('owner', 'name')
