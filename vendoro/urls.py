@@ -1,13 +1,14 @@
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
 from django.urls import path, include, re_path
 from django.views.defaults import page_not_found as django_page_not_found
 from django.views.generic import RedirectView
+
+from home import views as home_views
 from home.views import index, contact
 from allauth.account.decorators import verified_email_required
-from django.http import HttpResponse
-from home import views as home_views
 
 handler404 = "home.views.error_404"
 
@@ -20,6 +21,7 @@ def verified(_):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
+    path("account/", include(("users.urls", "users"), namespace="users")),
     path("protected/", verified, name="verified"),
     path("", index, name="home"),
     path("home/", index, name="home_alt"),
@@ -60,7 +62,7 @@ urlpatterns = [
             namespace="admintools"
         )
     ),
-        path(
+    path(
         "newsletter/",
         home_views.newsletter_manage,
         name="newsletter_manage"

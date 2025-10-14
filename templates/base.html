@@ -175,6 +175,7 @@
                   {{ user.get_full_name|default:user.username }}
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="{% url 'users:profile' %}">Profile</a></li>
                   {% url 'orders:my_orders' as my_orders_url %}
                   {% if my_orders_url %}
                     <li><a class="dropdown-item" href="{{ my_orders_url }}">My orders</a></li>

@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile - Vendoro{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">My profile</h1>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="h5">Account</h2>
+          <div class="mb-3">
+            <label class="form-label" for="{{ uform.first_name.id_for_label }}">First name</label>
+            {{ uform.first_name }}
+            {% for e in uform.first_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ uform.last_name.id_for_label }}">Last name</label>
+            {{ uform.last_name }}
+            {% for e in uform.last_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <p class="text-muted small mb-0">Email changes are managed via
+            <a href="{% url 'account_email' %}">Account Email</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h5">Default delivery address</h2>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Display name</label>
+              {{ pform.display_name }}
+              {% for e in pform.display_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Telephone</label>
+              {{ pform.default_shipping_telephone }}
+              {% for e in pform.default_shipping_telephone.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              {{ pform.default_shipping_email }}
+              {% for e in pform.default_shipping_email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Address line 1</label>
+              {{ pform.default_shipping_address1 }}
+              {% for e in pform.default_shipping_address1.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Address line 2</label>
+              {{ pform.default_shipping_address2 }}
+              {% for e in pform.default_shipping_address2.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              {{ pform.default_shipping_city }}
+              {% for e in pform.default_shipping_city.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Postcode</label>
+              {{ pform.default_shipping_postcode }}
+              {% for e in pform.default_shipping_postcode.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Country</label>
+              {{ pform.default_shipping_country }}
+              {% for e in pform.default_shipping_country.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h5">Billing address</h2>
+
+          <div class="form-check mb-3">
+            {{ pform.billing_same_as_shipping }}
+            <label class="form-check-label" for="{{ pform.billing_same_as_shipping.id_for_label }}">
+              Billing address is the same as delivery
+            </label>
+          </div>
+
+          <div id="billingFields" class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Telephone</label>
+              {{ pform.default_billing_telephone }}
+              {% for e in pform.default_billing_telephone.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              {{ pform.default_billing_email }}
+              {% for e in pform.default_billing_email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Address line 1</label>
+              {{ pform.default_billing_address1 }}
+              {% for e in pform.default_billing_address1.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Address line 2</label>
+              {{ pform.default_billing_address2 }}
+              {% for e in pform.default_billing_address2.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              {{ pform.default_billing_city }}
+              {% for e in pform.default_billing_city.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Postcode</label>
+              {{ pform.default_billing_postcode }}
+              {% for e in pform.default_billing_postcode.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Country</label>
+              {{ pform.default_billing_country }}
+              {% for e in pform.default_billing_country.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="form-check">
+            {{ pform.marketing_opt_in }}
+            <label class="form-check-label" for="{{ pform.marketing_opt_in.id_for_label }}">
+              I’d like to receive updates & offers
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% block extra_js %}
+<script>
+  // Toggle billing fields visibility
+  (function() {
+    const cb = document.getElementById("{{ pform.billing_same_as_shipping.id_for_label }}");
+    const wrap = document.getElementById("billingFields");
+    function sync() { wrap.style.display = cb.checked ? "none" : ""; }
+    if (cb && wrap) {
+      cb.addEventListener("change", sync);
+      sync();
+    }
+  })();
+</script>
+{% endblock %}
+{% endblock %}

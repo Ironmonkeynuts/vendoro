@@ -29,6 +29,7 @@ class BuyerProfile(models.Model):
         'users.User', on_delete=models.CASCADE, related_name='buyer_profile'
     )
     display_name = models.CharField(max_length=120, blank=True)
+    # Default shipping (delivery) details
     default_shipping_email = models.EmailField(max_length=255, blank=True)
     default_shipping_telephone = models.CharField(max_length=20, blank=True)
     default_shipping_address1 = models.TextField(max_length=255, blank=True)
@@ -37,6 +38,20 @@ class BuyerProfile(models.Model):
     default_shipping_postcode = models.CharField(max_length=20, blank=True)
     default_shipping_country = models.CharField(max_length=120, blank=True)
     marketing_opt_in = models.BooleanField(default=False)
+
+    # Billing details
+    billing_same_as_shipping = models.BooleanField(default=True)
+
+    default_billing_email = models.EmailField(max_length=255, blank=True)
+    default_billing_telephone = models.CharField(max_length=20, blank=True)
+    default_billing_address1 = models.TextField(max_length=255, blank=True)
+    default_billing_address2 = models.TextField(max_length=255, blank=True)
+    default_billing_city = models.CharField(max_length=120, blank=True)
+    default_billing_postcode = models.CharField(max_length=20, blank=True)
+    default_billing_country = models.CharField(max_length=120, blank=True)
+
+    def __str__(self):
+        return f"BuyerProfile for {self.user.username}"
 
 
 class SellerProfile(models.Model):
