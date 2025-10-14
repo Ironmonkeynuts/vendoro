@@ -91,7 +91,7 @@ source: [vendoro amiresponsive](https://ui.dev/amiresponsive?url=https://imn-ven
 2. Guest user adds items to the cart → proceeds to checkout.
 3. Guest user creates an account or logs in during checkout → completes purchase.
 4. Returning customers log in → view past orders and track purchase history.
-5. Site owners manage inventory → add, update, or delete products and categories.
+5. Shop owners manage inventory → add, update, or delete products and categories.
 6. Users signup to the newsletter → potentially receive advanced notice of upcoming sales.
 
 #### 4. Skeleton
@@ -225,8 +225,8 @@ In this section, you should go over the different parts of your project, and des
 | Logout | Authentication is handled by allauth, allowing users to log out of their accounts. | ![screenshot](documentation/features/logout.png) |
 | Product List | Users can browse all available products with sorting, filtering by categories, and search functionality. | ![screenshot](documentation/features/product-list.png) |
 | Product Details | Displays detailed information about a selected product, including its name, description, price, an image, and available sizes. | ![screenshot](documentation/features/product-details.png) |
-| Add to Bag | Users can add items to their shopping bag, with support for selecting different sizes if applicable. | ![screenshot](documentation/features/add-to-bag.png) |
-| View Bag | Users can view the contents of their shopping bag, adjust quantities, or remove items. | ![screenshot](documentation/features/view-bag.png) |
+| Add to Cart | Users can add items to their shopping cart, with support for selecting different sizes if applicable. | ![screenshot](documentation/features/add-to-bag.png) |
+| View Cart | Users can view the contents of their shopping cart, adjust quantities, or remove items. | ![screenshot](documentation/features/view-bag.png) |
 | Checkout | Users can proceed to checkout, where they provide their delivery details and payment information using Stripe integration. | ![screenshot](documentation/features/checkout.png) |
 | Order Confirmation | Users receive an on-screen and email confirmation with details of their purchase. | ![screenshot](documentation/features/order-confirmation.png) |
 | Profile Management | Users can manage their profile information, including their default delivery address and order history. | ![screenshot](documentation/features/profile-management.png) |
