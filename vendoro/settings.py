@@ -21,7 +21,7 @@ DEBUG = os.environ.get("DEBUG", "1") == "1"
 
 ALLOWED_HOSTS = []
 CSRF_TRUSTED_ORIGINS = []
-host = os.env.get("ALLOWED_HOSTS")
+host = os.environ.get("ALLOWED_HOSTS")
 if host:
     ALLOWED_HOSTS.append(host)
     CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
