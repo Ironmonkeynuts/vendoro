@@ -91,7 +91,7 @@ source: [vendoro amiresponsive](https://ui.dev/amiresponsive?url=https://imn-ven
 2. Guest user adds items to the cart → proceeds to checkout.
 3. Guest user creates an account or logs in during checkout → completes purchase.
 4. Returning customers log in → view past orders and track purchase history.
-5. Shop owners manage inventory → add, update, or delete products and categories.
+5. Site owners manage inventory → add, update, or delete products and categories.
 6. Users signup to the newsletter → potentially receive advanced notice of upcoming sales.
 
 #### 4. Skeleton
@@ -225,8 +225,8 @@ In this section, you should go over the different parts of your project, and des
 | Logout | Authentication is handled by allauth, allowing users to log out of their accounts. | ![screenshot](documentation/features/logout.png) |
 | Product List | Users can browse all available products with sorting, filtering by categories, and search functionality. | ![screenshot](documentation/features/product-list.png) |
 | Product Details | Displays detailed information about a selected product, including its name, description, price, an image, and available sizes. | ![screenshot](documentation/features/product-details.png) |
-| Add to Cart | Users can add items to their shopping cart, with support for selecting different sizes if applicable. | ![screenshot](documentation/features/add-to-bag.png) |
-| View Cart | Users can view the contents of their shopping cart, adjust quantities, or remove items. | ![screenshot](documentation/features/view-bag.png) |
+| Add to Bag | Users can add items to their shopping bag, with support for selecting different sizes if applicable. | ![screenshot](documentation/features/add-to-bag.png) |
+| View Bag | Users can view the contents of their shopping bag, adjust quantities, or remove items. | ![screenshot](documentation/features/view-bag.png) |
 | Checkout | Users can proceed to checkout, where they provide their delivery details and payment information using Stripe integration. | ![screenshot](documentation/features/checkout.png) |
 | Order Confirmation | Users receive an on-screen and email confirmation with details of their purchase. | ![screenshot](documentation/features/order-confirmation.png) |
 | Profile Management | Users can manage their profile information, including their default delivery address and order history. | ![screenshot](documentation/features/profile-management.png) |
@@ -291,6 +291,9 @@ A few examples are listed below to align with possible ways to improve on the sa
 | [![badge](https://img.shields.io/badge/Balsamiq-grey?logo=barmenia&logoColor=CE0908)](https://balsamiq.com/wireframes) | Creating wireframes. |
 | [![badge](https://img.shields.io/badge/Font_Awesome-grey?logo=fontawesome&logoColor=528DD7)](https://fontawesome.com) | Icons. |
 | [![badge](https://img.shields.io/badge/ChatGPT-grey?logo=openai&logoColor=75A99C)](https://chat.openai.com) | Help debug, troubleshoot, and explain things. |
+| [![badge](https://img.shields.io/badge/Mermaid-grey?logo=mermaid&logoColor=FF3670)](https://mermaid.live) | Generate an interactive diagram for the data/schema. |
+| [![badge](https://img.shields.io/badge/W3Schools-grey?logo=w3schools&logoColor=04AA6D)](https://www.w3schools.com) | Tutorials/Reference Guide |
+| [![badge](https://img.shields.io/badge/StackOverflow-grey?logo=stackoverflow&logoColor=F58025)](https://stackoverflow.com) | Troubleshooting and Debugging |
 
 ⚠️ NOTE ⚠️
 
@@ -332,98 +335,177 @@ I have used `Mermaid` to generate an interactive ERD of my project.
 
 ```mermaid
 erDiagram
-    User {
-        int id PK
-        varchar username
-        varchar email
-        varchar password
-    }
+  USERS_USER {
+    int id
+    string username
+    string email
+    string user_type
+  }
 
-    UserProfile {
-        int id PK
-        varchar default_phone_number
-        varchar default_street_address1
-        varchar default_street_address2
-        varchar default_town_or_city
-        varchar default_county
-        varchar default_postcode
-        varchar default_country
-    }
+  USERS_BUYERPROFILE {
+    int id
+    int user_id
+    string display_name
+    string default_shipping_email
+    string default_shipping_telephone
+    text default_shipping_address1
+    text default_shipping_address2
+    string default_shipping_city
+    string default_shipping_postcode
+    string default_shipping_country
+    boolean marketing_opt_in
+    boolean billing_same_as_shipping
+    string default_billing_email
+    string default_billing_telephone
+    text default_billing_address1
+    text default_billing_address2
+    string default_billing_city
+    string default_billing_postcode
+    string default_billing_country
+  }
 
-    User ||--|| UserProfile : has_one
+  USERS_SELLERPROFILE {
+    int id
+    int user_id
+    string legal_name
+    string tax_id
+    string contact_email
+    string contact_telephone
+  }
 
-    Category {
-        int id PK
-        varchar name
-        varchar friendly_name
-    }
+  MARKETPLACE_SHOP {
+    int id
+    int owner_id
+    string name
+    string slug
+    string tagline
+    string primary_color
+    string highlight_color
+    string banner
+    string legal_name_override
+    string tax_id_override
+    string contact_email_override
+    string contact_telephone_override
+  }
 
-    Product {
-        int id PK
-        varchar sku
-        varchar name
-        text description
-        bool has_sizes
-        decimal price
-        decimal rating
-        varchar image_url
-        image image
-    }
+  MARKETPLACE_CATEGORY {
+    int id
+    string name
+    string slug
+  }
 
-    Product ||--o| Category : belongs_to
+  MARKETPLACE_PRODUCT {
+    int id
+    int shop_id
+    string title
+    string slug
+    text description
+    int category_id
+    decimal price
+    boolean is_active
+    datetime created_at
+    datetime updated_at
+  }
 
-    Order {
-        int id PK
-        varchar order_number
-        varchar full_name
-        varchar email
-        varchar phone_number
-        varchar country
-        varchar postcode
-        varchar town_or_city
-        varchar street_address1
-        varchar street_address2
-        varchar county
-        datetime date
-        decimal delivery_cost
-        decimal order_total
-        decimal grand_total
-        text original_bag
-        varchar stripe_pid
-    }
+  MARKETPLACE_PRODUCTIMAGE {
+    int id
+    int product_id
+    string image
+    string alt_text
+  }
 
-    OrderLineItem {
-        int id PK
-        int quantity
-        decimal lineitem_total
-        varchar product_size
-    }
+  MARKETPLACE_INVENTORY {
+    int id
+    int product_id
+    int quantity
+    int low_stock_threshold
+    datetime updated_at
+  }
 
-    Order ||--o| OrderLineItem : has_many
-    OrderLineItem ||--o| Product : belongs_to
+  MARKETPLACE_PRODUCTREVIEW {
+    int id
+    int product_id
+    int user_id
+    int rating
+    text comment
+    boolean is_public
+    datetime created_at
+  }
 
-    Order ||--o| UserProfile : belongs_to
+  MARKETPLACE_REVIEWREPLY {
+    int id
+    int review_id
+    int responder_id
+    text body
+    datetime created_at
+  }
 
-    Newsletter {
-        int id PK
-        varchar email
-    }
+  ORDERS_CART {
+    int id
+    int user_id
+    boolean active
+    datetime created_at
+  }
 
-    Contact {
-        int id PK
-        varchar name
-        varchar email
-        text message
-    }
+  ORDERS_CARTITEM {
+    int id
+    int cart_id
+    int product_id
+    int quantity
+  }
 
-    FAQ {
-        int id PK
-        varchar question
-        text answer
-    }
+  ORDERS_ORDER {
+    int id
+    int user_id
+    int shop_id
+    decimal total_amount
+    string status
+    string fulfillment_status
+    datetime created_at
+    string stripe_checkout_session_id
+    string stripe_payment_intent
+  }
+
+  ORDERS_ORDERITEM {
+    int id
+    int order_id
+    int product_id
+    decimal unit_price
+    int quantity
+  }
+
+  HOME_NEWSLETTERSUBSCRIPTION {
+    int id
+    int user_id
+    string email
+    boolean is_active
+    string token
+    datetime created_at
+    datetime updated_at
+  }
+
+  USERS_USER ||--o| USERS_BUYERPROFILE : has
+  USERS_USER ||--o| USERS_SELLERPROFILE : has
+  USERS_USER ||--o{ MARKETPLACE_SHOP : owns
+  MARKETPLACE_SHOP ||--o{ MARKETPLACE_PRODUCT : lists
+  MARKETPLACE_CATEGORY ||--o{ MARKETPLACE_PRODUCT : categorizes
+  MARKETPLACE_PRODUCT ||--o{ MARKETPLACE_PRODUCTIMAGE : has
+  MARKETPLACE_PRODUCT ||--|| MARKETPLACE_INVENTORY : has_one
+  USERS_USER ||--o{ ORDERS_CART : has
+  ORDERS_CART ||--o{ ORDERS_CARTITEM : contains
+  MARKETPLACE_PRODUCT ||--o{ ORDERS_CARTITEM : in_carts
+  USERS_USER ||--o{ ORDERS_ORDER : places
+  MARKETPLACE_SHOP ||--o{ ORDERS_ORDER : receives
+  ORDERS_ORDER ||--o{ ORDERS_ORDERITEM : includes
+  MARKETPLACE_PRODUCT ||--o{ ORDERS_ORDERITEM : ordered_as
+  USERS_USER ||--o{ MARKETPLACE_PRODUCTREVIEW : writes
+  MARKETPLACE_PRODUCT ||--o{ MARKETPLACE_PRODUCTREVIEW : reviewed
+  MARKETPLACE_PRODUCTREVIEW ||--|| MARKETPLACE_REVIEWREPLY : reply
+  USERS_USER ||--o{ MARKETPLACE_REVIEWREPLY : responds
+  USERS_USER ||--o{ HOME_NEWSLETTERSUBSCRIPTION : subscribes
 ```
 
-source: [Mermaid](https://mermaid.live/edit#pako:eNqVVcFu2zAM_RVD57RIHLdpfRs6DBg2bB2GXYYAhmIxjlBZcimqqdvk3yfbSVPHceP5kBh8TyRFPtKvLDUCWMwAP0ueIc_nOvDPHwsYvDbv1SM1BVIE998OpieO6Ypj4DxV8xy6CORcqq654NauDYoG2c71IeQ9mqVUMDCygCV3ipJiZTQk2uULwH6WJQSghAuBYO1kKDHsJ5JZ68Rgkkoq-1mpcfojvDCWqiac8YDliXoFm83FxWbTql0crLhNfEX2xDtOkBksB1b1dC-XKEELVSYH-C0TH1m4lAb6tw_uXFCCZ_K3tynKgqTRB2RhjKrvZ-UL2INdQCpzroICZQpdM3KSOuuG9WAGicN3Kq1NzW_PNauam82hrHGwAGV0Zr0g9tyfKAYPkKm4vfJdOqWS_5uvD8ehJabWsV4dfqzzs3N1dp6OJ0T4ypLMoX7pNlOAkk-ApZ8LS124KScZ4qoL-g2nxTFYy82gzKTmKlnw7OQdZAFJIY-3Vt3o71LDV4L8TMMr06Pjmlp13KemvBPpnRxn99afRn618k8lsddlO6NmG-Rcl6fy3R3ZK7tfyTtie890yT9gbRUQDdb-Owm_3ebOaOKD18mg0ag7nHv1daf6y6dfAyM9OrDtbVS75dqu94O2ZSOWA_rgwn9Ta7dzRivwKbLYvwqOD3M21xWPOzK_S52ymNDBiLmikvvuK8ziJVfWWwuuWfzKnlk8jSaXN9ez8HoyHc_C8TiajVjJ4ovp5XUUTqMovLqdXd2Et-FsO2Ivxngfk8vxZBpGkT_m_zxW-_tbY01QNC5b7YJt_wE0ZoQj)
+source: [Mermaid](https://mermaid.live/edit#pako:eNqlWG1v2joU_itRPrOqBApdvjGabehCQYFu2hVSZBI3serYubbTlpX-92sHkubNKes-lAb7vD7n-DkOL6ZPA2jaJmQ3CIQMxFtiGHdrx1176tN4Ud8NAxFhoOD4zAVDJDRSDhkBMawswhgg3BDzxD7J5F635M3-l7tfjrtyl19nc6fNj3rOtGuOA8QTDPZew3kA70GKhccjlCRywWtG0xAREMMkouRkScBn0RQCQcAg5_0zZKxudz4S-26JhHKhavKOHZoSwU6mdpRiCIgRA_YAhdqmifAQqe7uEMZqj0vYPMALW62OcmE9grlEF4C5TAd-NRGr05cWvVygE7zCyht2lX5cO_P5hxoSwxDgZjsK8FyX9CkRwBctsOY7FThP4S0m7j_OZjWfTB1v_X250sVGn0gzuEZYHKdhLc5Q4lIVShiS3bSXWGHKKjsRCiMs_0TL3g4QGYEGG48-QsZQ0AZS-14FrW6RAraKWAt-08nG-bZ0f3UQmxaxFnOyW27uphtdRXhEk3pBBBJYV5HT0eA-Q4lAlLxZ8oGAIZUVya0F0JclwqpSPqyedMQ9iQl6PC0HUlWgGBo-g_Ix8ICobaRJUNrQpzlbTL5pT0bCaJDKUtTSlUGG1XQBVvV61vma3f5wbjeaErU5Umv_pYCIgh3UCqZPHhfUf_BEJJklojj4YNau82Pm_PyTaCokoRYYEAXTZjX2aRxDIhp1S9IdRn5n3VoCPUboOqu5FjQGHxF8qgYFeUJJUAo1C21Hg_05ASzdG8Wa04m7OYss8yzPaM2mh9nGWei8-IBV4X-vQarms39nZdA40fkZFFRIkgOxGizVky2ASHll6T7F93IQqep75W3tKS1MSU6Anh9B_4GmUldOS8kQ9eN2EkvAPvMgQz61WUvSXaBSFtQyr6OaJ58SJLwSC2nQ_r5cON6t83M9dzYbGcLdl_XUna02s-Xtn8za0uTU0F1Os_QBkr8iwNIt-HD49Ike2u6tthEB3iVdvVVoxV-aU95WA523XgBaVPJJZBsYccG1c69T9TRl0G_IdZNOr3-cDkWGOuXDQUP3maZ3uvo08SnzTeGkvNiUyxrcPl4SEHkvpaYiIp4iF94Z0JE_bEO-k_iws1w1BQZ9KLuWN7ioRbwIyMdpAM_MpKyZnWfV4Wd0X3Xu2cYTQ-IjDVEYOA4fGHQP2JbmKA82ZSbB-_fDrytlU06Tdhcr2QZPd-oqtlPJmz0zlPdK0xYshT0zhkwykfxqZuS1NUUE5bXRtOVjIN_DtuaWvEqdBJB_KY1zNUbTMDLte4C5_HakndOLd7EKUkHXe-LnOtKEab-Yz6Y9uLIuBuPx9di6GljWaDy66pl70x5ZF5fWaGR9HvaHw8Hwuv_aM39nTi8vxsPBoD8aXY0vR58vR4NrGQJUM3-qZpVp962eCQMkKFscfwfIfg54_R-xtFYC)
 
 ⚠️ RECOMMENDED ⚠️
 
@@ -691,8 +773,9 @@ Sample `env.py` file:
 ```python
 import os
 
-os.environ.setdefault("AWS_ACCESS_KEY_ID", "user-inserts-own-aws-access-key-id")
-os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "user-inserts-own-aws-secret-access-key")
+os.environ.setdefault("CLOUDINARY_NAME", "user-inserts-own-cloudinary-name")
+os.environ.setdefault("CLOUDINARY_API", "user-inserts-own-cloudinary-api-key")
+os.environ.setdefault("CLOUDINARY_SECRET", "user-inserts-own-cloudinary-secret-key")
 os.environ.setdefault("DATABASE_URL", "user-inserts-own-postgres-database-url")
 os.environ.setdefault("EMAIL_HOST_PASS", "user-inserts-own-gmail-host-api-key")
 os.environ.setdefault("EMAIL_HOST_USER", "user-inserts-own-gmail-email-address")
@@ -735,11 +818,11 @@ You can clone the repository by following these steps:
 	- `git clone https://www.github.com/Ironmonkeynuts/vendoro.git`
 7. Press "Enter" to create your local clone.
 
-Alternatively, if using Gitpod, you can click below to create your own workspace using this repository.
+Alternatively, if using Ona (formerly Gitpod), you can click below to create your own workspace using this repository.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://www.github.com/Ironmonkeynuts/vendoro)
+[![Open in Ona-Gitpod](https://ona.com/run-in-ona.svg)](https://gitpod.io/#https://www.github.com/Ironmonkeynuts/vendoro)
 
-**Please Note**: in order to directly open the project in Gitpod, you should have the browser extension installed. A tutorial on how to do that can be found [here](https://www.gitpod.io/docs/configure/user-settings/browser-extension).
+**Please Note**: in order to directly open the project in Ona (Gitpod), you should have the browser extension installed. A tutorial on how to do that can be found [here](https://www.gitpod.io/docs/configure/user-settings/browser-extension).
 
 #### Forking
 
@@ -844,9 +927,11 @@ Use this space to provide attribution and acknowledgement to any supports that h
 
 - I would like to thank my Code Institute mentor, [Tim Nelson](https://www.github.com/TravelTimN) for the support throughout the development of this project.
 - I would like to thank the [Code Institute](https://codeinstitute.net) Tutor Team for their assistance with troubleshooting and debugging some project issues.
-- I would like to thank the [Code Institute Slack community](https://code-institute-room.slack.com) for the moral support; it kept me going during periods of self doubt and impostor syndrome.
+- I would like to thank the [Code Institute Slack community](https://code-institute-room.slack.com) and [Code Institute Discord community](https://discord-portal.codeinstitute.net) for the moral support; it kept me going during periods of self doubt and impostor syndrome.
 - I would like to thank my partner, for believing in me, and allowing me to make this transition into software development.
 - I would like to thank my employer, for supporting me in my career development change towards becoming a software developer.
+
+
 
 
 
