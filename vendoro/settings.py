@@ -2,81 +2,29 @@
 Django settings for vendoro project.
 """
 
-from pathlib import Path
 import os
-
+from pathlib import Path
 from django.contrib.messages import constants as messages
 import cloudinary
 import dj_database_url
+if os.path.isfile("env.py"):
+    import env  # noqa
 
 # Paths and local env loader
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-if os.path.isfile(BASE_DIR / "env.py"):
-    import env  # noqa; sets os.environ values
-
-
-# Env helpers
-def env_csv(key: str, default: str = "") -> list[str]:
-    return [
-        x.strip() for x in os.environ.get(key, default).split(",")
-        if x.strip()
-    ]
-
-
-def env_bool(key: str, default: str = "0") -> bool:
-    return (
-        os.environ.get(key, default).strip()
-        in {"1", "true", "True", "yes", "YES"}
-    )
-
-
-def env_int(key: str, default: int) -> int:
-    try:
-        return int(os.environ.get(key, str(default)))
-    except Exception:
-        return default
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 
 # Core settings
-SECRET_KEY = os.environ.get("SECRET_KEY", default='your secret key')
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "secret-key")
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = env_csv(
-    "ALLOWED_HOSTS",
-    "imn-vendoro-55af0b986025.herokuapp.com,localhost,127.0.0.1"
-)
-
-# Heroku proxy/HTTPS
-
-# In dev: no HTTPS enforcement
-if DEBUG:
-    SECURE_SSL_REDIRECT = False
-    SECURE_PROXY_SSL_HEADER = None
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
-    # Make form posts from local origins work smoothly
-    CSRF_TRUSTED_ORIGINS = env_csv(
-        "CSRF_TRUSTED_ORIGINS",
-        "http://localhost,http://localhost:8000",
-    )
-else:
-    SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "1") == "1"
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
-    CSRF_TRUSTED_ORIGINS = env_csv(
-        "CSRF_TRUSTED_ORIGINS",
-        "https://imn-vendoro-55af0b986025.herokuapp.com",
-    )
-    # HSTS (recommended for production)
-    SECURE_HSTS_SECONDS = env_int("SECURE_HSTS_SECONDS", 31536000)  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool(
-        "SECURE_HSTS_INCLUDE_SUBDOMAINS", "1"
-    )
-    SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", "1")
+ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = []
+host = os.env.get("ALLOWED_HOSTS")
+if host:
+    ALLOWED_HOSTS.append(host)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
 
 # Application definition
 INSTALLED_APPS = [
@@ -139,27 +87,16 @@ ACCOUNT_FORMS = {
 }
 
 # Email
-DEFAULT_FROM_EMAIL = (
-    os.environ.get("DEFAULT_FROM_EMAIL")
-    or os.environ.get("EMAIL_HOST_USER")
-    or "no-reply@vendoro.app"
-)
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
-SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", DEFAULT_FROM_EMAIL)
-
-if os.environ.get("EMAIL_BACKEND"):
-    EMAIL_BACKEND = os.environ["EMAIL_BACKEND"]
+if os.environ.get("DEBUG"):
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    if env_bool("DEVELOPMENT", "0"):
-        EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    else:
-        EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-        EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
-        EMAIL_PORT = env_int("EMAIL_PORT", 587)
-        EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", "1")
-        EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-        EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASS")
-        EMAIL_TIMEOUT = env_int("EMAIL_TIMEOUT", 20)
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.gmail.com"
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = 1
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASS")
+    EMAIL_TIMEOUT = 20
 
 # Middleware
 MIDDLEWARE = [
@@ -178,7 +115,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -200,36 +137,22 @@ WSGI_APPLICATION = 'vendoro.wsgi.application'
 
 # Database
 DATABASES = {
-   "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-        conn_max_age=600,
-        ssl_require=not DEBUG
-   )
+    "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'UserAttributeSimilarityValidator'
-        ),
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',  # noqa
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'MinimumLengthValidator'
-        ),
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',  # noqa
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'CommonPasswordValidator'
-        ),
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',  # noqa
     },
     {
-        'NAME':
-            'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',  # noqa
     },
 ]
 
@@ -243,8 +166,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
@@ -260,9 +183,9 @@ CLOUDINARY_STORAGE = {
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 cloudinary.config(
-    cloud_name=os.environ.get("CLOUDINARY_NAME", ""),
-    api_key=os.environ.get("CLOUDINARY_API", ""),
-    api_secret=os.environ.get("CLOUDINARY_SECRET", ""),
+    cloud_name=os.environ.get("CLOUDINARY_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API"),
+    api_secret=os.environ.get("CLOUDINARY_SECRET"),
     secure=True,
 )
 
@@ -272,9 +195,9 @@ cloudinary.config(
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Stripe settings
-STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "")
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
-STRIPE_WH_SECRET = os.environ.get("STRIPE_WH_SECRET", "")
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_WH_SECRET = os.environ.get("STRIPE_WH_SECRET")
 STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", "gbp")
 
 # Logging
