@@ -5,6 +5,7 @@ Django settings for vendoro project.
 import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
+from django.core.exceptions import ImproperlyConfigured
 import cloudinary
 import dj_database_url
 if os.path.isfile("env.py"):
@@ -16,15 +17,38 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 
 # Core settings
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "secret-key")
-DEBUG = os.environ.get("DEBUG", "1") == "1"
+# SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+DEBUG = os.getenv("DEBUG", "1") == "1"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "dev-only-change-me"   # local fallback
+    else:
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set in production.")
 
-ALLOWED_HOSTS = []
-CSRF_TRUSTED_ORIGINS = []
+ALLOWED_HOSTS = [
+    "imn-vendoro-55af0b986025.herokuapp.com",
+    "127.0.0.1",
+    "localhost",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://imn-vendoro-55af0b986025.herokuapp.com",
+]
 host = os.environ.get("ALLOWED_HOSTS")
 if host:
     ALLOWED_HOSTS.append(host)
     CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
+
+# 🔒 Prod-only HTTPS/security flags (prevents local HTTPS errors)
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Rotate the cookie name so every browser gets a fresh cookie immediately
+SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
+SESSION_COOKIE_NAME = "vendoro_sessionid_v2"  # rotate once to invalidate old cookies
 
 # Application definition
 INSTALLED_APPS = [
@@ -37,6 +61,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
 
     # Third-party
     'allauth',
@@ -87,7 +112,7 @@ ACCOUNT_FORMS = {
 }
 
 # Email
-if os.environ.get("DEBUG"):
+if DEBUG:  # os.environ.get("DEBUG"):
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
