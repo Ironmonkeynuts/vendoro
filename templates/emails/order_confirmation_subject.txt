@@ -1,1 +1,1 @@
-Your Vendoro order #{{ order.id }} is confirmed
+Vendoro Order #{{ order.id }} confirmed{% if order.shop %} — {{ order.shop.name }}{% endif %}

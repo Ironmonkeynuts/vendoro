@@ -1,17 +1,23 @@
-Hi {{ user.get_full_name|default:user.username }},
+Hi {{ order.user.get_full_name|default:order.user.username }},
 
-Thanks for your purchase! Your order #{{ order.id }} has been confirmed.
+Thanks for your purchase — your order is confirmed.
 
-Order summary:
-{% for L in lines %}
-- {{ L.qty }} × {{ L.title }} ({{ L.shop }}) — {{ L.unit }}
+Order #: {{ order.id }}
+Placed: {% if placed_at %}{{ placed_at|date:"Y-m-d H:i" }}{% else %}N/A{% endif %}
+Status: {{ status_display|default:"N/A" }}
+
+Items:
+{% for it in items %}
+- {{ it.quantity }} × {{ it.product.title }} @ {{ currency }}{{ it.unit_price }}{% if it.product.shop %} ({{ it.product.shop.name }}){% endif %}
+{% empty %}
+- No items recorded.
 {% endfor %}
 
-Total: {{ total_str }}
-Placed: {{ placed_str }}
-Status: {{ status|title }}
+Total: {{ currency }}{{ order.total_amount }}
 
-You can view your order in your Vendoro account.
+We’ll email you again when your order ships.
+If you have any questions, just reply to this message.
 
 Thanks,
-The Vendoro Team
+The {{ order.shop.name|default:"Vendoro" }} team
+Vendoro
