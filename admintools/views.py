@@ -1,3 +1,4 @@
+# admintools/views.py
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -16,30 +17,26 @@ from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
 from decimal import Decimal
 from datetime import datetime, time, timedelta
+import csv
 
 from marketplace.models import Shop, Product, ProductReview
 from orders.models import Order, OrderItem
 
-import csv
-
 User = get_user_model()
 
 
+# ---------- Access control ----------
 class SuperuserRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Mixin for views that only superusers should access."""
+    """Views here are superuser-only."""
     login_url = "account_login"
 
     def test_func(self):
         return self.request.user.is_superuser
 
 
-class DashboardView(SuperuserRequiredMixin, TemplateView):
-    """Admin dashboard home page."""
-    template_name = "admintools/index.html"
-
-
+# ---------- Users ----------
 class UserListView(SuperuserRequiredMixin, ListView):
-    """List of users with search and sort functionality."""
+    """List of users with search and sort."""
     template_name = "admintools/users.html"
     model = User
     paginate_by = 25
@@ -59,9 +56,8 @@ class UserListView(SuperuserRequiredMixin, ListView):
     }
 
     def get_queryset(self):
-        """Allow searching and sorting."""
         qs = super().get_queryset()
-        q = self.request.GET.get("q", "").strip()
+        q = (self.request.GET.get("q") or "").strip()
         if q:
             qs = qs.filter(
                 Q(username__icontains=q)
@@ -70,21 +66,19 @@ class UserListView(SuperuserRequiredMixin, ListView):
                 | Q(last_name__icontains=q)
             )
         sort = (self.request.GET.get("sort") or "").strip()
-        order_by = self.SORT_MAP.get(sort, self.ordering)
-        return qs.order_by(order_by)
+        return qs.order_by(self.SORT_MAP.get(sort, self.ordering))
 
     def get_context_data(self, **kwargs):
-        """Add search and sort parameters to context."""
         ctx = super().get_context_data(**kwargs)
         ctx["q"] = (self.request.GET.get("q") or "").strip()
         ctx["sort"] = (self.request.GET.get("sort") or "").strip()
+        ctx["adm_active"] = "users"
         return ctx
 
 
 def _safe_redirect_next(request, fallback_name="admintools:users"):
     """
-    Redirect back to ?next=... if it's a safe same-origin URL;
-    otherwise fallback.
+    Redirect to ?next=... if safe for this host; otherwise fallback.
     """
     next_url = request.POST.get("next") or request.GET.get("next")
     if next_url and url_has_allowed_host_and_scheme(
@@ -98,105 +92,87 @@ def _safe_redirect_next(request, fallback_name="admintools:users"):
 
 @require_POST
 def user_toggle_staff(request, pk: int):
-    """Toggle staff status for a user."""
-    # superuser-only (belt-and-suspenders)
+    """Toggle staff status for a user (superusers only)."""
     if not (request.user.is_authenticated and request.user.is_superuser):
         messages.error(request, "You do not have permission to do that.")
         return _safe_redirect_next(request)
 
     target = get_object_or_404(User, pk=pk)
 
-    # Safety rails: don't edit other superusers; don't demote yourself
+    # Safety rails
     if target.is_superuser and target != request.user:
-        messages.error(
-            request,
-            "You cannot change staff status of another superuser."
-        )
+        messages.error(request, "You cannot change staff status of another superuser.")
         return _safe_redirect_next(request)
-
     if target == request.user:
-        messages.error(
-            request,
-            "You cannot change your own staff status here."
-        )
+        messages.error(request, "You cannot change your own staff status here.")
         return _safe_redirect_next(request)
 
     target.is_staff = not target.is_staff
     target.save(update_fields=["is_staff"])
     messages.success(
         request,
-        f"Set staff for {target.username} to "
-        f"{'Yes' if target.is_staff else 'No'}."
+        f"Set staff for {target.username} to {'Yes' if target.is_staff else 'No'}."
     )
     return _safe_redirect_next(request)
 
 
 @require_POST
 def user_toggle_suspend(request, pk: int):
-    """Toggle suspended (is_active) status for a user."""
-    # superuser-only
+    """Toggle suspended (is_active) status for a user (superusers only)."""
     if not (request.user.is_authenticated and request.user.is_superuser):
         messages.error(request, "You do not have permission to do that.")
         return _safe_redirect_next(request)
 
     target = get_object_or_404(User, pk=pk)
 
-    # Safety rails: don't suspend other superusers; don't suspend yourself
     if target.is_superuser and target != request.user:
         messages.error(request, "You cannot suspend another superuser.")
         return _safe_redirect_next(request)
-
     if target == request.user:
         messages.error(request, "You cannot suspend your own account.")
         return _safe_redirect_next(request)
 
-    # "Suspend" = set is_active False; unsuspend = True
     target.is_active = not target.is_active
     target.save(update_fields=["is_active"])
     messages.success(
         request,
-        f"{'Unsuspended' if target.is_active else 'Suspended'} "
-        f"{target.username}."
+        f"{'Unsuspended' if target.is_active else 'Suspended'} {target.username}."
     )
     return _safe_redirect_next(request)
 
 
+# ---------- Shops & Products ----------
 @require_POST
 def product_toggle_suspend(request, pk: int):
     """Superuser: toggle Product.is_active (suspend / activate)."""
     if not (request.user.is_authenticated and request.user.is_superuser):
         messages.error(request, "You do not have permission to do that.")
-        return _safe_redirect_next(request, fallback_name="admintools:shops")
+        return _safe_redirect_next(request, fallback_name="admintools:shops_products")
 
     product = get_object_or_404(
         Product.objects.select_related("shop", "shop__owner"),
         pk=pk
     )
-
     product.is_active = not product.is_active
     product.save(update_fields=["is_active"])
 
     messages.success(
         request,
-        (
-            f"{'Reactivated' if product.is_active else 'Suspended'} "
-            f"“{product.title}”."
-        )
+        f"{'Reactivated' if product.is_active else 'Suspended'} “{product.title}”."
     )
-    return _safe_redirect_next(request, fallback_name="admintools:shops")
+    return _safe_redirect_next(request, fallback_name="admintools:shops_products")
 
 
 class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
     """
-    Admin-only page that lists all shops with expandable rows
-    showing owner details and all products + per-product stats.
+    Admin-only page listing all shops with expandable product rows + stats.
     """
     template_name = "admintools/shops_products.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        # Per-product stat annotations (efficiently reused via Prefetch)
+        # Per-product annotations
         revenue_expr = ExpressionWrapper(
             F("orderitem__unit_price") * F("orderitem__quantity"),
             output_field=DecimalField(max_digits=12, decimal_places=2),
@@ -211,16 +187,13 @@ class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
             )
             .order_by("title")
         )
-
-        # Prefetch the annotated products to each shop as "adm_products"
         products_prefetch = Prefetch(
             "products", queryset=products_qs, to_attr="adm_products"
         )
 
         # Per-shop rollups
         shop_revenue_expr = ExpressionWrapper(
-            F("products__orderitem__unit_price") *
-            F("products__orderitem__quantity"),
+            F("products__orderitem__unit_price") * F("products__orderitem__quantity"),
             output_field=DecimalField(max_digits=12, decimal_places=2),
         )
 
@@ -238,13 +211,15 @@ class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
         )
 
         ctx["shops"] = shops
+        ctx["adm_active"] = "shops"
         return ctx
 
 
+# ---------- Reports ----------
 def _parse_range(request):
     """
-    Shared date range parser for reports.
     Returns (start, end, label) as timezone-aware datetimes.
+    Querystring: ?range=7|30|90|custom&start=YYYY-MM-DD&end=YYYY-MM-DD
     """
     now = timezone.now()
     rng = (request.GET.get("range") or "7").strip()
@@ -271,11 +246,12 @@ def _parse_range(request):
 
 
 class ReportsView(SuperuserRequiredMixin, TemplateView):
-    """Site-wide reports dashboard (KPIs, range, leaders, recent activity)."""
+    """Site-wide reports dashboard (KPIs, leaders, recent activity)."""
     template_name = "admintools/reports.html"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx["adm_active"] = "reports"
 
         # ---------- Basic tallies ----------
         total_users = User.objects.count()
@@ -302,7 +278,7 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
 
-        # ---------- Range parsing ----------
+        # ---------- Range ----------
         start, end, range_label = _parse_range(self.request)
         ctx["range"] = {"label": range_label, "start": start, "end": end}
         now = timezone.now()
@@ -336,12 +312,8 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                 order__status="paid", order__created_at__gte=last_7_days
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-        new_users_7d = (
-            User.objects.filter(date_joined__gte=last_7_days).count()
-        )
-        new_reviews_7d = ProductReview.objects.filter(
-            created_at__gte=last_7_days
-        ).count()
+        new_users_7d = User.objects.filter(date_joined__gte=last_7_days).count()
+        new_reviews_7d = ProductReview.objects.filter(created_at__gte=last_7_days).count()
 
         orders_30d = paid_orders.filter(created_at__gte=last_30_days).count()
         revenue_30d = (
@@ -349,12 +321,8 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                 order__status="paid", order__created_at__gte=last_30_days
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-        new_users_30d = User.objects.filter(
-            date_joined__gte=last_30_days
-        ).count()
-        new_reviews_30d = ProductReview.objects.filter(
-            created_at__gte=last_30_days
-        ).count()
+        new_users_30d = User.objects.filter(date_joined__gte=last_30_days).count()
+        new_reviews_30d = ProductReview.objects.filter(created_at__gte=last_30_days).count()
 
         orders_1y = paid_orders.filter(created_at__gte=last_1_year).count()
         revenue_1y = (
@@ -362,12 +330,8 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
                 order__status="paid", order__created_at__gte=last_1_year
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-        new_users_1y = User.objects.filter(
-            date_joined__gte=last_1_year
-        ).count()
-        new_reviews_1y = ProductReview.objects.filter(
-            created_at__gte=last_1_year
-        ).count()
+        new_users_1y = User.objects.filter(date_joined__gte=last_1_year).count()
+        new_reviews_1y = ProductReview.objects.filter(created_at__gte=last_1_year).count()
 
         ctx.update(
             {
@@ -469,10 +433,7 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
             .select_related("user")
             .annotate(
                 items_count_calc=Coalesce(Sum("items__quantity"), 0),
-                total_amount_calc=Coalesce(
-                    Sum(order_line_amount),
-                    Decimal("0"),
-                ),
+                total_amount_calc=Coalesce(Sum(order_line_amount), Decimal("0")),
             )
             .order_by("-created_at")[:20]
         )
@@ -505,8 +466,7 @@ class ReportsView(SuperuserRequiredMixin, TemplateView):
 
 def reports_export_csv(request):
     """
-    Superuser-only CSV export of daily
-    Orders / Items / Revenue for the selected range.
+    Superuser-only CSV export of daily Orders / Items / Revenue for the range.
     """
     if not (request.user.is_authenticated and request.user.is_superuser):
         return redirect("account_login")
@@ -534,7 +494,6 @@ def reports_export_csv(request):
         .order_by("day")
     )
 
-    # Build CSV
     response = HttpResponse(content_type="text/csv")
     filename = f"reports_timeseries_{start.date()}_{end.date()}.csv"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
@@ -552,9 +511,8 @@ def reports_export_csv(request):
 
 def reports_export_products_csv(request):
     """
-    Superuser-only CSV export of orders & revenue by product for the selected
-    range. Columns: product_id, product_title, shop_name, orders,
-    items_sold, revenue
+    Superuser-only CSV export of orders & revenue by product for the range.
+    Columns: product_id, product_title, shop_name, orders, items_sold, revenue
     """
     if not (request.user.is_authenticated and request.user.is_superuser):
         return redirect("account_login")
@@ -598,7 +556,7 @@ def reports_export_products_csv(request):
         "shop_name",
         "orders",
         "items_sold",
-        "revenue"
+        "revenue",
     ])
     for row in qs:
         writer.writerow([
@@ -612,6 +570,7 @@ def reports_export_products_csv(request):
     return response
 
 
+# ---------- Reviews ----------
 class ReviewsListView(SuperuserRequiredMixin, ListView):
     """Admin: list & moderate product reviews."""
     template_name = "admintools/reviews.html"
@@ -643,30 +602,22 @@ class ReviewsListView(SuperuserRequiredMixin, ListView):
         q = (self.request.GET.get("q") or "").strip()
         if q:
             qs = qs.filter(
-                Q(comment__icontains=q) |
-                Q(user__username__icontains=q) |
-                Q(product__title__icontains=q) |
-                Q(product__shop__name__icontains=q)
+                Q(comment__icontains=q)
+                | Q(user__username__icontains=q)
+                | Q(product__title__icontains=q)
+                | Q(product__shop__name__icontains=q)
             )
 
-        # rating filter (exact)
         rating = (self.request.GET.get("rating") or "").strip()
         if rating.isdigit():
             qs = qs.filter(rating=int(rating))
 
-        # visibility filter: all | public | hidden
         vis = (self.request.GET.get("vis") or "all").strip()
         if vis == "public":
             qs = qs.filter(is_public=True)
         elif vis == "hidden":
             qs = qs.filter(is_public=False)
 
-        # date range (reuse your existing short range style)
-        from django.utils.dateparse import parse_date
-        from datetime import datetime, time
-        from django.utils import timezone
-
-        # "", "7","30","90","custom"
         rng = (self.request.GET.get("range") or "").strip()
         start_param = self.request.GET.get("start")
         end_param = self.request.GET.get("end")
@@ -678,14 +629,8 @@ class ReviewsListView(SuperuserRequiredMixin, ListView):
         elif rng == "custom":
             sd = parse_date(start_param) if start_param else None
             ed = parse_date(end_param) if end_param else None
-            start = (
-                timezone.make_aware(datetime.combine(sd, time.min))
-                if sd else None
-            )
-            end = (
-                timezone.make_aware(datetime.combine(ed, time.max))
-                if ed else None
-            )
+            start = timezone.make_aware(datetime.combine(sd, time.min)) if sd else None
+            end = timezone.make_aware(datetime.combine(ed, time.max)) if ed else None
         else:
             start = end = None
 
@@ -694,10 +639,8 @@ class ReviewsListView(SuperuserRequiredMixin, ListView):
         if end:
             qs = qs.filter(created_at__lte=end)
 
-        # sorting
         sort = (self.request.GET.get("sort") or "").strip()
-        order_by = self.SORT_MAP.get(sort, self.ordering)
-        return qs.order_by(order_by)
+        return qs.order_by(self.SORT_MAP.get(sort, self.ordering))
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -708,6 +651,7 @@ class ReviewsListView(SuperuserRequiredMixin, ListView):
         ctx["range"] = (self.request.GET.get("range") or "").strip()
         ctx["start"] = (self.request.GET.get("start") or "").strip()
         ctx["end"] = (self.request.GET.get("end") or "").strip()
+        ctx["adm_active"] = "reviews"
         return ctx
 
 
@@ -728,7 +672,7 @@ def review_toggle_visibility(request, pk: int):
     messages.success(
         request,
         f"{'Published' if review.is_public else 'Hidden'} review by "
-        f"@{review.user.username} on “{review.product.title}”."
+        f"@{getattr(review.user, 'username', 'user')} on “{getattr(review.product, 'title', 'product')}”."
     )
     return _safe_redirect_next(request, fallback_name="admintools:reviews")
 
@@ -765,27 +709,13 @@ def review_bulk_action(request):
         return redirect(next_url)
 
     if action == "export_csv":
-        # Build CSV of the selected reviews
-        import csv
-        from django.http import HttpResponse
-
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            'attachment; filename="reviews_selected.csv"'
-        )
+        response["Content-Disposition"] = 'attachment; filename="reviews_selected.csv"'
         writer = csv.writer(response)
         writer.writerow([
-            "id",
-            "created_at",
-            "is_public",
-            "rating",
-            "comment",
-            "product_id",
-            "product_title",
-            "shop_name",
-            "user_id",
-            "username",
-            "user_email",
+            "id", "created_at", "is_public", "rating", "comment",
+            "product_id", "product_title", "shop_name",
+            "user_id", "username", "user_email",
         ])
         for r in qs:
             writer.writerow([

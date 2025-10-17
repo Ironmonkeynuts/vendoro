@@ -1,14 +1,18 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 app_name = "dashboard"
 
 urlpatterns = [
-    path("", views.DashboardView.as_view(), name="index"),
+    # Root now goes straight to a tabbed page (Reports by default)
+    path("", RedirectView.as_view(
+        pattern_name="admintools:reports", permanent=False
+    ), name="index"),
     path("users/", views.UserListView.as_view(), name="users"),
-    path("shops/", views.ShopsProductsView.as_view(), name="shops_products"),
-    path("reports/", views.ReportsView.as_view(), name="reports"),
     path("reviews/", views.ReviewsListView.as_view(), name="reviews"),
+    path("reports/", views.ReportsView.as_view(), name="reports"),
+    path("shops/", views.ShopsProductsView.as_view(), name="shops_products"),
     path("reviews/bulk/", views.review_bulk_action, name="review_bulk_action"),
     path(
         "reviews/<int:pk>/toggle/",

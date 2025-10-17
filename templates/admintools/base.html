@@ -1,10 +1,28 @@
 {% extends "base.html" %}
+
 {% block content %}
 <div class="container py-3" style="max-width: 1100px;">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0">Admin Tools</h1>
-    <a class="btn btn-sm btn-outline-secondary" href="{% url 'admintools:index' %}">Dashboard</a>
-  </div>
+  <h1 class="h4 mb-2">Admin Tools</h1>
+
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <a class="nav-link {% if adm_active == 'users' %}active{% endif %}"
+         href="{% url 'admintools:users' %}" role="tab">Users</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link {% if adm_active == 'reviews' %}active{% endif %}"
+         href="{% url 'admintools:reviews' %}" role="tab">Reviews</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link {% if adm_active == 'reports' %}active{% endif %}"
+         href="{% url 'admintools:reports' %}" role="tab">Reports</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link {% if adm_active == 'shops' %}active{% endif %}"
+         href="{% url 'admintools:shops_products' %}" role="tab">Shops &amp; Products</a>
+    </li>
+  </ul>
+
   {% block admintools_content %}{% endblock %}
 </div>
 {% endblock %}
