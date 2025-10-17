@@ -14,6 +14,11 @@ class User(AbstractUser):
         max_length=10, choices=UserType.choices, blank=True, null=True
         )
 
+    class Meta:
+        permissions = [
+            ("can_manage_staff", "Can promote/demote staff"),
+        ]
+
     def is_buyer(self):
         return self.user_type == self.UserType.BUYER
 

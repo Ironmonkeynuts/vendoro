@@ -1,4 +1,3 @@
-# admintools/views.py
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -26,16 +25,15 @@ User = get_user_model()
 
 
 # ---------- Access control ----------
-class SuperuserRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Views here are superuser-only."""
+class StaffOrSuperuserRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     login_url = "account_login"
-
     def test_func(self):
-        return self.request.user.is_superuser
+        u = self.request.user
+        return u.is_authenticated and (u.is_staff or u.is_superuser)
 
 
 # ---------- Users ----------
-class UserListView(SuperuserRequiredMixin, ListView):
+class UserListView(StaffOrSuperuserRequiredMixin, ListView):
     """List of users with search and sort."""
     template_name = "admintools/users.html"
     model = User
@@ -92,8 +90,10 @@ def _safe_redirect_next(request, fallback_name="admintools:users"):
 
 @require_POST
 def user_toggle_staff(request, pk: int):
-    """Toggle staff status for a user (superusers only)."""
-    if not (request.user.is_authenticated and request.user.is_superuser):
+    """Toggle staff status for a user (superuser or custom permission)."""
+    # allow superuser OR users with the custom permission
+    if not (request.user.is_authenticated and
+            (request.user.is_superuser or request.user.has_perm("users.can_manage_staff"))):
         messages.error(request, "You do not have permission to do that.")
         return _safe_redirect_next(request)
 
@@ -163,7 +163,7 @@ def product_toggle_suspend(request, pk: int):
     return _safe_redirect_next(request, fallback_name="admintools:shops_products")
 
 
-class ShopsProductsView(SuperuserRequiredMixin, TemplateView):
+class ShopsProductsView(StaffOrSuperuserRequiredMixin, TemplateView):
     """
     Admin-only page listing all shops with expandable product rows + stats.
     """
@@ -245,7 +245,7 @@ def _parse_range(request):
     return start, end, label
 
 
-class ReportsView(SuperuserRequiredMixin, TemplateView):
+class ReportsView(StaffOrSuperuserRequiredMixin, TemplateView):
     """Site-wide reports dashboard (KPIs, leaders, recent activity)."""
     template_name = "admintools/reports.html"
 
@@ -571,7 +571,7 @@ def reports_export_products_csv(request):
 
 
 # ---------- Reviews ----------
-class ReviewsListView(SuperuserRequiredMixin, ListView):
+class ReviewsListView(StaffOrSuperuserRequiredMixin, ListView):
     """Admin: list & moderate product reviews."""
     template_name = "admintools/reviews.html"
     model = ProductReview
@@ -624,7 +624,7 @@ class ReviewsListView(SuperuserRequiredMixin, ListView):
         now = timezone.now()
 
         if rng in {"7", "30", "90"}:
-            start = now - timezone.timedelta(days=int(rng))
+            start = now - timedelta(days=int(rng))
             end = now
         elif rng == "custom":
             sd = parse_date(start_param) if start_param else None

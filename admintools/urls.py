@@ -2,7 +2,7 @@ from django.urls import path
 from django.views.generic import RedirectView
 from . import views
 
-app_name = "dashboard"
+app_name = "admintools"
 
 urlpatterns = [
     # Root now goes straight to a tabbed page (Reports by default)

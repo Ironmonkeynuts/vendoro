@@ -22,51 +22,51 @@
         <th>
           {# Username sortable header #}
           {% if request.GET.sort == 'username' %}
-            <a href="?q={{ request.GET.q }}&sort=-username" class="text-decoration-none">User ▲</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-username" class="text-decoration-none">User ▲</a>
           {% elif request.GET.sort == '-username' %}
-            <a href="?q={{ request.GET.q }}&sort=username" class="text-decoration-none">User ▼</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=username" class="text-decoration-none">User ▼</a>
           {% else %}
-            <a href="?q={{ request.GET.q }}&sort=username" class="text-decoration-none">User</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=username" class="text-decoration-none">User</a>
           {% endif %}
         </th>
         <th>
           {# Email sortable header #}
           {% if request.GET.sort == 'email' %}
-            <a href="?q={{ request.GET.q }}&sort=-email" class="text-decoration-none">Email ▲</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-email" class="text-decoration-none">Email ▲</a>
           {% elif request.GET.sort == '-email' %}
-            <a href="?q={{ request.GET.q }}&sort=email" class="text-decoration-none">Email ▼</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=email" class="text-decoration-none">Email ▼</a>
           {% else %}
-            <a href="?q={{ request.GET.q }}&sort=email" class="text-decoration-none">Email</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=email" class="text-decoration-none">Email</a>
           {% endif %}
         </th>
         <th>
           {# Joined sortable header #}
           {% if request.GET.sort == 'date_joined' %}
-            <a href="?q={{ request.GET.q }}&sort=-date_joined" class="text-decoration-none">Joined ▲</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-date_joined" class="text-decoration-none">Joined ▲</a>
           {% elif request.GET.sort == '-date_joined' %}
-            <a href="?q={{ request.GET.q }}&sort=date_joined" class="text-decoration-none">Joined ▼</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=date_joined" class="text-decoration-none">Joined ▼</a>
           {% else %}
-            <a href="?q={{ request.GET.q }}&sort=-date_joined" class="text-decoration-none">Joined</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-date_joined" class="text-decoration-none">Joined</a>
           {% endif %}
         </th>
         <th>
           {# Staff sortable header #}
           {% if request.GET.sort == 'is_staff' %}
-            <a href="?q={{ request.GET.q }}&sort=-is_staff" class="text-decoration-none">Staff ▲</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-is_staff" class="text-decoration-none">Staff ▲</a>
           {% elif request.GET.sort == '-is_staff' %}
-            <a href="?q={{ request.GET.q }}&sort=is_staff" class="text-decoration-none">Staff ▼</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=is_staff" class="text-decoration-none">Staff ▼</a>
           {% else %}
-            <a href="?q={{ request.GET.q }}&sort=-is_staff" class="text-decoration-none">Staff</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-is_staff" class="text-decoration-none">Staff</a>
           {% endif %}
         </th>
         <th>
-          {# Suspended (is_active == False) — we sort by is_active underneath #}
+          {# Suspended (is_active == False) — toggled by sorting on is_active #}
           {% if request.GET.sort == 'is_active' %}
-            <a href="?q={{ request.GET.q }}&sort=-is_active" class="text-decoration-none">Suspended ▲</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-is_active" class="text-decoration-none">Suspended ▲</a>
           {% elif request.GET.sort == '-is_active' %}
-            <a href="?q={{ request.GET.q }}&sort=is_active" class="text-decoration-none">Suspended ▼</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=is_active" class="text-decoration-none">Suspended ▼</a>
           {% else %}
-            <a href="?q={{ request.GET.q }}&sort=-is_active" class="text-decoration-none">Suspended</a>
+            <a href="?q={{ request.GET.q }}&amp;sort=-is_active" class="text-decoration-none">Suspended</a>
           {% endif %}
         </th>
         <th>Superuser</th>
@@ -88,7 +88,6 @@
             </span>
           </td>
           <td>
-            {# Suspended if NOT active #}
             {% if u.is_active %}
               <span class="badge text-bg-secondary">No</span>
             {% else %}
@@ -97,25 +96,29 @@
           </td>
           <td>{{ u.is_superuser|yesno:"Yes,No" }}</td>
           <td class="text-end">
-            {# Toggle Staff button — disabled for self or any superuser #}
-            <form method="post" action="{% url 'admintools:user_toggle_staff' pk=u.id %}" class="d-inline">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button
-                class="btn btn-sm btn-outline-primary"
-                {% if u.is_superuser or u.id == request.user.id %}disabled{% endif %}
-                title="Toggle staff">
-                {% if u.is_staff %}Make Non-staff{% else %}Make Staff{% endif %}
-              </button>
-            </form>
+            {# Toggle Staff: only superusers or users with can_manage_staff; never allow editing yourself or any superuser #}
+            {% if request.user.is_superuser or perms.users.can_manage_staff %}
+              <form method="post" action="{% url 'admintools:user_toggle_staff' pk=u.id %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  {% if u.is_superuser %}disabled{% endif %}
+                  {% if u.id == request.user.id %}disabled{% endif %}
+                  title="Toggle staff">
+                  {% if u.is_staff %}Make Non-staff{% else %}Make Staff{% endif %}
+                </button>
+              </form>
+            {% endif %}
 
-            {# Toggle Suspend button — disabled for self or any superuser #}
+            {# Toggle Suspend: never allow suspending yourself or any superuser #}
             <form method="post" action="{% url 'admintools:user_toggle_suspend' pk=u.id %}" class="d-inline ms-1">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
               <button
                 class="btn btn-sm btn-outline-warning"
-                {% if u.is_superuser or u.id == request.user.id %}disabled{% endif %}
+                {% if u.is_superuser %}disabled{% endif %}
+                {% if u.id == request.user.id %}disabled{% endif %}
                 title="Suspend/Unsuspend">
                 {% if u.is_active %}Suspend{% else %}Unsuspend{% endif %}
               </button>
@@ -133,7 +136,7 @@
   <ul class="pagination">
     {% if page_obj.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?q={{ request.GET.q }}&sort={{ request.GET.sort }}&page={{ page_obj.previous_page_number }}">Prev</a>
+        <a class="page-link" href="?q={{ request.GET.q }}&amp;sort={{ request.GET.sort }}&amp;page={{ page_obj.previous_page_number }}">Prev</a>
       </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">Prev</span></li>
@@ -145,11 +148,12 @@
 
     {% if page_obj.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?q={{ request.GET.q }}&sort={{ request.GET.sort }}&page={{ page_obj.next_page_number }}">Next</a>
+        <a class="page-link" href="?q={{ request.GET.q }}&amp;sort={{ request.GET.sort }}&amp;page={{ page_obj.next_page_number }}">Next</a>
       </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">Next</span></li>
     {% endif %}
   </ul>
 </nav>
+
 {% endblock %}
