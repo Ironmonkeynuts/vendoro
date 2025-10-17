@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <h2>Order #{{ order.id }} confirmed</h2>
+    <p>Hi {{ user.get_full_name|default:user.username }},</p>
+    <p>Thanks for your purchase! Your order has been confirmed.</p>
+
+    <h3>Order summary</h3>
+    <table cellpadding="6" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <thead>
+        <tr><th align="left">Item</th><th align="right">Qty</th><th align="right">Price</th><th align="left">Shop</th></tr>
+      </thead>
+      <tbody>
+        {% for L in lines %}
+        <tr>
+          <td>{{ L.title }}</td>
+          <td align="right">{{ L.qty }}</td>
+          <td align="right">{{ L.unit }}</td>
+          <td>{{ L.shop }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p style="margin-top:12px;"><strong>Status:</strong> {{ status|title }}</p>
+    <p><strong>Placed:</strong> {{ placed_str }}</p>
+    <p>— The Vendoro Team</p>
+  </body>
+</html>

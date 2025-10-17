@@ -4,6 +4,7 @@ from decimal import Decimal
 import logging
 
 from orders.models import Order, Cart
+from orders.emails import send_order_confirmation_on_commit  # NEW: send email after payment
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class StripeWH_Handler:
         logger.info("Unhandled Stripe event: %s", event.get("type"))
         return HttpResponse(f"Unhandled event {event.get('type')}", status=200)
 
-    # --- If you also care about raw PaymentIntent events, keep these: ---
+    # If you also care about raw PaymentIntent events, you can keep these:
     def handle_payment_intent_succeeded(self, event):
         logger.info("payment_intent.succeeded received (noop).")
         return HttpResponse("OK", status=200)
@@ -28,9 +29,8 @@ class StripeWH_Handler:
         logger.info("payment_intent.payment_failed received (noop).")
         return HttpResponse("OK", status=200)
 
-    # --- Main one for Stripe Checkout: ---
     def handle_checkout_session_completed(self, event):
-        """Mark order paid & clear cart (idempotent)."""
+        """Mark order paid, clear cart, and email confirmation (idempotent)."""
         session = event["data"]["object"]
         metadata = session.get("metadata") or {}
         order_id = metadata.get("order_id")
@@ -42,6 +42,7 @@ class StripeWH_Handler:
         )
 
         # Update order (idempotent)
+        order = None
         if order_id:
             try:
                 order = Order.objects.get(id=order_id)
@@ -64,6 +65,10 @@ class StripeWH_Handler:
                 if hasattr(order, "stripe_payment_intent"):
                     order.stripe_payment_intent = session.get("payment_intent", "") or getattr(order, "stripe_payment_intent", "")
                 order.save()
+
+                # NEW: send confirmation email after the transaction commits
+                send_order_confirmation_on_commit(order)
+
             except Order.DoesNotExist:
                 logger.warning("Webhook: order %s not found", order_id)
 

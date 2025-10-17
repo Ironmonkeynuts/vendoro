@@ -1,0 +1,17 @@
+Hi {{ user.get_full_name|default:user.username }},
+
+Thanks for your purchase! Your order #{{ order.id }} has been confirmed.
+
+Order summary:
+{% for L in lines %}
+- {{ L.qty }} × {{ L.title }} ({{ L.shop }}) — {{ L.unit }}
+{% endfor %}
+
+Total: {{ total_str }}
+Placed: {{ placed_str }}
+Status: {{ status|title }}
+
+You can view your order in your Vendoro account.
+
+Thanks,
+The Vendoro Team

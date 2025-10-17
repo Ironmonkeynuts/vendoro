@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from orders.models import Cart, Order, OrderItem
+from orders.emails import send_order_confirmation_now
+
 
 import stripe
 
@@ -95,21 +97,24 @@ def create_checkout_session(request):
     ]
 
     try:
-        session = stripe.checkout.Session.create(
-            mode="payment",
-            line_items=line_items,  # type: ignore
-            success_url=(
+        session_kwargs = {
+            "mode": "payment",
+            "line_items": line_items,  # type: ignore
+            "success_url": (
                 _abs_url(request, "payments:success")
                 + "?session_id={CHECKOUT_SESSION_ID}"
             ),
-            cancel_url=_abs_url(request, "payments:cancel"),
-            customer_email=(request.user.email or None),
-            metadata={
+            "cancel_url": _abs_url(request, "payments:cancel"),
+            "metadata": {
                 "order_id": str(order.pk),
                 "user_id": str(request.user.id),
                 "cart_id": str(cart.pk),
             },
-        )
+        }
+        if getattr(request.user, "email", ""):
+            session_kwargs["customer_email"] = request.user.email
+
+        session = stripe.checkout.Session.create(**session_kwargs)
 
         # Save the session id if your model has the field
         if hasattr(order, "stripe_checkout_session_id"):
@@ -145,7 +150,7 @@ def success(request):
     order = None
 
     if session_id:
-        # Verify with Stripe (helpful UX, webhook is still the source of truth)
+        # Verify with Stripe (helpful UX; webhook remains source of truth)
         try:
             session = stripe.checkout.Session.retrieve(session_id)
         except stripe.StripeError:
@@ -162,7 +167,7 @@ def success(request):
                 ).first()
             )
 
-            # Idempotently mark as paid if Stripe says it’s paid
+            # Idempotently mark as paid if Stripe says it’s paid (webhook will do this too)
             if (
                 order
                 and (
@@ -171,9 +176,13 @@ def success(request):
                 )
             ):
                 changed = False
+                transitioned_to_paid = False
+
                 if order.status != Order.Status.PAID:
                     order.status = Order.Status.PAID
                     changed = True
+                    transitioned_to_paid = True
+
                 if session.get("amount_total") is not None:
                     reported = Decimal(
                         (session["amount_total"]) / Decimal("100")
@@ -189,6 +198,7 @@ def success(request):
                         )
                     order.total_amount = reported
                     changed = True
+
                 if hasattr(order, "stripe_payment_intent"):
                     pi = session.get("payment_intent") or ""
                     if (
@@ -197,11 +207,25 @@ def success(request):
                     ):
                         order.stripe_payment_intent = pi
                         changed = True
+
                 if changed:
                     order.save()
 
-            # Clear cart if present in metadata
-            # (safe if already cleared by webhook)
+                # Fallback email: only if we transitioned to PAID here
+                if transitioned_to_paid and getattr(order.user, "email", ""):
+                    try:
+                        send_order_confirmation_now(order)
+                        logger.info(
+                            "Sent order confirmation from success page. order_id=%s email=%s",
+                            order.id, order.user.email
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Failed to send order confirmation from success page. order_id=%s",
+                            getattr(order, "id", None)
+                        )
+
+            # Clear cart if present in metadata (safe if already cleared by webhook)
             cart_id = session.get("metadata", {}).get("cart_id")
             if cart_id:
                 try:
@@ -220,7 +244,9 @@ def success(request):
         request,
         "Payment received. Thank you! Your order is confirmed."
     )
+    # Note: confirmation email is sent by the webhook for reliability.
     return render(request, "payments/success.html", {"order": order})
+
 
 
 @login_required
