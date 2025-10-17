@@ -18,13 +18,15 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # Core settings
 # SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-DEBUG = os.getenv("DEBUG", "1") == "1"
+DEBUG = os.getenv("DEBUG", "0") == "1"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "dev-only-change-me"   # local fallback
     else:
-        raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set in production.")
+        raise ImproperlyConfigured(
+            "DJANGO_SECRET_KEY must be set in production."
+        )
 
 ALLOWED_HOSTS = [
     "imn-vendoro-55af0b986025.herokuapp.com",
@@ -48,7 +50,7 @@ if not DEBUG:
 
 # Rotate the cookie name so every browser gets a fresh cookie immediately
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
-SESSION_COOKIE_NAME = "vendoro_sessionid_v2"  # rotate once to invalidate old cookies
+SESSION_COOKIE_NAME = "vendoro_sessionid_v2"
 
 # Application definition
 INSTALLED_APPS = [
@@ -162,7 +164,7 @@ WSGI_APPLICATION = 'vendoro.wsgi.application'
 
 # Database
 DATABASES = {
-    "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+    "default": dj_database_url.parse(os.environ.get("DATABASE_URL", ""))
 }
 
 # Password validation
