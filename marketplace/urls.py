@@ -10,6 +10,11 @@ urlpatterns = [
         name="seller"
     ),
     path(
+        "seller/orders/<int:order_id>/fulfillment/",
+        views.seller_update_fulfillment,
+        name="seller_update_fulfillment"
+    ),
+    path(
         "seller/export/timeseries/",
         views.seller_export_timeseries,
         name="seller_export_timeseries"

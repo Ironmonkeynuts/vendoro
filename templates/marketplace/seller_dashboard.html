@@ -11,6 +11,15 @@
       Inventory
     </button>
   </li>
+
+  {# NEW: Orders tab button #}
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}"
+            data-bs-toggle="tab" data-bs-target="#tab-orders" type="button" role="tab">
+      Orders
+    </button>
+  </li>
+
   <li class="nav-item" role="presentation">
     <button class="nav-link {% if active_tab == 'alerts' %}active{% endif %}"
             data-bs-toggle="tab" data-bs-target="#tab-alerts" type="button" role="tab">
@@ -74,6 +83,61 @@
       {% endfor %}
     {% else %}
       <p class="text-muted">No active products yet.</p>
+    {% endif %}
+  </div>
+
+  {# NEW: ORDERS #}
+  <div id="tab-orders" class="tab-pane fade {% if active_tab == 'orders' %}show active{% endif %}" role="tabpanel">
+    {% if orders_by_shop %}
+      {% for shop, orders in orders_by_shop.items %}
+        <div class="mb-4">
+          <h2 class="h6 mb-2">{{ shop.name }}</h2>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Placed</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Fulfillment</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                  <tr>
+                    <td>
+                      #{{ order.id }}
+                      {% if order.user %}<div class="small text-muted">by {{ order.user }}</div>{% endif %}
+                    </td>
+                    <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>£{{ order.total_amount|floatformat:2 }}</td>
+                    <td><span class="badge text-bg-secondary">{{ order.get_status_display }}</span></td>
+                    <td style="min-width: 220px;">
+                      <form method="post" action="{% url 'marketplace:seller_update_fulfillment' order_id=order.id %}" class="d-flex gap-2 align-items-center">
+                        {% csrf_token %}
+                        <input type="hidden" name="tab" value="orders">
+                        <select name="fulfillment_status" class="form-select form-select-sm" onchange="this.form.submit()">
+                          {% for key, label in fulfillment_choices %}
+                            <option value="{{ key }}" {% if order.fulfillment_status == key %}selected{% endif %}>{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                        <noscript><button class="btn btn-sm btn-outline-primary">Save</button></noscript>
+                      </form>
+                    </td>
+                    <td class="text-end">
+                      {# Optional actions for an order go here (e.g., invoice download) #}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">No orders yet.</p>
     {% endif %}
   </div>
 
@@ -151,11 +215,9 @@
     </div>
   </div>
 
-  {# STATS #}
+  {# STATS (unchanged) #}
   <div id="tab-stats" class="tab-pane fade {% if active_tab == 'stats' %}show active{% endif %}" role="tabpanel">
-    {# Toolbar: range + optional start/end + Apply (left), CSV (right) #}
     <form method="get" class="row g-2 align-items-end justify-content-between mb-3">
-      {# keep Stats active after submit #}
       <input type="hidden" name="tab" value="stats">
 
       <div class="col-auto d-flex align-items-end flex-wrap gap-2">
@@ -199,47 +261,42 @@
 
     <!-- KPI cards -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="border rounded p-3 h-100">
-                <div class="small text-muted">Orders</div>
-                <div class="fs-5 fw-semibold">{{ kpi.orders|default:0 }}</div>
-            </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="border rounded p-3 h-100">
+          <div class="small text-muted">Orders</div>
+          <div class="fs-5 fw-semibold">{{ kpi.orders|default:0 }}</div>
         </div>
-
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="border rounded p-3 h-100">
-                <div class="small text-muted">Items sold</div>
-                <div class="fs-5 fw-semibold">{{ kpi.items|default:0 }}</div>
-            </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="border rounded p-3 h-100">
+          <div class="small text-muted">Items sold</div>
+          <div class="fs-5 fw-semibold">{{ kpi.items|default:0 }}</div>
         </div>
-
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="border rounded p-3 h-100">
-                <div class="small text-muted">Revenue</div>
-                <div class="fs-5 fw-semibold">£{{ kpi.revenue|floatformat:2 }}</div>
-            </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="border rounded p-3 h-100">
+          <div class="small text-muted">Revenue</div>
+          <div class="fs-5 fw-semibold">£{{ kpi.revenue|floatformat:2 }}</div>
         </div>
-
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="border rounded p-3 h-100">
-                <div class="small text-muted">Avg order value</div>
-                <div class="fs-5 fw-semibold">£{{ kpi.aov|floatformat:2 }}</div>
-            </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="border rounded p-3 h-100">
+          <div class="small text-muted">Avg order value</div>
+          <div class="fs-5 fw-semibold">£{{ kpi.aov|floatformat:2 }}</div>
         </div>
-
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="border rounded p-3 h-100">
-                <div class="small text-muted">New reviews</div>
-                <div class="fs-5 fw-semibold">{{ kpi.reviews|default:0 }}</div>
-            </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="border rounded p-3 h-100">
+          <div class="small text-muted">New reviews</div>
+          <div class="fs-5 fw-semibold">{{ kpi.reviews|default:0 }}</div>
         </div>
-
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="border rounded p-3 h-100">
-                <div class="small text-muted">Active products</div>
-                <div class="fs-5 fw-semibold">{{ kpi.active_products|default:0 }}</div>
-            </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="border rounded p-3 h-100">
+          <div class="small text-muted">Active products</div>
+          <div class="fs-5 fw-semibold">{{ kpi.active_products|default:0 }}</div>
         </div>
+      </div>
     </div>
 
     <div class="row g-4">
@@ -328,16 +385,16 @@
     const startWrap = document.getElementById('range-start');
     const endWrap   = document.getElementById('range-end');
     function sync() {
-      const show = rangeSel.value === 'custom';
-      startWrap.classList.toggle('d-none', !show);
-      endWrap.classList.toggle('d-none', !show);
+      const show = rangeSel && rangeSel.value === 'custom';
+      if (startWrap) startWrap.classList.toggle('d-none', !show);
+      if (endWrap) endWrap.classList.toggle('d-none', !show);
     }
     if (rangeSel) {
       rangeSel.addEventListener('change', sync);
       sync();
     }
 
-    // Optional: keep hash in sync with the active tab (nice UX)
+    // Keep hash in sync with the active tab (nice UX)
     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
       btn.addEventListener('shown.bs.tab', e => {
         const id = e.target.getAttribute('data-bs-target');

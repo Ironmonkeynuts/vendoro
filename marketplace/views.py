@@ -15,6 +15,7 @@ from django.http import (
     JsonResponse
 )
 from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import (
@@ -32,7 +33,7 @@ from .models import (
     ProductReview,
     Category
 )
-from orders.models import OrderItem
+from orders.models import Order, OrderItem
 from users.models import SellerProfile
 from .forms import ProductForm, ShopForm, ProductReviewForm, SellerProfileForm
 
@@ -683,6 +684,24 @@ def seller_dashboard(request):
     for p in products:
         by_shop.setdefault(p.shop, []).append(p)
 
+    # ORDERS (each order belongs to one shop)
+    orders_qs = (
+        Order.objects
+        .filter(shop__owner=request.user)
+        .select_related("user", "shop")
+        .order_by("-created_at")
+    )
+
+    orders_by_shop = {}
+    for order in orders_qs:
+        orders_by_shop.setdefault(order.shop, []).append(order)
+
+    # choices for the fulfillment dropdown
+    try:
+        fulfillment_choices = Order._meta.get_field("fulfillment_status").choices
+    except Exception:
+        fulfillment_choices = getattr(getattr(Order, "FulfillmentStatus", None), "choices", [])
+
     # ALERTS
     recent_items = (
         OrderItem.objects
@@ -772,6 +791,8 @@ def seller_dashboard(request):
 
     context = {
         "inventory_by_shop": by_shop,
+        "orders_by_shop": orders_by_shop,
+        "fulfillment_choices": fulfillment_choices,
         "recent_items": recent_items,
         "new_reviews": new_reviews,
         "stats_by_shop": stats_by_shop,
@@ -784,6 +805,39 @@ def seller_dashboard(request):
     }
 
     return render(request, "marketplace/seller_dashboard.html", context)
+
+
+@login_required
+@require_POST
+def seller_update_fulfillment(request, order_id):
+    """
+    Seller can update fulfillment_status on their own shop's order.
+    Single-shop orders only (current behavior).
+    """
+    order = get_object_or_404(Order.objects.select_related("shop", "user"), id=order_id)
+
+    # Authorize: must be this seller's shop
+    if order.shop.owner_id != request.user.id:
+        messages.error(request, "You cannot update fulfillment for this order.")
+        return redirect(f"{reverse('marketplace:seller')}?tab=orders")
+
+    # Validate and update
+    field = Order._meta.get_field("fulfillment_status")
+    valid = {k for k, _ in field.choices}
+    new_value = (request.POST.get("fulfillment_status") or "").strip()
+
+    if new_value not in valid:
+        messages.error(request, "Invalid fulfillment status.")
+    else:
+        order.fulfillment_status = new_value
+        order.save(update_fields=["fulfillment_status"])
+        messages.success(
+            request,
+            f"Order #{order.id} updated to {order.get_fulfillment_status_display()}."
+        )
+
+    # Keep Orders tab active
+    return redirect(f"{reverse('marketplace:seller')}?tab=orders")
 
 
 @login_required
