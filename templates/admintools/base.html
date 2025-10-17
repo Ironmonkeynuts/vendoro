@@ -9,6 +9,10 @@
       <a class="nav-link {% if adm_active == 'users' %}active{% endif %}"
          href="{% url 'admintools:users' %}" role="tab">Users</a>
     </li>
+      <li class="nav-item">
+        <a class="nav-link {% if adm_active == 'orders' %}active{% endif %}"
+         href="{% url 'admintools:orders' %}">Orders</a>
+      </li>
     <li class="nav-item" role="presentation">
       <a class="nav-link {% if adm_active == 'reviews' %}active{% endif %}"
          href="{% url 'admintools:reviews' %}" role="tab">Reviews</a>

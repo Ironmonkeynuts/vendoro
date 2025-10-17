@@ -10,6 +10,7 @@ urlpatterns = [
         pattern_name="admintools:reports", permanent=False
     ), name="index"),
     path("users/", views.UserListView.as_view(), name="users"),
+    path("orders/", views.OrdersListView.as_view(), name="orders"),
     path("reviews/", views.ReviewsListView.as_view(), name="reviews"),
     path("reports/", views.ReportsView.as_view(), name="reports"),
     path("shops/", views.ShopsProductsView.as_view(), name="shops_products"),

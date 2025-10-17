@@ -1,0 +1,145 @@
+{% extends "admintools/base.html" %}
+
+{% block admintools_content %}
+
+<h1 class="h4 mb-3">Orders</h1>
+
+<form method="get" class="row g-2 align-items-center mb-3">
+  <div class="col-sm-8">
+    <input type="text" name="q" value="{{ request.GET.q }}" class="form-control"
+           placeholder="Search by order #, buyer, email, shop, status">
+  </div>
+  <div class="col-sm-4 d-flex gap-2">
+    <button class="btn btn-primary w-100">Search</button>
+    <a class="btn btn-outline-secondary" href="{% url 'admintools:orders' %}">Reset</a>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr class="text-muted small">
+        <th>
+          {% if request.GET.sort == 'id' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-id" class="text-decoration-none">Order # ▲</a>
+          {% elif request.GET.sort == '-id' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=id" class="text-decoration-none">Order # ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-id" class="text-decoration-none">Order #</a>
+          {% endif %}
+        </th>
+        <th>
+          {% if request.GET.sort == 'shop' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-shop" class="text-decoration-none">Shop ▲</a>
+          {% elif request.GET.sort == '-shop' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=shop" class="text-decoration-none">Shop ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&amp;sort=shop" class="text-decoration-none">Shop</a>
+          {% endif %}
+        </th>
+        <th>
+          {% if request.GET.sort == 'date' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-date" class="text-decoration-none">Placed ▲</a>
+          {% elif request.GET.sort == '-date' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=date" class="text-decoration-none">Placed ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-date" class="text-decoration-none">Placed</a>
+          {% endif %}
+        </th>
+        <th class="text-end">
+          {% if request.GET.sort == 'total' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-total" class="text-decoration-none">Total ▲</a>
+          {% elif request.GET.sort == '-total' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=total" class="text-decoration-none">Total ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-total" class="text-decoration-none">Total</a>
+          {% endif %}
+        </th>
+        <th>
+          {% if request.GET.sort == 'status' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-status" class="text-decoration-none">Status ▲</a>
+          {% elif request.GET.sort == '-status' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=status" class="text-decoration-none">Status ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&amp;sort=status" class="text-decoration-none">Status</a>
+          {% endif %}
+        </th>
+        <th>
+          {# We normalize both spellings to the same sort key in the view #}
+          {% if request.GET.sort == 'fulfillment' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=-fulfillment" class="text-decoration-none">Fulfilment ▲</a>
+          {% elif request.GET.sort == '-fulfillment' %}
+            <a href="?q={{ request.GET.q }}&amp;sort=fulfillment" class="text-decoration-none">Fulfilment ▼</a>
+          {% else %}
+            <a href="?q={{ request.GET.q }}&amp;sort=fulfillment" class="text-decoration-none">Fulfilment</a>
+          {% endif %}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in object_list %}
+        <tr>
+          <td class="fw-medium">#{{ o.id }}</td>
+
+          <td>
+            {% if o.shops_count and o.shops_count|add:0 > 1 %}
+              Multiple shops ({{ o.shops_count }})
+            {% else %}
+              {# show the single shop name if present #}
+              {% with first_item=o.items.all.0 %}
+                {% if first_item and first_item.product and first_item.product.shop %}
+                  {{ first_item.product.shop.name }}
+                {% else %}
+                  —
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+          </td>
+
+          <td>{{ o.created_at|date:"Y-m-d H:i" }}</td>
+
+          <td class="text-end">
+            {{ o.total_amount_calc|floatformat:2 }}
+          </td>
+
+          <td>{{ o.status|default:"—" }}</td>
+
+          <td>
+            {% if o.fulfillment_status %}{{ o.fulfillment_status }}
+            {% elif o.fulfilment_status %}{{ o.fulfilment_status }}
+            {% elif o.shipping_status %}{{ o.shipping_status }}
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-muted">No orders found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<nav aria-label="Pagination">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?q={{ request.GET.q }}&amp;sort={{ request.GET.sort }}&amp;page={{ page_obj.previous_page_number }}">Prev</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Prev</span></li>
+    {% endif %}
+
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    </li>
+
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?q={{ request.GET.q }}&amp;sort={{ request.GET.sort }}&amp;page={{ page_obj.next_page_number }}">Next</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Next</span></li>
+    {% endif %}
+  </ul>
+</nav>
+
+{% endblock %}

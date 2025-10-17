@@ -1,8 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models import (
-    Q, F, Count, Avg, Sum, Prefetch, DecimalField, ExpressionWrapper
+    Q, F, Count, Avg, Sum, Prefetch, DecimalField, ExpressionWrapper, Min
 )
 from django.db.models.functions import Coalesce, TruncDate
 from django.http import HttpResponse
@@ -139,6 +140,135 @@ def user_toggle_suspend(request, pk: int):
         f"{'Unsuspended' if target.is_active else 'Suspended'} {target.username}."
     )
     return _safe_redirect_next(request)
+
+
+# ---------- Orders ----------
+class OrdersListView(StaffOrSuperuserRequiredMixin, ListView):
+    """Admin: list orders with search + sortable columns."""
+    template_name = "admintools/orders.html"
+    model = Order
+    paginate_by = 25
+    ordering = "-created_at"
+
+    # map UI sort keys -> DB fields / annotations
+    SORT_MAP = {
+        "id": "id",
+        "-id": "-id",
+        "date": "created_at",
+        "-date": "-created_at",
+        "total": "total_amount_calc",       # annotated below
+        "-total": "-total_amount_calc",
+        "status": "status",
+        "-status": "-status",
+        "shop": "shop_name_sort",           # annotated below
+        "-shop": "-shop_name_sort",
+    }
+
+    def _has_field(self, model, name: str) -> bool:
+        try:
+            model._meta.get_field(name)
+            return True
+        except FieldDoesNotExist:
+            return False
+
+    def _first_existing_field(self, model, candidates):
+        for name in candidates:
+            if self._has_field(model, name):
+                return name
+        return None
+
+    def _build_search_q(self, q: str):
+        """
+        Robust search:
+        - username, email, first/last name
+        - shop name
+        - order status
+        - fulfillment/fulfilment/shipping status (whichever exists)
+        - possible order reference/number/code/short_id (if present)
+        - "#123" or "123" -> id
+        - exact date like "2025-10-17" -> orders on that day
+        """
+        search_q = (
+            Q(user__username__icontains=q)
+            | Q(user__email__icontains=q)
+            | Q(user__first_name__icontains=q)
+            | Q(user__last_name__icontains=q)
+            | Q(items__product__shop__name__icontains=q)
+            | Q(status__icontains=q)
+        )
+
+        # Order reference-like fields if your model has one
+        ref_field = self._first_existing_field(
+            Order, ("reference", "number", "code", "short_id")
+        )
+        if ref_field:
+            search_q |= Q(**{f"{ref_field}__icontains": q})
+
+        # Fulfillment/fulfilment/shipping status (whichever exists)
+        ff = self._first_existing_field(
+            Order, ("fulfillment_status", "fulfilment_status", "shipping_status")
+        )
+        if ff:
+            search_q |= Q(**{f"{ff}__icontains": q})
+
+        # Numeric ID or "#123"
+        digits = q[1:] if q.startswith("#") else q
+        if digits.isdigit():
+            search_q |= Q(id=int(digits))
+
+        # Date search: YYYY-MM-DD
+        d = parse_date(q)
+        if d:
+            start = timezone.make_aware(datetime.combine(d, time.min))
+            end = timezone.make_aware(datetime.combine(d, time.max))
+            search_q |= Q(created_at__gte=start, created_at__lte=end)
+
+        return search_q
+
+    def get_queryset(self):
+        qs = (
+            super()
+            .get_queryset()
+            .select_related("user")
+            .prefetch_related("items__product__shop")
+        )
+
+        # annotations for totals and shop sorting
+        line_amount = ExpressionWrapper(
+            F("items__quantity") * F("items__unit_price"),
+            output_field=OrderItem._meta.get_field("unit_price"),
+        )
+        qs = qs.annotate(
+            total_amount_calc=Coalesce(Sum(line_amount), Decimal("0")),
+            shop_name_sort=Min("items__product__shop__name"),
+        )
+
+        # search (robust)
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(self._build_search_q(q)).distinct()
+
+        # sorting
+        sort = (self.request.GET.get("sort") or "").strip()
+        if sort in ("fulfillment", "-fulfillment"):
+            fulfillment_field = self._first_existing_field(
+                Order, ("fulfillment_status", "fulfilment_status", "shipping_status")
+            )
+            if fulfillment_field:
+                order_by = "-" + fulfillment_field if sort.startswith("-") else fulfillment_field
+            else:
+                order_by = self.ordering
+        else:
+            order_by = self.SORT_MAP.get(sort, self.ordering)
+
+        return qs.order_by(order_by)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["q"] = (self.request.GET.get("q") or "").strip()
+        ctx["sort"] = (self.request.GET.get("sort") or "").strip()
+        ctx["adm_active"] = "orders"
+        return ctx
 
 
 # ---------- Shops & Products ----------
