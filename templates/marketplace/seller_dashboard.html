@@ -37,6 +37,29 @@
 <div class="tab-content">
   {# INVENTORY #}
   <div id="tab-inventory" class="tab-pane fade {% if active_tab == 'inventory' or not active_tab %}show active{% endif %}" role="tabpanel">
+    <form method="get" class="row g-2 align-items-end mb-3">
+      <input type="hidden" name="tab" value="inventory">
+      <div class="col-sm-6 col-md-7">
+        <label class="form-label small text-muted d-block mb-1">Search products</label>
+        <input type="search" name="inv_q" value="{{ inv_q }}" placeholder="Title or category..."
+              class="form-control form-control-sm">
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label small text-muted d-block mb-1">Sort</label>
+        <select name="inv_sort" class="form-select form-select-sm">
+          <option value="new"        {% if inv_sort == 'new' %}selected{% endif %}>Newest</option>
+          <option value="old"        {% if inv_sort == 'old' %}selected{% endif %}>Oldest</option>
+          <option value="price_asc"  {% if inv_sort == 'price_asc' %}selected{% endif %}>Price ↑</option>
+          <option value="price_desc" {% if inv_sort == 'price_desc' %}selected{% endif %}>Price ↓</option>
+          <option value="title"      {% if inv_sort == 'title' %}selected{% endif %}>Title A→Z</option>
+          <option value="rating"     {% if inv_sort == 'rating' %}selected{% endif %}>Rating</option>
+        </select>
+      </div>
+      <div class="col-sm-2 col-md-2 text-end">
+        <label class="form-label d-block mb-1 invisible">Apply</label>
+        <button class="btn btn-sm btn-primary">Apply</button>
+      </div>
+    </form>
     {% if inventory_by_shop %}
       {% for shop, plist in inventory_by_shop.items %}
         <div class="mb-4">
@@ -88,6 +111,29 @@
 
   {# NEW: ORDERS #}
   <div id="tab-orders" class="tab-pane fade {% if active_tab == 'orders' %}show active{% endif %}" role="tabpanel">
+    <form method="get" class="row g-2 align-items-end mb-3">
+      <input type="hidden" name="tab" value="orders">
+      <div class="col-sm-6 col-md-7">
+        <label class="form-label small text-muted d-block mb-1">Search orders</label>
+        <input type="search" name="ord_q" value="{{ ord_q }}" placeholder="#ID, buyer, status..."
+              class="form-control form-control-sm">
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label small text-muted d-block mb-1">Sort</label>
+        <select name="ord_sort" class="form-select form-select-sm">
+          <option value="new"          {% if ord_sort == 'new' %}selected{% endif %}>Newest</option>
+          <option value="old"          {% if ord_sort == 'old' %}selected{% endif %}>Oldest</option>
+          <option value="status"       {% if ord_sort == 'status' %}selected{% endif %}>Payment status</option>
+          <option value="fulfillment"  {% if ord_sort == 'fulfillment' %}selected{% endif %}>Fulfillment</option>
+          <option value="total_desc"   {% if ord_sort == 'total_desc' %}selected{% endif %}>Total £ ↓</option>
+          <option value="total_asc"    {% if ord_sort == 'total_asc' %}selected{% endif %}>Total £ ↑</option>
+        </select>
+      </div>
+      <div class="col-sm-2 col-md-2 text-end">
+        <label class="form-label d-block mb-1 invisible">Apply</label>
+        <button class="btn btn-sm btn-primary">Apply</button>
+      </div>
+    </form>
     {% if orders_by_shop %}
       {% for shop, orders in orders_by_shop.items %}
         <div class="mb-4">
@@ -143,6 +189,29 @@
 
   {# ALERTS #}
   <div id="tab-alerts" class="tab-pane fade {% if active_tab == 'alerts' %}show active{% endif %}" role="tabpanel">
+    <form method="get" class="row g-2 align-items-end mb-3">
+      <input type="hidden" name="tab" value="alerts">
+      <div class="col-sm-6 col-md-7">
+        <label class="form-label small text-muted d-block mb-1">Search alerts</label>
+        <input type="search" name="al_q" value="{{ al_q }}" placeholder="Order #, product, buyer, review text..."
+              class="form-control form-control-sm">
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label small text-muted d-block mb-1">Sort</label>
+        <select name="al_sort" class="form-select form-select-sm">
+          <option value="new"         {% if al_sort == 'new' %}selected{% endif %}>Newest first</option>
+          <option value="old"         {% if al_sort == 'old' %}selected{% endif %}>Oldest first</option>
+          <option value="amount_desc" {% if al_sort == 'amount_desc' %}selected{% endif %}>Amount ↓ (transactions)</option>
+          <option value="amount_asc"  {% if al_sort == 'amount_asc' %}selected{% endif %}>Amount ↑ (transactions)</option>
+          <option value="rating_desc" {% if al_sort == 'rating_desc' %}selected{% endif %}>Rating ↓ (reviews)</option>
+          <option value="rating_asc"  {% if al_sort == 'rating_asc' %}selected{% endif %}>Rating ↑ (reviews)</option>
+        </select>
+      </div>
+      <div class="col-sm-2 col-md-2 text-end">
+        <label class="form-label d-block mb-1 invisible">Apply</label>
+        <button class="btn btn-sm btn-primary">Apply</button>
+      </div>
+    </form>
     <div class="row g-4">
       <div class="col-lg-6">
         <h2 class="h6">Recent transactions</h2>

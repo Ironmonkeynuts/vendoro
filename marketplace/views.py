@@ -659,17 +659,25 @@ def review_add(request, shop_slug, product_slug):
 def seller_dashboard(request):
     """
     Seller dashboard with tabs:
-    - Inventory (unchanged)
-    - Alerts (recent transactions & reviews; unchanged)
-    - Stats (now range-aware + CSV export support)
+    - Inventory (search + sort)
+    - Orders    (search + sort)
+    - Alerts    (search + sort)
+    - Stats     (range-aware + CSV export support)
     """
     has_shop = Shop.objects.filter(owner=request.user).exists()
     if not has_shop:
         return redirect("marketplace:shop_create")
-    
-    start, end, label = _parse_range(request)
 
-    # INVENTORY
+    # ---- Range parsing for Stats (your helper) ----
+    start, end, label = _parse_range(request)
+    active_tab = (request.GET.get("tab") or "inventory").strip()
+
+    # ------------------------------------------------
+    # INVENTORY: search & sort
+    # ------------------------------------------------
+    inv_q = (request.GET.get("inv_q") or "").strip()
+    inv_sort = (request.GET.get("inv_sort") or "new").strip()
+
     products = (
         Product.objects
         .filter(shop__owner=request.user, is_active=True)
@@ -678,45 +686,132 @@ def seller_dashboard(request):
             review_count=Count("reviews", distinct=True),
             review_avg=Avg("reviews__rating"),
         )
-        .order_by("shop__name", "-created_at")
     )
-    by_shop = {}
-    for p in products:
-        by_shop.setdefault(p.shop, []).append(p)
 
-    # ORDERS (each order belongs to one shop)
+    if inv_q:
+        products = products.filter(
+            Q(title__icontains=inv_q) |
+            Q(category__name__icontains=inv_q)
+        )
+
+    inv_sort_map = {
+        "new": ("-created_at",),
+        "old": ("created_at",),
+        "price_asc": ("price", "-id"),
+        "price_desc": ("-price", "-id"),
+        "title": ("title",),
+        "rating": ("-review_avg", "-review_count", "-created_at"),
+    }
+    products = products.order_by(*(inv_sort_map.get(inv_sort, ("-created_at",))))
+
+    inventory_by_shop = {}
+    for p in products:
+        inventory_by_shop.setdefault(p.shop, []).append(p)
+
+    # ------------------------------------------------
+    # ORDERS: single-shop orders (search & sort)
+    # ------------------------------------------------
+    ord_q = (request.GET.get("ord_q") or "").strip().lstrip("#")
+    ord_sort = (request.GET.get("ord_sort") or "new").strip()
+
     orders_qs = (
         Order.objects
         .filter(shop__owner=request.user)
         .select_related("user", "shop")
-        .order_by("-created_at")
     )
+
+    # search by id / buyer / status / fulfillment
+    if ord_q:
+        q_obj = (
+            Q(user__username__icontains=ord_q) |
+            Q(user__email__icontains=ord_q) |
+            Q(status__icontains=ord_q) |
+            Q(fulfillment_status__icontains=ord_q)
+        )
+        if ord_q.isdigit():
+            q_obj |= Q(id=int(ord_q))
+        orders_qs = orders_qs.filter(q_obj)
+
+    ord_sort_map = {
+        "new": ("-created_at", "-id"),
+        "old": ("created_at", "id"),
+        "status": ("status", "-created_at", "-id"),
+        "fulfillment": ("fulfillment_status", "-created_at", "-id"),
+        "total_desc": ("-total_amount", "-created_at", "-id"),
+        "total_asc": ("total_amount", "-created_at", "-id"),
+    }
+    orders_qs = orders_qs.order_by(*(ord_sort_map.get(ord_sort, ("-created_at", "-id"))))
 
     orders_by_shop = {}
     for order in orders_qs:
         orders_by_shop.setdefault(order.shop, []).append(order)
 
-    # choices for the fulfillment dropdown
+    # choices for fulfillment dropdown
     try:
         fulfillment_choices = Order._meta.get_field("fulfillment_status").choices
     except Exception:
         fulfillment_choices = getattr(getattr(Order, "FulfillmentStatus", None), "choices", [])
 
-    # ALERTS
+    # ------------------------------------------------
+    # ALERTS: search & sort (Recent transactions + New reviews)
+    # ------------------------------------------------
+    al_q = (request.GET.get("al_q") or "").strip()
+    al_sort = (request.GET.get("al_sort") or "new").strip()
+
+    # Recent transactions (OrderItem)
+    line_amount = ExpressionWrapper(
+        F("quantity") * F("unit_price"),
+        output_field=DecimalField(max_digits=12, decimal_places=2),
+    )
     recent_items = (
         OrderItem.objects
         .filter(product__shop__owner=request.user)
         .select_related("order", "product", "product__shop", "order__user")
-        .order_by("-order__created_at")[:20]
+        .annotate(line_amount=line_amount)
     )
+    if al_q:
+        q_oi = (
+            Q(product__title__icontains=al_q) |
+            Q(order__user__username__icontains=al_q) |
+            Q(order__user__email__icontains=al_q)
+        )
+        if al_q.lstrip("#").isdigit():
+            q_oi |= Q(order_id=int(al_q.lstrip("#")))
+        recent_items = recent_items.filter(q_oi)
+
+    al_sort_map_oi = {
+        "new": ("-order__created_at", "-order_id"),
+        "old": ("order__created_at", "order_id"),
+        "amount_desc": ("-line_amount", "-order__created_at"),
+        "amount_asc": ("line_amount", "-order__created_at"),
+    }
+    recent_items = recent_items.order_by(*(al_sort_map_oi.get(al_sort, ("-order__created_at", "-order_id"))))[:50]
+
+    # New reviews (ProductReview)
     new_reviews = (
         ProductReview.objects
         .filter(product__shop__owner=request.user)
         .select_related("product", "product__shop", "user")
-        .order_by("-created_at")[:20]
     )
+    if al_q:
+        new_reviews = new_reviews.filter(
+            Q(product__title__icontains=al_q) |
+            Q(user__username__icontains=al_q) |
+            Q(user__email__icontains=al_q) |
+            Q(comment__icontains=al_q)
+        )
 
-    # STATS (range-aware)
+    al_sort_map_rev = {
+        "new": ("-created_at", "-id"),
+        "old": ("created_at", "id"),
+        "rating_desc": ("-rating", "-created_at"),
+        "rating_asc": ("rating", "-created_at"),
+    }
+    new_reviews = new_reviews.order_by(*(al_sort_map_rev.get(al_sort, ("-created_at", "-id"))))[:50]
+
+    # ------------------------------------------------
+    # STATS (your original logic, unchanged)
+    # ------------------------------------------------
     sale_statuses = ["paid", "completed"]
     items_qs = (
         OrderItem.objects
@@ -729,7 +824,6 @@ def seller_dashboard(request):
         .select_related("product", "product__shop")
     )
 
-    # KPI calculations
     revenue_expr = ExpressionWrapper(
         F("unit_price") * F("quantity"),
         output_field=DecimalField(max_digits=12, decimal_places=2),
@@ -787,10 +881,8 @@ def seller_dashboard(request):
         )
         stats_by_shop.setdefault(key, []).append(row)
 
-    active_tab = (request.GET.get("tab") or "inventory").strip()
-
     context = {
-        "inventory_by_shop": by_shop,
+        "inventory_by_shop": inventory_by_shop,
         "orders_by_shop": orders_by_shop,
         "fulfillment_choices": fulfillment_choices,
         "recent_items": recent_items,
@@ -798,13 +890,17 @@ def seller_dashboard(request):
         "stats_by_shop": stats_by_shop,
         "top_5": top_5,
         "lowest_5": lowest_5,
-        # pass range + kpis to the Stats tab
         "range": {"label": label, "start": start.date(), "end": end.date()},
         "kpi": kpi,
         "active_tab": active_tab,
-    }
 
+        # expose current filters to the template
+        "inv_q": inv_q, "inv_sort": inv_sort,
+        "ord_q": ord_q, "ord_sort": ord_sort,
+        "al_q": al_q,   "al_sort": al_sort,
+    }
     return render(request, "marketplace/seller_dashboard.html", context)
+
 
 
 @login_required
