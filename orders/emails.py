@@ -7,6 +7,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.template.loader import render_to_string
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def _load_order(order_or_id):
     """Return (order, items_list) with related objects preloaded."""
@@ -66,20 +69,31 @@ def _render(order, items):
 
 
 def send_order_confirmation_now(order_or_id, to_email: Optional[str] = None) -> bool:
-    """Send the confirmation immediately with text + HTML. Returns True if sent."""
     order, items = _load_order(order_or_id)
     subject, text_body, html_body = _render(order, items)
 
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", getattr(settings, "EMAIL_HOST_USER", None))
+    from_email = (
+        f"Vendoro <{getattr(settings, 'EMAIL_HOST_USER', '')}>"
+        if getattr(settings, "EMAIL_HOST_USER", None)
+        else getattr(settings, "DEFAULT_FROM_EMAIL", None)
+    )
+    
     to_email = to_email or getattr(getattr(order, "user", None), "email", None)
     if not (from_email and to_email):
+        logger.warning("order_email missing from/to: from=%s to=%s order_id=%s", from_email, to_email, getattr(order, "id", None))
         return False
 
     msg = EmailMultiAlternatives(subject, text_body, from_email, [to_email])
     if html_body:
         msg.attach_alternative(html_body, "text/html")
-    msg.send(fail_silently=False)
-    return True
+
+    try:
+        sent = msg.send(fail_silently=False)
+        logger.info("order_email sent=%s order_id=%s to=%s", sent, getattr(order, "id", None), to_email)
+        return bool(sent)
+    except Exception:
+        logger.exception("order_email failed order_id=%s to=%s", getattr(order, "id", None), to_email)
+        return False
 
 
 def send_order_confirmation_on_commit(order_or_id) -> None:

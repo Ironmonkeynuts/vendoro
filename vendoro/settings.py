@@ -114,16 +114,31 @@ ACCOUNT_FORMS = {
 }
 
 # Email
-if DEBUG:  # os.environ.get("DEBUG"):
+if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = "smtp.gmail.com"
     EMAIL_PORT = 587
-    EMAIL_USE_TLS = 1
+    EMAIL_USE_TLS = True
     EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASS")
+    # Accept either env var name
+    EMAIL_HOST_PASSWORD = (
+        os.environ.get("EMAIL_HOST_PASSWORD")
+        or os.environ.get("EMAIL_HOST_PASS")
+    )
     EMAIL_TIMEOUT = 20
+
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
+if not DEFAULT_FROM_EMAIL:
+    # Fall back cleanly to a friendly value when on Heroku
+    if not DEBUG and os.environ.get("EMAIL_HOST_USER"):
+        DEFAULT_FROM_EMAIL = f"Vendoro <{os.environ.get('EMAIL_HOST_USER')}>"
+    else:
+        DEFAULT_FROM_EMAIL = "webmaster@localhost"
+
+SERVER_EMAIL = os.environ.get("SERVER_EMAIL") or DEFAULT_FROM_EMAIL
+
 
 # Middleware
 MIDDLEWARE = [

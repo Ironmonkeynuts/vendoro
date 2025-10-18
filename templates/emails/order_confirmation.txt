@@ -8,16 +8,15 @@ Status: {{ status_display|default:"N/A" }}
 
 Items:
 {% for it in items %}
-- {{ it.quantity }} × {{ it.product.title }} @ {{ currency }}{{ it.unit_price }}{% if it.product.shop %} ({{ it.product.shop.name }}){% endif %}
+- {{ it.quantity }} × {{ it.product.title }} @ {{ currency }}{{ it.unit_price|floatformat:2 }}{% if it.product.shop %} ({{ it.product.shop.name }}){% endif %}
 {% empty %}
 - No items recorded.
 {% endfor %}
 
-Total: {{ currency }}{{ order.total_amount }}
+Total: {{ currency }}{{ order.total_amount|floatformat:2 }}
 
 We’ll email you again when your order ships.
 If you have any questions, just reply to this message.
 
 Thanks,
 The {{ order.shop.name|default:"Vendoro" }} team
-Vendoro
