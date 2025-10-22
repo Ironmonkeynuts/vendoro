@@ -22,8 +22,6 @@ A dashboard with KPIs (orders, items sold, revenue, AOV, new reviews) and time-r
 
 CSV exports for accounting, fulfilment, or deeper analysis.
 
-A secondary audience is learners and developers who want a well-structured, production-minded Django project to study. The codebase demonstrates practical patterns: clean URL design, secure media handling with Cloudinary, owner-scoped permissions, PRG flows, Django Allauth integration for auth, and query optimization with annotations and aggregates.
-
 Vendoro will be useful to sellers because it eliminates friction at every step: creating a shop, uploading images, tracking stock, responding to reviews, and understanding performance without leaving the app. By exposing clear KPIs and time-series trends, it turns raw transactions into insight—highlighting best-sellers, underperformers, and seasonal patterns. This clarity supports decisions like re-stocking, pricing adjustments, or targeted promotions.
 
 ### Rationale — Why this project?
@@ -1140,3 +1138,18 @@ Vendoro is a virtual marketplace that connects buyers and sellers, allowing user
 - Admin can take action (warn, suspend, ban).
 
 ---
+
+| ID | Target | Expectation | Outcome |
+| --- | --- | --- | --- |
+| B1 | As a **buyer**  | I can **register and create a profile** |  so that **I can browse and purchase products**. |
+| | | **Acceptance criteria:** | Buyer can sign up using email and password. |
+| | | | Buyer profile is automatically created upon registration. |
+| | | | Buyer can log in and log out.
+| | | | Buyer can update profile details (name, address, etc.).
+| B2 | As a **buyer** | I can **view product listings with filters and categories** | so that **I can find what I’m looking for easily**. |
+| | | **Acceptance criteria:** | Buyer can view all products in a list/grid. |
+| | | | Buyer can filter by category, price range, seller, or rating. |
+| | | | Buyer can search by product name or keyword. |
+| | | | Buyer can sort results by price or popularity. |
+
+
