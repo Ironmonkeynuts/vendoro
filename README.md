@@ -148,14 +148,14 @@ I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wirefram
 | --- | --- | --- | --- |
 | Register | ![screenshot](documentation/wireframes/register-mobile.png) | ![screenshot](documentation/wireframes/register-tablet.png) | ![screenshot](documentation/wireframes/register-desktop.png) |
 | Login | ![screenshot](documentation/wireframes/login-mobile.png) | ![screenshot](documentation/wireframes/login-tablet.png) | ![screenshot](documentation/wireframes/login-desktop.png) |
-| Profile | ![screenshot](documentation/wireframes/) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Profile | ![screenshot](documentation/wireframes/profile-mobile.png) | ![screenshot](documentation/wireframes/profile-tablet.png) | ![screenshot](documentation/wireframes/profile-desktop.png) |
 | Home | ![screenshot](documentation/wireframes/home-mobile.png) | ![screenshot](documentation/wireframes/home-tablet.png) | ![screenshot](documentation/wireframes/home-desktop.png) |
 | Product Lists | ![screenshot](documentation/wireframes/browse-mobile.png) | ![screenshot](documentation/wireframes/browse-tablet.png) | ![screenshot](documentation/wireframes/browse-desktop.png) |
 | Product Details | ![screenshot](documentation/wireframes/product-mobile.png) | ![screenshot](documentation/wireframes/product-tablet.png) | ![screenshot](documentation/wireframes/product-desktop.png) |
 | Cart | ![screenshot](documentation/wireframes/cart-mobile.png) | ![screenshot](documentation/wireframes/cart-tablet.png) | ![screenshot](documentation/wireframes/cart-desktop.png) |
 | Checkout | ![screenshot](documentation/wireframes/checkout-mobile.png) | ![screenshot](documentation/wireframes/checkout-tablet.png) | ![screenshot](documentation/wireframes/checkout-desktop.png) |
-| Checkout Success | ![screenshot](documentation/wireframes/mobile-checkout-success.png) | ![screenshot](documentation/wireframes/tablet-checkout-success.png) | ![screenshot](documentation/wireframes/desktop-checkout-success.png) |
-| Order History | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Checkout Success | ![screenshot](documentation/wireframes/checkout-success-mobile.png) | ![screenshot](documentation/wireframes/checkout-success-tablet.png) | ![screenshot](documentation/wireframes/checkout-success-desktop.png) |
+| Order History | ![screenshot](documentation/wireframes/order-history-mobile.png) | ![screenshot](documentation/wireframes/order-history-tablet.png) | ![screenshot](documentation/wireframes/order-history-desktop.png) |
 | Shop View | ![screenshot](documentation/wireframes/shop-mobile.png) | ![screenshot](documentation/wireframes/shop-tablet.png) | ![screenshot](documentation/wireframes/shop-desktop.png) |
 | Shop Settings | ![screenshot](documentation/wireframes/shop-settings-mobile.png) | ![screenshot](documentation/wireframes/shop-settings-tablet.png) | ![screenshot](documentation/wireframes/shop-settings-desktop.png) |
 | Add Product | ![screenshot](documentation/wireframes/add-product-mobile.png) | ![screenshot](documentation/wireframes/add-product-tablet.png) | ![screenshot](documentation/wireframes/add-product-desktop.png) |
@@ -168,8 +168,8 @@ I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wirefram
 | Admin Orders | ![screenshot](documentation/wireframes/admin-orders-mobile.png) | ![screenshot](documentation/wireframes/admin-orders-tablet.png) | ![screenshot](documentation/wireframes/admin-orders-desktop.png) |
 | Admin Reviews | ![screenshot](documentation/wireframes/admin-reviews-mobile.png) | ![screenshot](documentation/wireframes/admin-reviews-tablet.png) | ![screenshot](documentation/wireframes/admin-reviews-desktop.png) |
 | Admin Shops & Products | ![screenshot](documentation/wireframes/admin-shops&products-mobile.png) | ![screenshot](documentation/wireframes/admin-shops&products-tablet.png) | ![screenshot](documentation/wireframes/admin-shops&products-desktop.png) |
-| Newsletter | ![screenshot](documentation/wireframes/) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
-| Contact | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) | ![screenshot](documentation/wireframes) |
+| Contact | ![screenshot](documentation/wireframes/contact-mobile.png) | ![screenshot](documentation/wireframes/contact-tablet.png) | ![screenshot](documentation/wireframes/contact-desktop.png) |
+| Newsletter Subscription | ![screenshot](documentation/wireframes/subscription-mobile.png) | ![screenshot](documentation/wireframes/subscription-tablet.png) | ![screenshot](documentation/wireframes/subscription-desktop.png) |
 | 404 | ![screenshot](documentation/wireframes/404-mobile.png) | ![screenshot](documentation/wireframes/404-tablet.png) | ![screenshot](documentation/wireframes/404-desktop.png) |
 
 ## User Stories
