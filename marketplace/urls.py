@@ -71,6 +71,11 @@ urlpatterns = [
         views.product_image_remove,
         name="product_image_remove"
     ),
+    path(
+        "products/<int:pk>/delete/",
+        views.product_delete,
+        name="product_delete"
+    ),
     # Generic product detail
     path(
         "shops/<slug:shop_slug>/<slug:product_slug>/",

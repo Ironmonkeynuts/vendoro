@@ -95,7 +95,21 @@
                     </td>
                     <td>{{ p.created_at|date:"Y-m-d" }}</td>
                     <td class="text-end">
-                      <a class="btn btn-sm btn-outline-secondary" href="{% url 'marketplace:product_edit' pk=p.id %}">Edit</a>
+                      <div class="btn-group">
+                        <a class="btn btn-sm btn-outline-secondary"
+                          href="{% url 'marketplace:product_edit' pk=p.id %}">
+                          Edit
+                        </a>
+
+                        <form method="post"
+                              action="{% url 'marketplace:product_delete' pk=p.id %}"
+                              onsubmit="return confirm('Delete “{{ p.title }}”? This cannot be undone.');">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-outline-danger">
+                            Delete
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 {% endfor %}
