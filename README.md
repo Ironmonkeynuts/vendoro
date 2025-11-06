@@ -223,15 +223,15 @@ In this section, you should go over the different parts of your project, and des
 | Register | Authentication is handled by allauth, allowing users to register accounts. | ![screenshot](documentation/features/register.png) |
 | Login | Authentication is handled by allauth, allowing users to log in to their existing accounts. | ![screenshot](documentation/features/login.png) |
 | Logout | Authentication is handled by allauth, allowing users to log out of their accounts. | ![screenshot](documentation/features/logout.png) |
-| Product List | Users can browse all available products with sorting, filtering by categories, and search functionality. | ![screenshot](documentation/features/product-list.png) |
+| Product List | Users can browse all available products with sorting, filtering by categories, and search functionality. | ![screenshot](documentation/features/browse.png) |
 | Product Details | Displays detailed information about a selected product, including its name, description, price, an image, and available sizes. | ![screenshot](documentation/features/product-details.png) |
-| Add to Bag | Users can add items to their shopping bag, with support for selecting different sizes if applicable. | ![screenshot](documentation/features/add-to-bag.png) |
-| View Bag | Users can view the contents of their shopping bag, adjust quantities, or remove items. | ![screenshot](documentation/features/view-bag.png) |
+| Add to Cart | Users can add items to their shopping bag, with support for selecting different sizes if applicable. | ![screenshot](documentation/features/add-to-cart.png) |
+| View Cart | Users can view the contents of their shopping bag, adjust quantities, or remove items. | ![screenshot](documentation/features/view-cart.png) |
 | Checkout | Users can proceed to checkout, where they provide their delivery details and payment information using Stripe integration. | ![screenshot](documentation/features/checkout.png) |
 | Order Confirmation | Users receive an on-screen and email confirmation with details of their purchase. | ![screenshot](documentation/features/order-confirmation.png) |
 | Profile Management | Users can manage their profile information, including their default delivery address and order history. | ![screenshot](documentation/features/profile-management.png) |
 | Order History | Users can view their past orders and access details of each order, including products purchased and the delivery status. | ![screenshot](documentation/features/order-history.png) |
-| Product Management | Superusers can add, edit, and delete products from the site via a CRUD interface. | ![screenshot](documentation/features/product-management.png) |
+| Product Management | Shop owners can add, edit, and delete products from the site via a CRUD interface. | ![screenshot](documentation/features/product-management.png) |
 | Newsletter | Users can register their email address to receive newsletters from the site. Currently, this only stores the email in the database. | ![screenshot](documentation/features/newsletter.png) |
 | Contact | Users can submit a message via the contact form, which stores their name, email, and message in the database. | ![screenshot](documentation/features/contact.png) |
 | FAQs | Admins can manage frequently asked questions, which are displayed on the site for users. | ![screenshot](documentation/features/faqs.png) |
@@ -590,13 +590,6 @@ Deployment steps are as follows, after account setup:
 
 > [!IMPORTANT]  
 > This is a sample only; you would replace the values with your own if cloning/forking my repository.
-
-🛑 !!! ATTENTION Ironmonkeynuts !!! 🛑
-
-⚠️ DO NOT update the environment variables to your own! These should never be public; only use the demo values below! ⚠️
-⚠️ Replace the keys below with your own actual keys used; example: if not using AWS, then replace those keys with Cloudinary keys, or similar. ⚠️
-
-🛑 --- END --- 🛑
 
 | Key | Value |
 | --- | --- |
