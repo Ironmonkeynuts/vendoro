@@ -45,8 +45,6 @@ source: [vendoro amiresponsive](https://ui.dev/amiresponsive?url=https://imn-ven
 
 ### The 5 Planes of UX
 
-⚠️ NOTE: make sure to update the text below to match your own project! ⚠️
-
 #### 1. Strategy
 
 **Purpose**
@@ -123,23 +121,11 @@ I used [coolors.co](https://coolors.co/080708-3772ff-df2935-fdca40-e6e8e6) to ge
 
 ### Typography
 
-⚠️ INSTRUCTIONS ⚠️
-
-Explain any fonts and icon libraries used, like **Google Fonts**, **Font Awesome**, etc. Consider adding a link to each font used, the Font Awesome site (if used), or similar icon library.
-
-⚠️ --- END --- ⚠️
-
 - [Montserrat](https://fonts.google.com/specimen/Montserrat) was used for the primary headers and titles.
 - [Lato](https://fonts.google.com/specimen/Lato) was used for all other secondary text.
 - [Font Awesome](https://fontawesome.com) icons were used throughout the site, such as the social media icons in the footer.
 
 ## Wireframes
-
-⚠️ INSTRUCTIONS ⚠️
-
-If you've created wireframes or mock-ups, use this section to display screenshots of your wireframes. The example table below uses sample pages from the walkthrough project to give you some inspiration for your own project, so please adjust accordingly.
-
-⚠️ --- END --- ⚠️
 
 To follow best practice, wireframes were developed for mobile, tablet, and desktop sizes.
 I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wireframes.
@@ -174,17 +160,12 @@ I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wirefram
 
 ## User Stories
 
-⚠️ INSTRUCTIONS ⚠️
-
-In this section, list all of your possible user stories for the project. Samples have been provided below using the example walkthrough project for your inspiration. Make sure to adjust to match your own project features!
-
-⚠️ --- END --- ⚠️
-
 | Target | Expectation | Outcome |
 | --- | --- | --- |
 | As a guest user | I would like to browse products without needing to register | so that I can shop freely before deciding to create an account. |
 | As a guest user | I would like to be prompted to create an account or log in at checkout | so that I can complete my purchase and track my order history. |
 | As a user | I would like to sign up to the site's newsletter | so that I can stay up to date with any upcoming sales or promotions. |
+| As a user | I would like to see a 404 error page if I get lost | so that it's obvious that I've stumbled upon a page that doesn't exist. |
 | As a customer | I would like to browse various product categories (clothing, toys, jewelry, kitchen gadgets, etc.) | so that I can easily find what I'm looking for. |
 | As a customer | I would like to sort products by price (low-to-high/high-to-low) and name (alphabetical) | so that I can quickly organize items in a way that suits my shopping style. |
 | As a customer | I would like to filter products by category | so that I can narrow down the products to the types I am most interested in. |
@@ -197,24 +178,28 @@ In this section, list all of your possible user stories for the project. Samples
 | As a customer | I would like to receive a confirmation email after my purchase | so that I can have a record of my transaction and order details. |
 | As a customer | I would like to see an order confirmation page with a checkout order number after completing my purchase | so that I know my order has been successfully placed. |
 | As a customer | I would like to securely enter my card details using Stripe at checkout | so that I can feel confident my payment information is protected. |
+| As a customer | I would like to add products to a wishlist | so that I can save items I'm interested in. |
+| As a customer | I would like to favorite sellers | so that I can keep up with their new products. |
+| As a customer | I would like to leave reviews and ratings for products | so that I can help other buyers. |    
 | As a returning customer | I would like to be able to log in and view my past orders | so that I can track my previous purchases and order history. |
 | As a returning customer | I would like the checkout process to remember my shipping address | so that future purchases are quicker and easier. |
-| As a site owner | I would like to create new products with a name, description, price, images, and category | so that I can add additional items to the store inventory. |
-| As a site owner | I would like to update product details (name, price, description, image, category) at any time | so that I can keep my product listings accurate and up to date. |
-| As a site owner | I would like to delete products that are no longer available or relevant | so that I can maintain a clean and accurate inventory. |
-| As a site owner | I would like to view all orders placed on the website | so that I can track and manage customer purchases. |
-| As a site owner | I would like to manage product categories | so that I can ensure items are correctly organized and easy for customers to find. |
-| As a user | I would like to see a 404 error page if I get lost | so that it's obvious that I've stumbled upon a page that doesn't exist. |
+| As a shop owner | I would like to create new products with a name, description, price, images, and category | so that I can add additional items to the store inventory. |
+| As a shop owner | I would like to update product details (name, price, description, image, category) at any time | so that I can keep my product listings accurate and up to date. |
+| As a shop owner | I would like to delete products that are no longer available or relevant | so that I can maintain a clean and accurate inventory. |
+| As a shop owner | I would like to view all orders placed on the shop site | so that I can track and manage customer purchases. |
+| As a shop owner | I would like to create a shop profile | so that I can sell products. |
+| As a shop owner | I would like to customize the appearance of my shop | so that it reflects my brand. |
+| As a shop owner | I would like to see active and inactive products | so that I can control what’s visible. |
+| As a shop owner | I would like to view order notifications | so that I can fulfill them promptly. |
+| As a shop owner | I would like to view my product market statistics | so that I can monitor my marketplace activity. |
+| As an admin | I would like to manage product categories | so that I can ensure items are correctly organized and easy for customers to find. |
+| As an admin | I would like to manage user accounts | so that I can maintain platform integrity. |
+| As an admin | I would like to approve or reject seller applications | so that only verified users can sell. |
+| As an admin | I would like to moderate product listings and reviews | so that they meet community guidelines. |
+| As an admin | I would like to view site-wide statistics | so that I can monitor marketplace activity for all sops. |
+| As an admin | I would like to manage reports of abuse or fraud | so that I can take corrective action. |
 
 ## Features
-
-⚠️ INSTRUCTIONS ⚠️
-
-In this section, you should go over the different parts of your project, and describe each feature. You should explain what value each of the features provides for the user, focusing on your target audience, what they want to achieve, and how your project can help them achieve these things.
-
-**IMPORTANT**: Remember to always include a screenshot of each individual feature!
-
-⚠️ --- END --- ⚠️
 
 ### Existing Features
 
@@ -242,14 +227,6 @@ In this section, you should go over the different parts of your project, and des
 | 404 | The 404 error page will indicate when a user has navigated to a page that doesn't exist, replacing the default Heroku 404 page with one that ties into the site's look and feel. | ![screenshot](documentation/features/404.png) |
 
 ### Future Features
-
-⚠️ INSTRUCTIONS ⚠️
-
-Do you have additional ideas that you'd like to include on your project in the future? Fantastic, list them here! It's always great to have plans for future improvements. Consider adding any helpful links or notes to help remind you in the future, if you revisit the project in a couple years.
-
-A few examples are listed below to align with possible ways to improve on the sample walkthrough project, to give you some inspiration.
-
-⚠️ --- END ---⚠️
 
 - **Product Reviews & Ratings**: Allow customers to leave reviews and rate products, with admin moderation. Display average ratings and review counts on product pages.
 - **Wishlist Functionality**: Enable users to save products to a personal wishlist for future purchases. Notify users if wishlist items go on sale or are back in stock.
@@ -295,16 +272,6 @@ A few examples are listed below to align with possible ways to improve on the sa
 | [![badge](https://img.shields.io/badge/W3Schools-grey?logo=w3schools&logoColor=04AA6D)](https://www.w3schools.com) | Tutorials/Reference Guide |
 | [![badge](https://img.shields.io/badge/StackOverflow-grey?logo=stackoverflow&logoColor=F58025)](https://stackoverflow.com) | Troubleshooting and Debugging |
 
-⚠️ NOTE ⚠️
-
-Want to add more?
-
-- Tutorial: https://shields.io/badges/static-badge
-- Icons/Logos: https://simpleicons.org
-  - FYI: not all logos are available to use
-
-🛑 --- END --- 🛑
-
 ## Database Design
 
 ### Data Model
@@ -312,24 +279,6 @@ Want to add more?
 Entity Relationship Diagrams (ERD) help to visualize database architecture before creating models. Understanding the relationships between different tables can save time later in the project.
 
 ![screenshot](documentation/erd.png)
-
-⚠️ INSTRUCTIONS ⚠️
-
-Using your defined models, create an ERD with the relationships identified. A couple of recommendations for building your own free ERDs:
-- [Lucidchart](https://www.lucidchart.com/pages/ER-diagram-symbols-and-meaning)
-- [Draw.io](https://draw.io)
-
-Looking for an interactive version of your ERD? Consider using a [`Mermaid flowchart`](https://mermaid.live). To simplify the process, you can ask ChatGPT (or similar) the following prompt:
-
-> ChatGPT Prompt:  
-> "Generate a Markdown syntax Mermaid ERD using my Django models"  
-> [paste-your-django-models-into-ChatGPT]
-
-The "Boutique Ado" sample ERD in Markdown syntax using Mermaid can be seen below as an example.
-
-**NOTE**: A Markdown Preview tool doesn't show the interactive ERD; you must first commit/push the code to your GitHub repository in order to see it live in action.
-
-⚠️ --- END --- ⚠️
 
 I have used `Mermaid` to generate an interactive ERD of my project.
 
@@ -507,45 +456,10 @@ erDiagram
 
 source: [Mermaid](https://mermaid.live/edit#pako:eNqlWG1v2joU_itRPrOqBApdvjGabehCQYFu2hVSZBI3serYubbTlpX-92sHkubNKes-lAb7vD7n-DkOL6ZPA2jaJmQ3CIQMxFtiGHdrx1176tN4Ud8NAxFhoOD4zAVDJDRSDhkBMawswhgg3BDzxD7J5F635M3-l7tfjrtyl19nc6fNj3rOtGuOA8QTDPZew3kA70GKhccjlCRywWtG0xAREMMkouRkScBn0RQCQcAg5_0zZKxudz4S-26JhHKhavKOHZoSwU6mdpRiCIgRA_YAhdqmifAQqe7uEMZqj0vYPMALW62OcmE9grlEF4C5TAd-NRGr05cWvVygE7zCyht2lX5cO_P5hxoSwxDgZjsK8FyX9CkRwBctsOY7FThP4S0m7j_OZjWfTB1v_X250sVGn0gzuEZYHKdhLc5Q4lIVShiS3bSXWGHKKjsRCiMs_0TL3g4QGYEGG48-QsZQ0AZS-14FrW6RAraKWAt-08nG-bZ0f3UQmxaxFnOyW27uphtdRXhEk3pBBBJYV5HT0eA-Q4lAlLxZ8oGAIZUVya0F0JclwqpSPqyedMQ9iQl6PC0HUlWgGBo-g_Ix8ICobaRJUNrQpzlbTL5pT0bCaJDKUtTSlUGG1XQBVvV61vma3f5wbjeaErU5Umv_pYCIgh3UCqZPHhfUf_BEJJklojj4YNau82Pm_PyTaCokoRYYEAXTZjX2aRxDIhp1S9IdRn5n3VoCPUboOqu5FjQGHxF8qgYFeUJJUAo1C21Hg_05ASzdG8Wa04m7OYss8yzPaM2mh9nGWei8-IBV4X-vQarms39nZdA40fkZFFRIkgOxGizVky2ASHll6T7F93IQqep75W3tKS1MSU6Anh9B_4GmUldOS8kQ9eN2EkvAPvMgQz61WUvSXaBSFtQyr6OaJ58SJLwSC2nQ_r5cON6t83M9dzYbGcLdl_XUna02s-Xtn8za0uTU0F1Os_QBkr8iwNIt-HD49Ike2u6tthEB3iVdvVVoxV-aU95WA523XgBaVPJJZBsYccG1c69T9TRl0G_IdZNOr3-cDkWGOuXDQUP3maZ3uvo08SnzTeGkvNiUyxrcPl4SEHkvpaYiIp4iF94Z0JE_bEO-k_iws1w1BQZ9KLuWN7ioRbwIyMdpAM_MpKyZnWfV4Wd0X3Xu2cYTQ-IjDVEYOA4fGHQP2JbmKA82ZSbB-_fDrytlU06Tdhcr2QZPd-oqtlPJmz0zlPdK0xYshT0zhkwykfxqZuS1NUUE5bXRtOVjIN_DtuaWvEqdBJB_KY1zNUbTMDLte4C5_HakndOLd7EKUkHXe-LnOtKEab-Yz6Y9uLIuBuPx9di6GljWaDy66pl70x5ZF5fWaGR9HvaHw8Hwuv_aM39nTi8vxsPBoD8aXY0vR58vR4NrGQJUM3-qZpVp962eCQMkKFscfwfIfg54_R-xtFYC)
 
-⚠️ RECOMMENDED ⚠️
-
-Alternatively, or in addition to, a more comprehensive ERD can be auto-generated once you're at the end of your development stages, just before you submit. Follow the steps below to obtain a thorough ERD that you can include. Feel free to leave the steps below in the README for future use to yourself.
-
-⚠️ --- END --- ⚠️
-
-I have used `pygraphviz` and `django-extensions` to auto-generate an ERD.
-
-The steps taken were as follows:
-- In the terminal: `sudo apt update`
-- then: `sudo apt-get install python3-dev graphviz libgraphviz-dev pkg-config`
-- then type `Y` to proceed
-- then: `pip3 install django-extensions pygraphviz`
-- in my `settings.py` file, I added the following to my `INSTALLED_APPS`:
-```python
-INSTALLED_APPS = [
-    ...
-    'django_extensions',
-    ...
-]
-```
-- back in the terminal: `python3 manage.py graph_models -a -o erd.png`
-- drag the new `erd.png` file into my `documentation/` folder
-- removed `'django_extensions',` from my `INSTALLED_APPS`
-- finally, in the terminal: `pip3 uninstall django-extensions pygraphviz -y`
-
-![screenshot](documentation/advanced-erd.png)
-
-source: [medium.com](https://medium.com/@yathomasi1/1-using-django-extensions-to-visualize-the-database-diagram-in-django-application-c5fa7e710e16)
 
 ## Agile Development Process
 
 ### GitHub Projects
-
-⚠️ TIP ⚠️
-
-Consider adding screenshots of your Projects Board(s), Issues (open and closed), and Milestone tasks.
-
-⚠️ --- END ---⚠️
 
 [GitHub Projects](https://www.github.com/Ironmonkeynuts/vendoro/projects) served as an Agile tool for this project. Through it, EPICs, User Stories, issues/bugs, and Milestone tasks were planned, then subsequently tracked on a regular basis using the Kanban project board.
 
@@ -593,8 +507,6 @@ Deployment steps are as follows, after account setup:
 
 | Key | Value |
 | --- | --- |
-| `AWS_ACCESS_KEY_ID` | user-inserts-own-aws-access-key-id |
-| `AWS_SECRET_ACCESS_KEY` | user-inserts-own-aws-secret-access-key |
 | `DATABASE_URL` | user-inserts-own-postgres-database-url |
 | `DISABLE_COLLECTSTATIC` | 1 (*this is temporary, and can be removed for the final deployment*) |
 | `EMAIL_HOST_PASS` | user-inserts-own-gmail-api-key |
@@ -603,7 +515,9 @@ Deployment steps are as follows, after account setup:
 | `STRIPE_PUBLIC_KEY` | user-inserts-own-stripe-public-key |
 | `STRIPE_SECRET_KEY` | user-inserts-own-stripe-secret-key |
 | `STRIPE_WH_SECRET` | user-inserts-own-stripe-webhook-secret |
-| `USE_AWS` | True |
+| `CLOUDINARY_NAME` | user-inserts-own-cloudinary-name |
+| `CLOUDINARY_API` | user-inserts-own-cloudinary-api-key |
+| `CLOUDINARY_SECRET` | user-inserts-own-cloudinary-secret-key |
 
 Heroku needs some additional files in order to deploy properly.
 
@@ -754,13 +668,6 @@ You will need to create a new file called `env.py` at the root-level, and includ
 > [!IMPORTANT]  
 > This is a sample only; you would replace the values with your own if cloning/forking my repository.
 
-🛑 !!! ATTENTION Ironmonkeynuts !!! 🛑
-
-⚠️ DO NOT update the environment variables to your own! These should never be public; only use the demo values below! ⚠️
-⚠️ Replace the keys below with your own actual keys used; example: if not using Cloudinary | AWS, then replace those keys with whatever keys you're using. ⚠️
-
-🛑 --- END --- 🛑
-
 Sample `env.py` file:
 
 ```python
@@ -864,65 +771,25 @@ Eventually you'll want to learn how to use Git branches. Here's a helpful tutori
 | [Stripe](https://docs.stripe.com/payments/elements) | Online payment services |
 | [Gmail API](https://developers.google.com/gmail/api/guides) | Sending payment confirmation emails |
 | [Python Tutor](https://pythontutor.com) | Additional Python help |
-| [ChatGPT](https://chatgpt.com) | Help with code logic and explanations |
+| [ChatGPT](https://chatgpt.com) | Help with code logic and explanations. Help creating text content for site information |
 
 ### Media
-
-⚠️ INSTRUCTIONS ⚠️
-
-Use this space to provide attribution links to any media files borrowed from elsewhere (images, videos, audio, etc.). If you're the owner (or a close acquaintance) of some/all media files, then make sure to specify this information. Let the assessors know that you have explicit rights to use the media files within your project. Ideally, you should provide an actual link to every media file used, not just a generic link to the main site, unless it's AI-generated artwork.
-
-Looking for some media files? Here are some popular sites to use. The list of examples below is by no means exhaustive.
-
-- Images
-    - [Pexels](https://www.pexels.com)
-    - [Unsplash](https://unsplash.com)
-    - [Pixabay](https://pixabay.com)
-    - [Lorem Picsum](https://picsum.photos) (placeholder images)
-    - [Wallhere](https://wallhere.com) (wallpaper / backgrounds)
-    - [This Person Does Not Exist](https://thispersondoesnotexist.com) (reload to get a new person)
-- Audio
-    - [Audio Micro](https://www.audiomicro.com/free-sound-effects)
-    - [Button Clicks](https://www.zapsplat.com/sound-effect-category/button-clicks)
-    - [Lasers & Weapons](https://www.zapsplat.com/sound-effect-category/lasers-and-weapons/page/5)
-    - [Puzzle Music](https://soundimage.org/puzzle-music)
-    - [Camtasia Audio](https://library.techsmith.com/camtasia/assets/Audio)
-- Video
-    - [Videvo](https://www.videvo.net)
-- Image Compression
-    - [TinyPNG](https://tinypng.com) (for images <5MB)
-    - [CompressPNG](https://compresspng.com) (for images >5MB)
-
-A few examples have been provided below to give you some ideas on how to do your own Media credits.
-
-⚠️ --- END ---⚠️
 
 | Source | Notes |
 | --- | --- |
 | [favicon.io](https://favicon.io) | Generating the favicon |
 | [Boutique Ado](https://codeinstitute.net) | Sample images provided from the walkthrough projects |
+| [ChatGPT](https://chatgpt.com) | Help with creating logo and hero images to specification |
 | [Font Awesome](https://fontawesome.com) | Icons used throughout the site |
-| [Pexels](https://images.pexels.com/photos/416160/pexels-photo-416160.jpeg) | Hero image |
-| [Wallhere](https://c.wallhere.com/images/9c/c8/da4b4009f070c8e1dfee43d25f99-2318808.jpg!d) | Background wallpaper |
-| [Pixabay](https://cdn.pixabay.com/photo/2017/09/04/16/58/passport-2714675_1280.jpg) | Background wallpaper |
-| [DALL-E 3](https://openai.com/index/dall-e-3) | AI generated artwork |
-| [TinyPNG](https://tinypng.com) | Compressing images < 5MB |
-| [CompressPNG](https://compresspng.com) | Compressing images > 5MB |
-| [CloudConvert](https://cloudconvert.com/webp-converter) | Converting images to `.webp` |
 
 ### Acknowledgements
 
-⚠️ INSTRUCTIONS ⚠️
-
-Use this space to provide attribution and acknowledgement to any supports that helped, encouraged, or supported you throughout the development stages of this project. It's always lovely to appreciate those that help us grow and improve our developer skills. A few examples have been provided below to give you some ideas.
-
-⚠️ --- END ---⚠️
 
 - I would like to thank my Code Institute mentor, [Tim Nelson](https://www.github.com/TravelTimN) for the support throughout the development of this project.
+- I would like to thank my Runshaw College Tutors, [Tom Cowen](https://wwww.runshaw.ac.uk) and [Kevin Loughrey](https://wwww.runshaw.ac.uk) for the support throughout the development of this project.
 - I would like to thank the [Code Institute](https://codeinstitute.net) Tutor Team for their assistance with troubleshooting and debugging some project issues.
 - I would like to thank the [Code Institute Slack community](https://code-institute-room.slack.com) and [Code Institute Discord community](https://discord-portal.codeinstitute.net) for the moral support; it kept me going during periods of self doubt and impostor syndrome.
-- I would like to thank my partner, for believing in me, and allowing me to make this transition into software development.
-- I would like to thank my employer, for supporting me in my career development change towards becoming a software developer.
+- I would like to thank my fellow students on the course for support  with finding bugs and general appraisal of the project code.
 
 
 
@@ -1134,17 +1001,7 @@ Vendoro is a virtual marketplace that connects buyers and sellers, allowing user
 
 ---
 
-| ID | Target | Expectation | Outcome |
-| --- | --- | --- | --- |
-| B1 | As a **buyer**  | I can **register and create a profile** |  so that **I can browse and purchase products**. |
-| | | **Acceptance criteria:** | Buyer can sign up using email and password. |
-| | | | Buyer profile is automatically created upon registration. |
-| | | | Buyer can log in and log out.
-| | | | Buyer can update profile details (name, address, etc.).
-| B2 | As a **buyer** | I can **view product listings with filters and categories** | so that **I can find what I’m looking for easily**. |
-| | | **Acceptance criteria:** | Buyer can view all products in a list/grid. |
-| | | | Buyer can filter by category, price range, seller, or rating. |
-| | | | Buyer can search by product name or keyword. |
-| | | | Buyer can sort results by price or popularity. |
+
+
 
 
