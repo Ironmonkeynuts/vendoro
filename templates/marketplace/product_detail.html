@@ -5,27 +5,38 @@
 <div class="row g-4">
   <div class="col-md-8">
     <h1 class="h4 mb-3">{{ product.title }}</h1>
-    {# Average + count #}
     {% if rating_count %}
       <p class="mb-1">
         <strong>{{ rating_avg|floatformat:1 }}/5</strong>
         <span class="text-muted">({{ rating_count }} review{{ rating_count|pluralize }})</span>
       </p>
     {% endif %}
-    {# Main image + thumbs #}
+
+    {# Main image + thumbs (use cloudinary_url + <img>) #}
     {% with images=product.images.all %}
       {% if images %}
         {% with lead=images.0 %}
           <div class="mb-3">
-            {% cloudinary lead.image width=900 height=900 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=lead.alt_text class="img-fluid rounded" %}
+            {% cloudinary_url lead.image width=900 height=900 crop="fill" gravity="auto" fetch_format="auto" quality="auto" as lead_url %}
+            <img
+              src="{{ lead_url }}"
+              alt="{{ lead.alt_text|default:'Product image' }}"
+              width="900" height="900"
+              class="img-fluid rounded">
           </div>
         {% endwith %}
+
         {% if images|length > 1 %}
           <div class="d-flex flex-wrap gap-2">
             {% for pi in images %}
               <a href="{% url 'marketplace:product_detail' product.shop.slug product.slug %}#"
-                 onclick="event.preventDefault(); document.getElementById('lead-img-{{ forloop.counter }}')?.scrollIntoView({behavior:'smooth'});">
-                {% cloudinary pi.image width=140 height=140 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=pi.alt_text class="img-thumbnail" %}
+                 onclick="event.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});">
+                {% cloudinary_url pi.image width=140 height=140 crop="fill" gravity="auto" fetch_format="auto" quality="auto" as thumb_url %}
+                <img
+                  src="{{ thumb_url }}"
+                  alt="{{ pi.alt_text|default:'Thumbnail' }}"
+                  width="140" height="140"
+                  class="img-thumbnail">
               </a>
             {% endfor %}
           </div>

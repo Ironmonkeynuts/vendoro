@@ -41,7 +41,11 @@
         {% with lead=p.images.all.0 %}
           {% if lead %}
             <div class="ratio ratio-1x1">
-              {% cloudinary lead.image width=600 height=600 crop="fill" gravity="auto" fetch_format="auto" quality="auto" alt=lead.alt_text %}
+              {% cloudinary_url lead.image width=600 height=600 crop="fill" gravity="auto" fetch_format="auto" quality="auto" as lead_url %}
+              <img alt="{{ lead.alt_text|default:'Product image' }}"
+                   src="{{ lead_url }}"
+                   width="600"
+                   height="600">
             </div>
           {% else %}
             <div class="ratio ratio-1x1 bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center">
