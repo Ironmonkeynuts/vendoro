@@ -1,12 +1,11 @@
-{# templates/404.html #}
 {% extends "base.html" %}
-{% block title %}Page not found – Vendoro{% endblock %}
+{% block title %}404 - Page not found – Vendoro{% endblock %}
 
 {% block content %}
 <div class="container py-5">
   <div class="row align-items-center">
     <div class="col-lg-6">
-      <h1 class="display-5 fw-bold">Page not found</h1>
+      <h1 class="display-5 fw-bold">404 - Page not found</h1>
       <p class="lead text-muted">We couldn’t find the page you asked for. It may have moved or the link is incorrect.</p>
       <div class="d-flex flex-wrap gap-2 mt-3">
         <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
