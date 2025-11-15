@@ -18,4 +18,5 @@ urlpatterns = [
     ),
     path("cart/clear/", views.clear_cart, name="clear_cart"),
     path("myorders/", views.my_orders, name="my_orders"),
+    path("email-preview/<int:order_id>/", views.email_debug_preview, name="email_debug_preview"),
 ]

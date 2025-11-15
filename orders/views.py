@@ -10,6 +10,21 @@ from .models import Cart, CartItem, Order
 from .forms import QuantityAddForm
 from .utils import get_active_cart
 
+# TEMPORARY ONLY — for validating email HTML
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+
+
+def email_debug_preview(request, order_id):
+    """Super simple validator preview — NO tokens, NO auth."""
+    order = Order.objects.get(id=order_id)
+
+    html = render_to_string(
+        "emails/order_confirmation.html",
+        {"order": order},
+    )
+    return HttpResponse(html)
+
 
 @login_required
 def cart_detail(request):
