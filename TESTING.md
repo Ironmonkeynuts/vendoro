@@ -47,28 +47,11 @@ I have used the recommended [HTML W3C Validator](https://validator.w3.org) to va
 
 ### CSS
 
-⚠️ INSTRUCTIONS ⚠️
-
-1. [*recommended*] If you are using the live deployed site, use this link: https://jigsaw.w3.org/css-validator/#validate_by_uri
-2. If you are copying/pasting your CSS code, use this link: https://jigsaw.w3.org/css-validator/#validate_by_input
-
-It's recommended to validate the live site for your primary CSS file on the deployed URL. This will give you a custom URL as well, which you can use below on your testing documentation. It makes it easier to return back to a page for validating it again in the future. The URL will look something like this:
-
-- https://jigsaw.w3.org/css-validator/validator?uri=https://imn-vendoro-55af0b986025.herokuapp.com
-
-If you have additional/multiple CSS files, then individual "[validation by input](https://jigsaw.w3.org/css-validator/#validate_by_input)" is recommended for the extra CSS files.
-
-**IMPORTANT**: Third-Party tools
-
-If you're using external libraries/frameworks (e.g: Bootstrap, Materialize, Font Awesome, etc.), then sometimes the tool will attempt to also validate these, even though it's not part of your own actual code that you wrote. You are not required to validate the external libraries or frameworks!
-
-⚠️ --- END --- ⚠️
-
 I have used the recommended [CSS Jigsaw Validator](https://jigsaw.w3.org/css-validator) to validate all of my CSS files.
 
 | Directory | File | URL | Screenshot | Notes |
 | --- | --- | --- | --- | --- |
-| static | [main.css](https://github.com/Ironmonkeynuts/vendoro/blob/main/static/css/main.css) | ⚠️ Link (if applicable) | ![screenshot](documentation/validation/css-static-main.png) | ⚠️ Notes (if applicable) |
+| static | [main.css](https://github.com/Ironmonkeynuts/vendoro/blob/main/static/css/main.css) | [URL](https://jigsaw.w3.org/css-validator/validator?uri=https%3A%2F%2Fimn-vendoro-55af0b986025.herokuapp.com%2F&profile=css3svg&usermedium=all&warning=1&vextwarning=&lang=en) | ![screenshot](documentation/validation/css-static-main.png) | NA |
 
 
 ### JavaScript
@@ -94,6 +77,10 @@ The same thing applies when using external libraries such as Stripe, Leaflet, Bo
 ⚠️ --- END --- ⚠️
 
 I have used the recommended [JShint Validator](https://jshint.com) to validate all of my JS files.
+
+| Directory | File | URL | Screenshot | Notes |
+| --- | --- | --- | --- | --- |
+| templates | [reports]() | [URL]() | [Screenshot]() | js code situated at end of template |
 
 
 
@@ -154,7 +141,7 @@ I have used the recommended [PEP8 CI Python Linter](https://pep8ci.herokuapp.com
 
 | Directory | File | URL | Screenshot | Notes |
 | --- | --- | --- | --- | --- |
-| admintools | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/admin.py) | ![screenshot](documentation/validation/py-admintools-admin.png) | ⚠️ Notes (if applicable) |
+| admintools | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/refs/heads/main/admintools/admin.py) | ![screenshot](documentation/validation/py-admintools-admin.png) | NA |
 | admintools | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/models.py) | ![screenshot](documentation/validation/py-admintools-models.png) | ⚠️ Notes (if applicable) |
 | admintools | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/tests.py) | ![screenshot](documentation/validation/py-admintools-tests.png) | ⚠️ Notes (if applicable) |
 | admintools | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/urls.py) | ![screenshot](documentation/validation/py-admintools-urls.png) | ⚠️ Notes (if applicable) |
