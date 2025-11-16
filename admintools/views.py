@@ -28,6 +28,7 @@ User = get_user_model()
 # ---------- Access control ----------
 class StaffOrSuperuserRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     login_url = "account_login"
+
     def test_func(self):
         u = self.request.user
         return u.is_authenticated and (u.is_staff or u.is_superuser)
@@ -93,8 +94,13 @@ def _safe_redirect_next(request, fallback_name="admintools:users"):
 def user_toggle_staff(request, pk: int):
     """Toggle staff status for a user (superuser or custom permission)."""
     # allow superuser OR users with the custom permission
-    if not (request.user.is_authenticated and
-            (request.user.is_superuser or request.user.has_perm("users.can_manage_staff"))):
+    if not (
+        request.user.is_authenticated
+        and (
+            request.user.is_superuser
+            or request.user.has_perm("users.can_manage_staff")
+        )
+    ):
         messages.error(request, "You do not have permission to do that.")
         return _safe_redirect_next(request)
 
@@ -102,17 +108,24 @@ def user_toggle_staff(request, pk: int):
 
     # Safety rails
     if target.is_superuser and target != request.user:
-        messages.error(request, "You cannot change staff status of another superuser.")
+        messages.error(
+            request,
+            "You cannot change staff status of another superuser."
+        )
         return _safe_redirect_next(request)
     if target == request.user:
-        messages.error(request, "You cannot change your own staff status here.")
+        messages.error(
+            request,
+            "You cannot change your own staff status here."
+        )
         return _safe_redirect_next(request)
 
     target.is_staff = not target.is_staff
     target.save(update_fields=["is_staff"])
     messages.success(
         request,
-        f"Set staff for {target.username} to {'Yes' if target.is_staff else 'No'}."
+        f"Set staff for {target.username} to "
+        f"{'Yes' if target.is_staff else 'No'}."
     )
     return _safe_redirect_next(request)
 
@@ -135,10 +148,8 @@ def user_toggle_suspend(request, pk: int):
 
     target.is_active = not target.is_active
     target.save(update_fields=["is_active"])
-    messages.success(
-        request,
-        f"{'Unsuspended' if target.is_active else 'Suspended'} {target.username}."
-    )
+    status = "Unsuspended" if target.is_active else "Suspended"
+    messages.success(request, f"{status} {target.username}.")
     return _safe_redirect_next(request)
 
 
@@ -199,14 +210,25 @@ class OrdersListView(StaffOrSuperuserRequiredMixin, ListView):
 
         # Order reference-like fields if your model has one
         ref_field = self._first_existing_field(
-            Order, ("reference", "number", "code", "short_id")
+            Order,
+            (
+                "reference",
+                "number",
+                "code",
+                "short_id",
+            ),
         )
         if ref_field:
             search_q |= Q(**{f"{ref_field}__icontains": q})
 
         # Fulfillment/fulfilment/shipping status (whichever exists)
         ff = self._first_existing_field(
-            Order, ("fulfillment_status", "fulfilment_status", "shipping_status")
+            Order,
+            (
+                "fulfillment_status",
+                "fulfilment_status",
+                "shipping_status",
+            ),
         )
         if ff:
             search_q |= Q(**{f"{ff}__icontains": q})
@@ -252,10 +274,18 @@ class OrdersListView(StaffOrSuperuserRequiredMixin, ListView):
         sort = (self.request.GET.get("sort") or "").strip()
         if sort in ("fulfillment", "-fulfillment"):
             fulfillment_field = self._first_existing_field(
-                Order, ("fulfillment_status", "fulfilment_status", "shipping_status")
+                Order,
+                (
+                    "fulfillment_status",
+                    "fulfilment_status",
+                    "shipping_status",
+                ),
             )
             if fulfillment_field:
-                order_by = "-" + fulfillment_field if sort.startswith("-") else fulfillment_field
+                if sort.startswith("-"):
+                    order_by = "-" + fulfillment_field
+                else:
+                    order_by = fulfillment_field
             else:
                 order_by = self.ordering
         else:
@@ -277,7 +307,9 @@ def product_toggle_suspend(request, pk: int):
     """Superuser: toggle Product.is_active (suspend / activate)."""
     if not (request.user.is_authenticated and request.user.is_superuser):
         messages.error(request, "You do not have permission to do that.")
-        return _safe_redirect_next(request, fallback_name="admintools:shops_products")
+        return _safe_redirect_next(
+            request, fallback_name="admintools:shops_products"
+        )
 
     product = get_object_or_404(
         Product.objects.select_related("shop", "shop__owner"),
@@ -288,9 +320,12 @@ def product_toggle_suspend(request, pk: int):
 
     messages.success(
         request,
-        f"{'Reactivated' if product.is_active else 'Suspended'} “{product.title}”."
+        f"{'Reactivated' if product.is_active else 'Suspended'} "
+        f"'{product.title}'."
     )
-    return _safe_redirect_next(request, fallback_name="admintools:shops_products")
+    return _safe_redirect_next(
+        request, fallback_name="admintools:shops_products"
+    )
 
 
 class ShopsProductsView(StaffOrSuperuserRequiredMixin, TemplateView):
@@ -323,7 +358,8 @@ class ShopsProductsView(StaffOrSuperuserRequiredMixin, TemplateView):
 
         # Per-shop rollups
         shop_revenue_expr = ExpressionWrapper(
-            F("products__orderitem__unit_price") * F("products__orderitem__quantity"),
+            F("products__orderitem__unit_price")
+            * F("products__orderitem__quantity"),
             output_field=DecimalField(max_digits=12, decimal_places=2),
         )
 
@@ -442,8 +478,14 @@ class ReportsView(StaffOrSuperuserRequiredMixin, TemplateView):
                 order__status="paid", order__created_at__gte=last_7_days
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-        new_users_7d = User.objects.filter(date_joined__gte=last_7_days).count()
-        new_reviews_7d = ProductReview.objects.filter(created_at__gte=last_7_days).count()
+        new_users_7d = User.objects.filter(
+            date_joined__gte=last_7_days
+        ).count()
+        new_reviews_7d = (
+            ProductReview.objects
+            .filter(created_at__gte=last_7_days)
+            .count()
+        )
 
         orders_30d = paid_orders.filter(created_at__gte=last_30_days).count()
         revenue_30d = (
@@ -451,17 +493,31 @@ class ReportsView(StaffOrSuperuserRequiredMixin, TemplateView):
                 order__status="paid", order__created_at__gte=last_30_days
             ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-        new_users_30d = User.objects.filter(date_joined__gte=last_30_days).count()
-        new_reviews_30d = ProductReview.objects.filter(created_at__gte=last_30_days).count()
+        new_users_30d = User.objects.filter(
+            date_joined__gte=last_30_days
+        ).count()
+        new_reviews_30d = (
+            ProductReview.objects
+            .filter(created_at__gte=last_30_days)
+            .count()
+        )
 
-        orders_1y = paid_orders.filter(created_at__gte=last_1_year).count()
+        orders_1y = paid_orders.filter(
+            created_at__gte=last_1_year
+        ).count()
         revenue_1y = (
             OrderItem.objects.filter(
-                order__status="paid", order__created_at__gte=last_1_year
-            ).aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
+                order__status="paid",
+                order__created_at__gte=last_1_year,
+            )
+            .aggregate(total=Coalesce(Sum(line_amount_expr), Decimal("0")))
         )["total"] or Decimal("0")
-        new_users_1y = User.objects.filter(date_joined__gte=last_1_year).count()
-        new_reviews_1y = ProductReview.objects.filter(created_at__gte=last_1_year).count()
+        new_users_1y = User.objects.filter(
+            date_joined__gte=last_1_year
+        ).count()
+        new_reviews_1y = ProductReview.objects.filter(
+            created_at__gte=last_1_year
+        ).count()
 
         ctx.update(
             {
@@ -563,7 +619,10 @@ class ReportsView(StaffOrSuperuserRequiredMixin, TemplateView):
             .select_related("user")
             .annotate(
                 items_count_calc=Coalesce(Sum("items__quantity"), 0),
-                total_amount_calc=Coalesce(Sum(order_line_amount), Decimal("0")),
+                total_amount_calc=Coalesce(
+                    Sum(order_line_amount),
+                    Decimal("0"),
+                ),
             )
             .order_by("-created_at")[:20]
         )
@@ -759,8 +818,14 @@ class ReviewsListView(StaffOrSuperuserRequiredMixin, ListView):
         elif rng == "custom":
             sd = parse_date(start_param) if start_param else None
             ed = parse_date(end_param) if end_param else None
-            start = timezone.make_aware(datetime.combine(sd, time.min)) if sd else None
-            end = timezone.make_aware(datetime.combine(ed, time.max)) if ed else None
+            if sd:
+                start = timezone.make_aware(datetime.combine(sd, time.min))
+            else:
+                start = None
+            if ed:
+                end = timezone.make_aware(datetime.combine(ed, time.max))
+            else:
+                end = None
         else:
             start = end = None
 
@@ -799,10 +864,12 @@ def review_toggle_visibility(request, pk: int):
     review.is_public = not getattr(review, "is_public", True)
     review.save(update_fields=["is_public"])
 
+    username = getattr(review.user, "username", "user")
+    product_title = getattr(review.product, "title", "product")
+    status = "Published" if review.is_public else "Hidden"
     messages.success(
         request,
-        f"{'Published' if review.is_public else 'Hidden'} review by "
-        f"@{getattr(review.user, 'username', 'user')} on “{getattr(review.product, 'title', 'product')}”."
+        f"{status} review by @{username} on “{product_title}”."
     )
     return _safe_redirect_next(request, fallback_name="admintools:reviews")
 
@@ -840,7 +907,9 @@ def review_bulk_action(request):
 
     if action == "export_csv":
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="reviews_selected.csv"'
+        response["Content-Disposition"] = (
+            'attachment; filename="reviews_selected.csv"'
+        )
         writer = csv.writer(response)
         writer.writerow([
             "id", "created_at", "is_public", "rating", "comment",
@@ -848,6 +917,7 @@ def review_bulk_action(request):
             "user_id", "username", "user_email",
         ])
         for r in qs:
+            shop = getattr(r.product, "shop", None)
             writer.writerow([
                 r.id,
                 r.created_at.isoformat(timespec="seconds"),
@@ -856,7 +926,7 @@ def review_bulk_action(request):
                 smart_str(r.comment or ""),
                 getattr(r.product, "id", r.product_id),
                 smart_str(getattr(r.product, "title", "")),
-                smart_str(getattr(getattr(r.product, "shop", None), "name", "")),
+                smart_str(getattr(shop, "name", "")),
                 getattr(r.user, "id", r.user_id),
                 getattr(r.user, "username", ""),
                 getattr(r.user, "email", ""),
