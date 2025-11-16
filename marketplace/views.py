@@ -321,7 +321,8 @@ def shop_create(request):
 def _shop_banner_url(shop, *, width=1600, height=420):
     """
     Return a transformed Cloudinary URL for the shop banner if possible.
-    Works with CloudinaryField (public_id) and django-cloudinary-storage (name).
+    Works with CloudinaryField (public_id) and django-cloudinary-storage
+    (name).
     Falls back to the storage URL if transformation isn't possible.
     """
     if not getattr(shop, "banner", None):
@@ -330,8 +331,10 @@ def _shop_banner_url(shop, *, width=1600, height=420):
     # Try to get something we can hand to cloudinary_url
     public_id = (
         getattr(shop.banner, "public_id", None)  # CloudinaryField
-        or getattr(shop.banner, "name", None)    # django-cloudinary-storage path
-        or str(shop.banner)                       # last resort
+        or
+        getattr(shop.banner, "name", None)  # django-cloudinary-storage path
+        or
+        str(shop.banner)  # last resort
     )
 
     try:
@@ -712,7 +715,8 @@ def seller_dashboard(request):
         "title": ("title",),
         "rating": ("-review_avg", "-review_count", "-created_at"),
     }
-    products = products.order_by(*(inv_sort_map.get(inv_sort, ("-created_at",))))
+    order_by_args = inv_sort_map.get(inv_sort, ("-created_at",))
+    products = products.order_by(*order_by_args)
 
     inventory_by_shop = {}
     for p in products:
@@ -750,7 +754,8 @@ def seller_dashboard(request):
         "total_desc": ("-total_amount", "-created_at", "-id"),
         "total_asc": ("total_amount", "-created_at", "-id"),
     }
-    orders_qs = orders_qs.order_by(*(ord_sort_map.get(ord_sort, ("-created_at", "-id"))))
+    order_args = ord_sort_map.get(ord_sort, ("-created_at", "-id"))
+    orders_qs = orders_qs.order_by(*order_args)
 
     orders_by_shop = {}
     for order in orders_qs:
@@ -758,9 +763,11 @@ def seller_dashboard(request):
 
     # choices for fulfillment dropdown
     try:
-        fulfillment_choices = Order._meta.get_field("fulfillment_status").choices
+        field = Order._meta.get_field("fulfillment_status")
+        fulfillment_choices = field.choices
     except Exception:
-        fulfillment_choices = getattr(getattr(Order, "FulfillmentStatus", None), "choices", [])
+        fs = getattr(Order, "FulfillmentStatus", None)
+        fulfillment_choices = getattr(fs, "choices", [])
 
     # ------------------------------------------------
     # ALERTS: search & sort (Recent transactions + New reviews)
@@ -795,7 +802,10 @@ def seller_dashboard(request):
         "amount_desc": ("-line_amount", "-order__created_at"),
         "amount_asc": ("line_amount", "-order__created_at"),
     }
-    recent_items = recent_items.order_by(*(al_sort_map_oi.get(al_sort, ("-order__created_at", "-order_id"))))[:50]
+    al_order_args_oi = al_sort_map_oi.get(
+        al_sort, ("-order__created_at", "-order_id")
+    )
+    recent_items = recent_items.order_by(*al_order_args_oi)[:50]
 
     # New reviews (ProductReview)
     new_reviews = (
@@ -817,7 +827,9 @@ def seller_dashboard(request):
         "rating_desc": ("-rating", "-created_at"),
         "rating_asc": ("rating", "-created_at"),
     }
-    new_reviews = new_reviews.order_by(*(al_sort_map_rev.get(al_sort, ("-created_at", "-id"))))[:50]
+    new_reviews = new_reviews.order_by(
+        *al_sort_map_rev.get(al_sort, ("-created_at", "-id"))
+    )[:50]
 
     # ------------------------------------------------
     # STATS (your original logic, unchanged)
@@ -920,7 +932,10 @@ def seller_update_fulfillment(request, order_id):
     Seller can update fulfillment_status on their own shop's order.
     Single-shop orders only (current behavior).
     """
-    order = get_object_or_404(Order.objects.select_related("shop", "user"), id=order_id)
+    order = get_object_or_404(
+        Order.objects.select_related("shop", "user"),
+        id=order_id,
+    )
 
     # Authorize: must be this seller's shop
     if order.shop.owner_id != request.user.id:
@@ -937,9 +952,15 @@ def seller_update_fulfillment(request, order_id):
     else:
         order.fulfillment_status = new_value
         order.save(update_fields=["fulfillment_status"])
+        # obtain a display string via getattr to avoid static-analysis errors
+        disp_fn = getattr(order, "get_fulfillment_status_display", None)
+        if callable(disp_fn):
+            status_text = disp_fn()
+        else:
+            status_text = order.fulfillment_status
         messages.success(
             request,
-            f"Order #{order.id} updated to {order.get_fulfillment_status_display()}."
+            f"Order #{order.id} updated to {status_text}."
         )
 
     # Keep Orders tab active
