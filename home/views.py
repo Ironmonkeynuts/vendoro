@@ -217,7 +217,10 @@ def newsletter_subscribe(request):
             )
             return redirect("home")
 
-    messages.success(request, "Thanks! You’re subscribed to the Vendoro newsletter.")
+    messages.success(
+        request,
+        "Thanks! You’re subscribed to the Vendoro newsletter."
+    )
     return redirect("home")
 
 
