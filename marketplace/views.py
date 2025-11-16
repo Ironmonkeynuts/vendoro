@@ -924,7 +924,6 @@ def seller_dashboard(request):
     return render(request, "marketplace/seller_dashboard.html", context)
 
 
-
 @login_required
 @require_POST
 def seller_update_fulfillment(request, order_id):
@@ -939,7 +938,10 @@ def seller_update_fulfillment(request, order_id):
 
     # Authorize: must be this seller's shop
     if order.shop.owner_id != request.user.id:
-        messages.error(request, "You cannot update fulfillment for this order.")
+        messages.error(
+            request,
+            "You cannot update fulfillment for this order."
+        )
         return redirect(f"{reverse('marketplace:seller')}?tab=orders")
 
     # Validate and update
