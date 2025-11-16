@@ -13,15 +13,15 @@ def cloudinary(request):
     store = getattr(settings, "CLOUDINARY_STORAGE", {})
 
     cloud_name = (
-        (cfg.cloud_name or "") 
-        or os.environ.get("CLOUDINARY_NAME", "") 
+        (cfg.cloud_name or "")
+        or os.environ.get("CLOUDINARY_NAME", "")
         or store.get("CLOUD_NAME", "")
     ).strip()
 
     api_key = (
         (cfg.api_key or "")
-        or os.environ.get("CLOUDINARY_API", "")         # your current env var name
-        or os.environ.get("CLOUDINARY_API_KEY", "")     # also support the standard name
+        or os.environ.get("CLOUDINARY_API", "")
+        or os.environ.get("CLOUDINARY_API_KEY", "")
         or store.get("API_KEY", "")
     ).strip()
 
