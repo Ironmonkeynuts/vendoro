@@ -2,24 +2,36 @@
 {% block content %}
 <h2>Your Cart</h2>
 {% if items %}
-<table class="table align-middle">
-  <thead><tr><th>Product</th><th style="width:120px">Qty</th><th>Price</th><th>Subtotal</th><th></th></tr></thead>
-  <tbody>
-  {% for item in items %}
-    <tr data-item-id="{{ item.id }}">
-      <td>{{ item.product.title }}</td>
-      <td>
-        <input class="form-control qty" type="number" min="1" value="{{ item.quantity }}">
-      </td>
-      <td>£{{ item.product.price }}</td>
-      <td class="subtotal">£{{ item.subtotal }}</td>
-      <td>
-        <button class="btn btn-sm btn-outline-danger remove">Remove</button>
-      </td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="table-responsive">
+  <table class="table align-middle cart-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th style="width:120px">Qty</th>
+        <th>Price</th>
+        <th>Subtotal</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+      <tr data-item-id="{{ item.id }}">
+        <td>{{ item.product.title }}</td>
+        <td class="text-center">
+          <input class="form-control form-control-sm qty text-center"
+                 type="number" min="1" value="{{ item.quantity }}"
+                 inputmode="numeric">
+        </td>
+        <td>£{{ item.product.price }}</td>
+        <td class="subtotal">£{{ item.subtotal }}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-danger remove">Remove</button>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
 <form class="d-inline" method="post" action="{% url 'orders:clear_cart' %}">{% csrf_token %}
   <button class="btn btn-outline-secondary">Empty cart</button>
 </form>
