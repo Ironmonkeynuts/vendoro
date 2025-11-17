@@ -5,7 +5,7 @@ import logging
 
 from orders.models import Order, Cart
 # NEW: send email after payment
-from orders.emails import send_order_confirmation_on_commit  
+from orders.emails import send_order_confirmation_on_commit
 
 logger = logging.getLogger(__name__)
 
@@ -89,5 +89,5 @@ class StripeWH_Handler:
                 logger.info(
                     "Webhook: cart %s not found (already cleared?)", cart_id
                 )
-                
+
         return HttpResponse("OK", status=200)
