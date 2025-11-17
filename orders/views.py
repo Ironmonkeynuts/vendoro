@@ -69,7 +69,12 @@ def add_to_cart(request, product_id):
         total = str(cart.total())  
         # If you have a cart_count helper, compute it here too:
         cart_count = sum(i.quantity for i in cart.items.all())
-        return JsonResponse({"ok": True, "qty": line.quantity, "total": total, "cart_count": cart_count})
+        return JsonResponse({
+            "ok": True,
+            "qty": line.quantity,
+            "total": total,
+            "cart_count": cart_count
+        })
 
     return redirect("orders:cart_detail")
 

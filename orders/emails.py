@@ -1,6 +1,5 @@
 from __future__ import annotations
-from decimal import Decimal
-from typing import Tuple, List, Optional
+from typing import Optional
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -29,7 +28,9 @@ def _load_order(order_or_id):
         items_qs = order.items.select_related("product", "product__shop")
     else:
         # default reverse name if related_name wasn't set
-        items_qs = order.orderitem_set.select_related("product", "product__shop")
+        items_qs = order.orderitem_set.select_related(
+            "product", "product__shop"
+        )
 
     items = list(items_qs)
     return order, items
@@ -45,7 +46,8 @@ def _render(order, items):
         or getattr(order, "date_created", None)
     )
     status_display = (
-        order.get_status_display() if hasattr(order, "get_status_display") else getattr(order, "status", "")
+        order.get_status_display() if hasattr(order, "get_status_display") else
+        getattr(order, "status", "")
     )
 
     ctx = {
@@ -54,12 +56,15 @@ def _render(order, items):
         "placed_at": placed_at,
         "status_display": status_display,
         "currency": getattr(settings, "CURRENCY_SYMBOL", "£"),
-        # NEW: aliases so legacy templates using {{ user }} or {{ shop }} still work
+        # NEW: aliases so legacy templates using {{ user }} or {{ shop }} 
+        # still work
         "user": getattr(order, "user", None),
         "shop": getattr(order, "shop", None),
     }
 
-    subject = render_to_string("emails/order_confirmation_subject.txt", ctx).strip()
+    subject = render_to_string(
+        "emails/order_confirmation_subject.txt", ctx
+    ).strip()
     text_body = render_to_string("emails/order_confirmation.txt", ctx)
     try:
         html_body = render_to_string("emails/order_confirmation.html", ctx)
@@ -68,7 +73,9 @@ def _render(order, items):
     return subject, text_body, html_body
 
 
-def send_order_confirmation_now(order_or_id, to_email: Optional[str] = None) -> bool:
+def send_order_confirmation_now(
+    order_or_id, to_email: Optional[str] = None
+) -> bool:
     order, items = _load_order(order_or_id)
     subject, text_body, html_body = _render(order, items)
 
@@ -77,10 +84,15 @@ def send_order_confirmation_now(order_or_id, to_email: Optional[str] = None) -> 
         if getattr(settings, "EMAIL_HOST_USER", None)
         else getattr(settings, "DEFAULT_FROM_EMAIL", None)
     )
-    
+
     to_email = to_email or getattr(getattr(order, "user", None), "email", None)
     if not (from_email and to_email):
-        logger.warning("order_email missing from/to: from=%s to=%s order_id=%s", from_email, to_email, getattr(order, "id", None))
+        logger.warning(
+            "order_email missing from/to: from=%s to=%s order_id=%s",
+            from_email,
+            to_email,
+            getattr(order, "id", None),
+        )
         return False
 
     msg = EmailMultiAlternatives(subject, text_body, from_email, [to_email])
@@ -89,10 +101,19 @@ def send_order_confirmation_now(order_or_id, to_email: Optional[str] = None) -> 
 
     try:
         sent = msg.send(fail_silently=False)
-        logger.info("order_email sent=%s order_id=%s to=%s", sent, getattr(order, "id", None), to_email)
+        logger.info(
+            "order_email sent=%s order_id=%s to=%s",
+            sent,
+            getattr(order, "id", None),
+            to_email,
+        )
         return bool(sent)
     except Exception:
-        logger.exception("order_email failed order_id=%s to=%s", getattr(order, "id", None), to_email)
+        logger.exception(
+            "order_email failed order_id=%s to=%s",
+            getattr(order, "id", None),
+            to_email,
+        )
         return False
 
 
