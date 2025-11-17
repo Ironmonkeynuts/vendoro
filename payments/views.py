@@ -251,7 +251,6 @@ def success(request):
     return render(request, "payments/success.html", {"order": order})
 
 
-
 @login_required
 def cancel(request):
     messages.warning(request, "Checkout canceled. Your cart is preserved.")
