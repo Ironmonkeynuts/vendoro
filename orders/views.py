@@ -66,7 +66,7 @@ def add_to_cart(request, product_id):
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         # Safer to return strings for money/decimals
-        total = str(cart.total())  
+        total = str(cart.total())
         # If you have a cart_count helper, compute it here too:
         cart_count = sum(i.quantity for i in cart.items.all())
         return JsonResponse({
