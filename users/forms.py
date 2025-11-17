@@ -26,8 +26,18 @@ class UserNameForm(forms.ModelForm):
         model = User
         fields = ["first_name", "last_name"]
         widgets = {
-            "first_name": forms.TextInput(attrs={"class": "form-control", "autocomplete": "given-name"}),
-            "last_name": forms.TextInput(attrs={"class": "form-control", "autocomplete": "family-name"}),
+            "first_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "given-name",
+                }
+            ),
+            "last_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "family-name",
+                }
+            ),
         }
 
     def clean_first_name(self):
@@ -67,25 +77,78 @@ class BuyerProfileForm(forms.ModelForm):
         widgets = {
             "display_name": forms.TextInput(attrs={"class": "form-control"}),
 
-            "default_shipping_email": forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}),
-            "default_shipping_telephone": forms.TextInput(attrs={"class": "form-control", "autocomplete": "tel"}),
-            "default_shipping_address1": forms.TextInput(attrs={"class": "form-control", "autocomplete": "address-line1"}),
-            "default_shipping_address2": forms.TextInput(attrs={"class": "form-control", "autocomplete": "address-line2"}),
-            "default_shipping_city": forms.TextInput(attrs={"class": "form-control", "autocomplete": "address-level2"}),
-            "default_shipping_postcode": forms.TextInput(attrs={"class": "form-control", "autocomplete": "postal-code"}),
-            "default_shipping_country": forms.TextInput(attrs={"class": "form-control", "autocomplete": "country"}),
+            "default_shipping_email": forms.EmailInput(
+                attrs={"class": "form-control", "autocomplete": "email"}
+            ),
+            "default_shipping_telephone": forms.TextInput(
+                attrs={"class": "form-control", "autocomplete": "tel"}
+            ),
+            "default_shipping_address1": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "address-line1",
+                }
+            ),
+            "default_shipping_address2": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "address-line2",
+                }
+            ),
+            "default_shipping_city": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "address-level2",
+                }
+            ),
+            "default_shipping_postcode": forms.TextInput(
+                attrs={"class": "form-control", "autocomplete": "postal-code"}
+            ),
+            "default_shipping_country": forms.TextInput(
+                attrs={"class": "form-control", "autocomplete": "country"}
+            ),
 
-            "billing_same_as_shipping": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "billing_same_as_shipping": forms.CheckboxInput(
+                attrs={"class": "form-check-input"}
+            ),
 
-            "default_billing_email": forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}),
-            "default_billing_telephone": forms.TextInput(attrs={"class": "form-control", "autocomplete": "tel"}),
-            "default_billing_address1": forms.TextInput(attrs={"class": "form-control", "autocomplete": "address-line1"}),
-            "default_billing_address2": forms.TextInput(attrs={"class": "form-control", "autocomplete": "address-line2"}),
-            "default_billing_city": forms.TextInput(attrs={"class": "form-control", "autocomplete": "address-level2"}),
-            "default_billing_postcode": forms.TextInput(attrs={"class": "form-control", "autocomplete": "postal-code"}),
-            "default_billing_country": forms.TextInput(attrs={"class": "form-control", "autocomplete": "country"}),
+            "default_billing_email": forms.EmailInput(
+                attrs={"class": "form-control", "autocomplete": "email"}
+            ),
+            "default_billing_telephone": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "tel",
+                }
+            ),
+            "default_billing_address1": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "address-line1",
+                }
+            ),
+            "default_billing_address2": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "address-line2",
+                }
+            ),
+            "default_billing_city": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "autocomplete": "address-level2",
+                }
+            ),
+            "default_billing_postcode": forms.TextInput(
+                attrs={"class": "form-control", "autocomplete": "postal-code"}
+            ),
+            "default_billing_country": forms.TextInput(
+                attrs={"class": "form-control", "autocomplete": "country"}
+            ),
 
-            "marketing_opt_in": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "marketing_opt_in": forms.CheckboxInput(
+                attrs={"class": "form-check-input"}
+            ),
         }
 
     # Normalize common fields (trim whitespace; lowercase emails)
@@ -129,7 +192,11 @@ class BuyerProfileForm(forms.ModelForm):
             ]
             for f in required:
                 if not cleaned.get(f):
-                    self.add_error(f, "This field is required when billing differs from shipping.")
+                    self.add_error(
+                        f,
+                        "This field is required when billing differs from "
+                        "shipping."
+                    )
 
         return cleaned
 
@@ -138,13 +205,27 @@ class BuyerProfileForm(forms.ModelForm):
 
         # Mirror shipping -> billing when checkbox is ticked
         if self.cleaned_data.get("billing_same_as_shipping", True):
-            obj.default_billing_email = self.cleaned_data.get("default_shipping_email", "") or ""
-            obj.default_billing_telephone = self.cleaned_data.get("default_shipping_telephone", "") or ""
-            obj.default_billing_address1 = self.cleaned_data.get("default_shipping_address1", "") or ""
-            obj.default_billing_address2 = self.cleaned_data.get("default_shipping_address2", "") or ""
-            obj.default_billing_city = self.cleaned_data.get("default_shipping_city", "") or ""
-            obj.default_billing_postcode = self.cleaned_data.get("default_shipping_postcode", "") or ""
-            obj.default_billing_country = self.cleaned_data.get("default_shipping_country", "") or ""
+            obj.default_billing_email = self.cleaned_data.get(
+                "default_shipping_email", ""
+            ) or ""
+            obj.default_billing_telephone = self.cleaned_data.get(
+                "default_shipping_telephone", ""
+            ) or ""
+            obj.default_billing_address1 = self.cleaned_data.get(
+                "default_shipping_address1", ""
+            ) or ""
+            obj.default_billing_address2 = self.cleaned_data.get(
+                "default_shipping_address2", ""
+            ) or ""
+            obj.default_billing_city = self.cleaned_data.get(
+                "default_shipping_city", ""
+            ) or ""
+            obj.default_billing_postcode = self.cleaned_data.get(
+                "default_shipping_postcode", ""
+            ) or ""
+            obj.default_billing_country = self.cleaned_data.get(
+                "default_shipping_country", ""
+            ) or ""
 
         if commit:
             obj.save()
