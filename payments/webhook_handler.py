@@ -4,7 +4,8 @@ from decimal import Decimal
 import logging
 
 from orders.models import Order, Cart
-from orders.emails import send_order_confirmation_on_commit  # NEW: send email after payment
+# NEW: send email after payment
+from orders.emails import send_order_confirmation_on_commit  
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,9 @@ class StripeWH_Handler:
                     order.status = Order.Status.PAID
                 # Trust Stripe total if present
                 if session.get("amount_total") is not None:
-                    reported = Decimal(session["amount_total"]) / Decimal("100")
+                    reported = (
+                        Decimal(session["amount_total"]) / Decimal("100")
+                    )
                     if reported != order.total_amount:
                         logger.warning(
                             "Stripe total mismatch for order %s: expected=%s "
@@ -63,7 +66,10 @@ class StripeWH_Handler:
                 if hasattr(order, "stripe_checkout_session_id"):
                     order.stripe_checkout_session_id = session.get("id", "")
                 if hasattr(order, "stripe_payment_intent"):
-                    order.stripe_payment_intent = session.get("payment_intent", "") or getattr(order, "stripe_payment_intent", "")
+                    order.stripe_payment_intent = (
+                        session.get("payment_intent", "")
+                        or getattr(order, "stripe_payment_intent", "")
+                    )
                 order.save()
 
                 # NEW: send confirmation email after the transaction commits

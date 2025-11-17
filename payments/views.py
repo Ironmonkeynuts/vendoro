@@ -167,7 +167,8 @@ def success(request):
                 ).first()
             )
 
-            # Idempotently mark as paid if Stripe says it’s paid (webhook will do this too)
+            # Idempotently mark as paid if Stripe says it’s paid.
+            # The webhook will handle this as well.
             if (
                 order
                 and (
@@ -216,16 +217,18 @@ def success(request):
                     try:
                         send_order_confirmation_now(order)
                         logger.info(
-                            "Sent order confirmation from success page. order_id=%s email=%s",
+                            ("Sent order confirmation from success page. "
+                             "order_id=%s email=%s"),
                             order.id, order.user.email
                         )
                     except Exception:
                         logger.exception(
-                            "Failed to send order confirmation from success page. order_id=%s",
+                            "Failed to send order confirmation; order_id=%s",
                             getattr(order, "id", None)
                         )
 
-            # Clear cart if present in metadata (safe if already cleared by webhook)
+            # Clear cart if present in metadata
+            # (safe if already cleared by webhook)
             cart_id = session.get("metadata", {}).get("cart_id")
             if cart_id:
                 try:
