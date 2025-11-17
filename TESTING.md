@@ -149,7 +149,6 @@ I have used the recommended [PEP8 CI Python Linter](https://pep8ci.herokuapp.com
 | home | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/forms.py) | ![screenshot](documentation/validation/py-home-forms.png) | ⚠️ Notes (if applicable) |
 | home | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/models.py) | ![screenshot](documentation/validation/py-home-models.png) | ⚠️ Notes (if applicable) |
 | home | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/tests.py) | ![screenshot](documentation/validation/py-home-tests.png) | ⚠️ Notes (if applicable) |
-| home | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/urls.py) | ![screenshot](documentation/validation/py-home-urls.png) | ⚠️ Notes (if applicable) |
 | home | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/views.py) | ![screenshot](documentation/validation/py-home-views.png) | ⚠️ Notes (if applicable) |
 | marketplace | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/admin.py) | ![screenshot](documentation/validation/py-marketplace-admin.png) | ⚠️ Notes (if applicable) |
 | marketplace | [context_processors.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/context_processors.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/context_processors.py) | ![screenshot](documentation/validation/py-marketplace-context_processors.png) | ⚠️ Notes (if applicable) |
@@ -204,7 +203,8 @@ If you have tested the project on your actual mobile phone or tablet, consider a
 
 ⚠️ --- END --- ⚠️
 
-I've tested my deployed project to check for responsiveness issues.
+I've tested my deployed project to check for responsiveness issues. 
+**Note**: Mobile views are from an actual iphone 14.
 
 | Page | Mobile | Tablet | Desktop | Notes |
 | --- | --- | --- | --- | --- |
@@ -214,7 +214,7 @@ I've tested my deployed project to check for responsiveness issues.
 | Home | ![screenshot](documentation/responsiveness/mobile-home.png) | ![screenshot](documentation/responsiveness/tablet-home.png) | ![screenshot](documentation/responsiveness/desktop-home.png) | Works as expected |
 | Products | ![screenshot](documentation/responsiveness/mobile-products.png) | ![screenshot](documentation/responsiveness/tablet-products.png) | ![screenshot](documentation/responsiveness/desktop-products.png) | Works as expected |
 | Product Details | ![screenshot](documentation/responsiveness/mobile-product-details.png) | ![screenshot](documentation/responsiveness/tablet-product-details.png) | ![screenshot](documentation/responsiveness/desktop-product-details.png) | Works as expected |
-| Bag | ![screenshot](documentation/responsiveness/mobile-bag.png) | ![screenshot](documentation/responsiveness/tablet-bag.png) | ![screenshot](documentation/responsiveness/desktop-bag.png) | Works as expected |
+| Cart | ![screenshot](documentation/responsiveness/mobile-cart.png) | ![screenshot](documentation/responsiveness/tablet-cart.png) | ![screenshot](documentation/responsiveness/desktop-cart.png) | Works as expected |
 | Checkout | ![screenshot](documentation/responsiveness/mobile-checkout.png) | ![screenshot](documentation/responsiveness/tablet-checkout.png) | ![screenshot](documentation/responsiveness/desktop-checkout.png) | Works as expected |
 | Checkout Success | ![screenshot](documentation/responsiveness/mobile-checkout-success.png) | ![screenshot](documentation/responsiveness/tablet-checkout-success.png) | ![screenshot](documentation/responsiveness/desktop-checkout-success.png) | Works as expected |
 | Add Product | ![screenshot](documentation/responsiveness/mobile-add-product.png) | ![screenshot](documentation/responsiveness/tablet-add-product.png) | ![screenshot](documentation/responsiveness/desktop-add-product.png) | Works as expected |
