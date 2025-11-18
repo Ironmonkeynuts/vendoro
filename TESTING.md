@@ -76,12 +76,12 @@ The same thing applies when using external libraries such as Stripe, Leaflet, Bo
 
 ⚠️ --- END --- ⚠️
 
-I have used the recommended [JShint Validator](https://jshint.com) to validate all of my JS files.
+I have used the recommended [JShint Validator](https://jshint.com) to validate all of my JS code. The JS code is situated at the end of some templates and the JS has been pasted into JShint.
 
 | Directory | File | URL | Screenshot | Notes |
 | --- | --- | --- | --- | --- |
 | templates | [reports]() | [URL]() | [Screenshot]() | js code situated at end of template |
-
+| templates | []() | [URL]() | [Screenshot]() | js code situated at end of template |
 
 
 ### Python
@@ -203,7 +203,8 @@ If you have tested the project on your actual mobile phone or tablet, consider a
 
 ⚠️ --- END --- ⚠️
 
-I've tested my deployed project to check for responsiveness issues. 
+I've tested my deployed project to check for responsiveness issues.
+
 **Note**: Mobile views are from an actual iphone 14.
 
 | Page | Mobile | Tablet | Desktop | Notes |
@@ -219,8 +220,10 @@ I've tested my deployed project to check for responsiveness issues.
 | Checkout Success | ![screenshot](documentation/responsiveness/mobile-checkout-success.png) | ![screenshot](documentation/responsiveness/tablet-checkout-success.png) | ![screenshot](documentation/responsiveness/desktop-checkout-success.png) | Works as expected |
 | Add Product | ![screenshot](documentation/responsiveness/mobile-add-product.png) | ![screenshot](documentation/responsiveness/tablet-add-product.png) | ![screenshot](documentation/responsiveness/desktop-add-product.png) | Works as expected |
 | Edit Product | ![screenshot](documentation/responsiveness/mobile-edit-product.png) | ![screenshot](documentation/responsiveness/tablet-edit-product.png) | ![screenshot](documentation/responsiveness/desktop-edit-product.png) | Works as expected |
+| Seller dashoard | ![screenshot](documentation/responsiveness/mobile-seller.png) | ![screenshot](documentation/responsiveness/tablet-seller.png) | ![screenshot](documentation/responsiveness/desktop-seller.png) | Works as expected |
 | Newsletter | ![screenshot](documentation/responsiveness/mobile-newsletter.png) | ![screenshot](documentation/responsiveness/tablet-newsletter.png) | ![screenshot](documentation/responsiveness/desktop-newsletter.png) | Works as expected |
 | Contact | ![screenshot](documentation/responsiveness/mobile-contact.png) | ![screenshot](documentation/responsiveness/tablet-contact.png) | ![screenshot](documentation/responsiveness/desktop-contact.png) | Works as expected |
+| Admin dashboard | ![screenshot](documentation/responsiveness/mobile-admin.png) | ![screenshot](documentation/responsiveness/tablet-admin.png) | ![screenshot](documentation/responsiveness/desktop-admin.png) | Works as expected |
 | 404 | ![screenshot](documentation/responsiveness/mobile-404.png) | ![screenshot](documentation/responsiveness/tablet-404.png) | ![screenshot](documentation/responsiveness/desktop-404.png) | Works as expected |
 
 ## Browser Compatibility
