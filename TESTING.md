@@ -86,122 +86,53 @@ I have used the recommended [JShint Validator](https://jshint.com) to validate a
 
 ### Python
 
-⚠️ INSTRUCTIONS ⚠️
-
-The [CI Python Linter](https://pep8ci.herokuapp.com) can be used two different ways.
-
-- Copy/Paste your Python code directly into the linter.
-- As an API, using the "raw" URL appended to the linter URL.
-    - To find the "raw" URL, navigate to your file directly on the GitHub repo.
-    - On that page, GitHub provides a button on the right called "Raw" that you can click.
-    - From that new page, copy the full URL, and paste it after the CI Python Linter URL (with a `/` separator).
-
-It's recommended to validate each file using the API URL. This will give you a custom URL which you can use on your testing documentation. It makes it easier to return back to a file for validating it again in the future. Use the steps above to generate your own custom URLs for each Python file.
-
-**IMPORTANT**: `E501 line too long` errors
-
-You must strive to fix all Python lines that are too long (>80 characters). In rare cases where you cannot break the lines [*without breaking the functionality*], adding "`  # noqa`" (*NO Quality Assurance*) to the end of those lines will ignore linting validation. Do not use "`  # noqa`" all over your project just to clear down validation errors! This can still cause a project to fail, for failing to fix actual PEP8 validation errors.
-
-Sometimes variables can get too long, or excessive `if/else` conditional statements. These are acceptable instances to use the "`  # noqa`" comment.
-
-When trying to fix "line too long" errors, try to avoid using `/` to split lines. A better approach would be to use any type of opening bracket, and hit `<Enter>` just after that. Any opening bracket type will work: `(`, `[`, `{`. By using an opening bracket, Python knows where to appropriately indent the next line of code, without having to *guess* for yourself and attempt to "tab" to the correct indentation level.
-
-⚠️ --- END --- ⚠️
-
-🛑 IMPORTANT 🛑
-
-**IMPORTANT**: Django settings
-
-The Django `settings.py` file comes with 4 lines that are quite long, and will throw the `E501 line too long` error. This is default behavior, but can be fixed by adding the "`  # noqa`" comment at the end of those lines.
-
-```python
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",  # noqa
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",  # noqa
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",  # noqa
-    },
-]
-```
-
-**IMPORTANT**: *migration* and *pycache* files
-
-You do not have to validate files from the `migrations/` or `pycache/` folders! Ignore these `.py` files, and validate just the files that you've created or modified.
-
-🛑 --- END --- 🛑
-
 I have used the recommended [PEP8 CI Python Linter](https://pep8ci.herokuapp.com) to validate all of my Python files.
 
 | Directory | File | URL | Screenshot | Notes |
 | --- | --- | --- | --- | --- |
 | admintools | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/refs/heads/main/admintools/admin.py) | ![screenshot](documentation/validation/py-admintools-admin.png) | NA |
-| admintools | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/tests.py) | ![screenshot](documentation/validation/py-admintools-tests.png) | ⚠️ Notes (if applicable) |
-| admintools | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/urls.py) | ![screenshot](documentation/validation/py-admintools-urls.png) | ⚠️ Notes (if applicable) |
-| admintools | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/views.py) | ![screenshot](documentation/validation/py-admintools-views.png) | ⚠️ Notes (if applicable) |
-| home | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/admin.py) | ![screenshot](documentation/validation/py-home-admin.png) | ⚠️ Notes (if applicable) |
-| home | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/forms.py) | ![screenshot](documentation/validation/py-home-forms.png) | ⚠️ Notes (if applicable) |
-| home | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/models.py) | ![screenshot](documentation/validation/py-home-models.png) | ⚠️ Notes (if applicable) |
-| home | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/tests.py) | ![screenshot](documentation/validation/py-home-tests.png) | ⚠️ Notes (if applicable) |
-| home | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/views.py) | ![screenshot](documentation/validation/py-home-views.png) | ⚠️ Notes (if applicable) |
-| marketplace | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/admin.py) | ![screenshot](documentation/validation/py-marketplace-admin.png) | ⚠️ Notes (if applicable) |
-| marketplace | [context_processors.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/context_processors.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/context_processors.py) | ![screenshot](documentation/validation/py-marketplace-context_processors.png) | ⚠️ Notes (if applicable) |
-| marketplace | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/forms.py) | ![screenshot](documentation/validation/py-marketplace-forms.png) | ⚠️ Notes (if applicable) |
-| marketplace | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/models.py) | ![screenshot](documentation/validation/py-marketplace-models.png) | ⚠️ Notes (if applicable) |
-| marketplace | [form_extras.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/templatetags/form_extras.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/templatetags/form_extras.py) | ![screenshot](documentation/validation/py-marketplace-form_extras.png) | ⚠️ Notes (if applicable) |
-| marketplace | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/tests.py) | ![screenshot](documentation/validation/py-marketplace-tests.png) | ⚠️ Notes (if applicable) |
-| marketplace | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/urls.py) | ![screenshot](documentation/validation/py-marketplace-urls.png) | ⚠️ Notes (if applicable) |
-| marketplace | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/views.py) | ![screenshot](documentation/validation/py-marketplace-views.png) | ⚠️ Notes (if applicable) |
-| orders | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/admin.py) | ![screenshot](documentation/validation/py-orders-admin.png) | ⚠️ Notes (if applicable) |
-| orders | [context_processors.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/context_processors.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/context_processors.py) | ![screenshot](documentation/validation/py-orders-context_processors.png) | ⚠️ Notes (if applicable) |
-| orders | [emails.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/emails.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/emails.py) | ![screenshot](documentation/validation/py-orders-emails.png) | ⚠️ Notes (if applicable) |
-| orders | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/forms.py) | ![screenshot](documentation/validation/py-orders-forms.png) | ⚠️ Notes (if applicable) |
-| orders | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/models.py) | ![screenshot](documentation/validation/py-orders-models.png) | ⚠️ Notes (if applicable) |
-| orders | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/tests.py) | ![screenshot](documentation/validation/py-orders-tests.png) | ⚠️ Notes (if applicable) |
-| orders | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/urls.py) | ![screenshot](documentation/validation/py-orders-urls.png) | ⚠️ Notes (if applicable) |
-| orders | [utils.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/utils.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/utils.py) | ![screenshot](documentation/validation/py-orders-utils.png) | ⚠️ Notes (if applicable) |
-| orders | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/views.py) | ![screenshot](documentation/validation/py-orders-views.png) | ⚠️ Notes (if applicable) |
-| payments | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/tests.py) | ![screenshot](documentation/validation/py-payments-tests.png) | ⚠️ Notes (if applicable) |
-| payments | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/urls.py) | ![screenshot](documentation/validation/py-payments-urls.png) | ⚠️ Notes (if applicable) |
-| payments | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/views.py) | ![screenshot](documentation/validation/py-payments-views.png) | ⚠️ Notes (if applicable) |
-| payments | [webhook_handler.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/webhook_handler.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/webhook_handler.py) | ![screenshot](documentation/validation/py-payments-webhook_handler.png) | ⚠️ Notes (if applicable) |
-| payments | [webhooks.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/webhooks.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/webhooks.py) | ![screenshot](documentation/validation/py-payments-webhooks.png) | ⚠️ Notes (if applicable) |
-| users | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/admin.py) | ![screenshot](documentation/validation/py-users-admin.png) | ⚠️ Notes (if applicable) |
-| users | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/forms.py) | ![screenshot](documentation/validation/py-users-forms.png) | ⚠️ Notes (if applicable) |
-| users | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/models.py) | ![screenshot](documentation/validation/py-users-models.png) | ⚠️ Notes (if applicable) |
-| users | [signals.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/signals.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/signals.py) | ![screenshot](documentation/validation/py-users-signals.png) | ⚠️ Notes (if applicable) |
-| users | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/tests.py) | ![screenshot](documentation/validation/py-users-tests.png) | ⚠️ Notes (if applicable) |
-| users | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/urls.py) | ![screenshot](documentation/validation/py-users-urls.png) | ⚠️ Notes (if applicable) |
-| users | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/views.py) | ![screenshot](documentation/validation/py-users-views.png) | ⚠️ Notes (if applicable) |
-| vendoro | [settings.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/vendoro/settings.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/vendoro/settings.py) | ![screenshot](documentation/validation/py-vendoro-settings.png) | ⚠️ Notes (if applicable) |
-| vendoro | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/vendoro/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/vendoro/urls.py) | ![screenshot](documentation/validation/py-vendoro-urls.png) | ⚠️ Notes (if applicable) |
+| admintools | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/tests.py) | ![screenshot](documentation/validation/py-admintools-tests.png) | NA |
+| admintools | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/urls.py) | ![screenshot](documentation/validation/py-admintools-urls.png) | NA |
+| admintools | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/views.py) | ![screenshot](documentation/validation/py-admintools-views.png) | NA |
+| home | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/admin.py) | ![screenshot](documentation/validation/py-home-admin.png) | NA |
+| home | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/forms.py) | ![screenshot](documentation/validation/py-home-forms.png) | NA |
+| home | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/models.py) | ![screenshot](documentation/validation/py-home-models.png) | NA |
+| home | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/tests.py) | ![screenshot](documentation/validation/py-home-tests.png) | NA |
+| home | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/views.py) | ![screenshot](documentation/validation/py-home-views.png) | NA |
+| marketplace | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/admin.py) | ![screenshot](documentation/validation/py-marketplace-admin.png) | NA |
+| marketplace | [context_processors.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/context_processors.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/context_processors.py) | ![screenshot](documentation/validation/py-marketplace-context_processors.png) | NA |
+| marketplace | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/forms.py) | ![screenshot](documentation/validation/py-marketplace-forms.png) | NA |
+| marketplace | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/models.py) | ![screenshot](documentation/validation/py-marketplace-models.png) | NA |
+| marketplace | [form_extras.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/templatetags/form_extras.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/templatetags/form_extras.py) | ![screenshot](documentation/validation/py-marketplace-form_extras.png) | NA |
+| marketplace | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/tests.py) | ![screenshot](documentation/validation/py-marketplace-tests.png) | NA |
+| marketplace | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/urls.py) | ![screenshot](documentation/validation/py-marketplace-urls.png) | NA |
+| marketplace | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/views.py) | ![screenshot](documentation/validation/py-marketplace-views.png) | NA |
+| orders | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/admin.py) | ![screenshot](documentation/validation/py-orders-admin.png) | NA |
+| orders | [context_processors.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/context_processors.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/context_processors.py) | ![screenshot](documentation/validation/py-orders-context_processors.png) | NA |
+| orders | [emails.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/emails.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/emails.py) | ![screenshot](documentation/validation/py-orders-emails.png) | NA |
+| orders | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/forms.py) | ![screenshot](documentation/validation/py-orders-forms.png) | NA |
+| orders | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/models.py) | ![screenshot](documentation/validation/py-orders-models.png) | NA |
+| orders | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/tests.py) | ![screenshot](documentation/validation/py-orders-tests.png) | NA |
+| orders | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/urls.py) | ![screenshot](documentation/validation/py-orders-urls.png) | NA |
+| orders | [utils.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/utils.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/utils.py) | ![screenshot](documentation/validation/py-orders-utils.png) | NA |
+| orders | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/views.py) | ![screenshot](documentation/validation/py-orders-views.png) | NA |
+| payments | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/tests.py) | ![screenshot](documentation/validation/py-payments-tests.png) | NA |
+| payments | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/urls.py) | ![screenshot](documentation/validation/py-payments-urls.png) | NA |
+| payments | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/views.py) | ![screenshot](documentation/validation/py-payments-views.png) | NA |
+| payments | [webhook_handler.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/webhook_handler.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/webhook_handler.py) | ![screenshot](documentation/validation/py-payments-webhook_handler.png) | NA |
+| payments | [webhooks.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/webhooks.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/webhooks.py) | ![screenshot](documentation/validation/py-payments-webhooks.png) | NA |
+| users | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/admin.py) | ![screenshot](documentation/validation/py-users-admin.png) | NA |
+| users | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/forms.py) | ![screenshot](documentation/validation/py-users-forms.png) | NA |
+| users | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/models.py) | ![screenshot](documentation/validation/py-users-models.png) | NA |
+| users | [signals.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/signals.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/signals.py) | ![screenshot](documentation/validation/py-users-signals.png) | NA |
+| users | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/tests.py) | ![screenshot](documentation/validation/py-users-tests.png) | NA |
+| users | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/urls.py) | ![screenshot](documentation/validation/py-users-urls.png) | NA |
+| users | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/views.py) | ![screenshot](documentation/validation/py-users-views.png) | NA |
+| vendoro | [settings.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/vendoro/settings.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/vendoro/settings.py) | ![screenshot](documentation/validation/py-vendoro-settings.png) | NA |
+| vendoro | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/vendoro/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/vendoro/urls.py) | ![screenshot](documentation/validation/py-vendoro-urls.png) | NA |
 
 
 ## Responsiveness
-
-⚠️ INSTRUCTIONS ⚠️
-
-Use this space to discuss testing the live/deployed site on various device sizes.
-
-The minimum requirement is to test the following 3 sizes:
-
-- Mobile
-- Tablet
-- Desktop
-
-**IMPORTANT**: You must provide screenshots of your results, to "prove" that you've actually tested them.
-
-Using the [amiresponsive](http://ami.responsivedesign.is) mockup images (*or similar*) does not meet the requirements. Consider using some of the built-in device sizes from the Developer Tools.
-
-If you have tested the project on your actual mobile phone or tablet, consider also including screenshots of these as well. It showcases a higher level of manual tests, and can be seen as a positive inclusion!
-
-⚠️ --- END --- ⚠️
 
 I've tested my deployed project to check for responsiveness issues.
 
