@@ -2,6 +2,113 @@
 {% block admintools_content %}
 
 <h1 class="h4 mb-3">Shops & Products</h1>
+<hr class="my-3">
+
+<h2 class="h5 mb-2">Categories</h2>
+<p class="text-muted small mb-3">Create, rename, change slug, and delete categories.</p>
+
+{# --- Categories (single accordion item) --- #}
+<div class="accordion mb-4" id="categoriesSection">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="catSectionHead">
+      <button class="accordion-button collapsed" type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#catSectionBody"
+              aria-expanded="false"
+              aria-controls="catSectionBody">
+        Categories
+      </button>
+    </h2>
+
+    <div id="catSectionBody" class="accordion-collapse collapse"
+         aria-labelledby="catSectionHead"
+         data-bs-parent="#categoriesSection">
+      <div class="accordion-body">
+
+        <p class="text-muted small mb-3">
+          Create, rename, change slug, and delete categories.
+        </p>
+
+        {# Create category #}
+        <div class="card mb-3">
+          <div class="card-body">
+            <form method="post" action="{% url 'admintools:category_create' %}" class="row g-2 align-items-end">
+              {% csrf_token %}
+              <div class="col-12 col-sm-5 col-md-4">
+                <label class="form-label small text-muted mb-1">Name</label>
+                <input type="text" name="name" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-12 col-sm-5 col-md-4">
+                <label class="form-label small text-muted mb-1">Slug (optional)</label>
+                <input type="text" name="slug" class="form-control form-control-sm">
+              </div>
+              <div class="col-12 col-sm-2 col-md-2 text-end">
+                <label class="form-label d-block mb-1 invisible">Add</label>
+                <button class="btn btn-sm btn-primary">Add</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {# List + inline update/delete #}
+        {% if categories %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr class="text-muted small">
+                  <th style="width:60px">ID</th>
+                  <th>Name</th>
+                  <th>Slug</th>
+                  <th class="text-center" style="width:120px">Products</th>
+                  <th class="text-end" style="width:200px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in categories %}
+                  <tr>
+                    <td class="text-muted">#{{ c.id }}</td>
+                    <td>
+                      <form method="post" action="{% url 'admintools:category_update' pk=c.id %}" class="d-flex gap-2 align-items-center">
+                        {% csrf_token %}
+                        <input type="text" name="name" value="{{ c.name }}" class="form-control form-control-sm" required>
+                    </td>
+                    <td>
+                        <input type="text" name="slug" value="{{ c.slug }}" class="form-control form-control-sm">
+                    </td>
+                    <td class="text-center">
+                      {{ c.product_count|default:0 }}
+                    </td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-primary">Save</button>
+                      </form>
+                      <form method="post"
+                            action="{% url 'admintools:category_delete' pk=c.id %}"
+                            class="d-inline"
+                            onsubmit="return confirm('Delete category “{{ c.name }}”? This cannot be undone.');">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger"
+                                {% if c.product_count %}disabled title="Cannot delete: category in use"{% endif %}>
+                          Delete
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No categories yet.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{# --- Shops & Products --- #}
+<h2 class="h5 mb-2">Shops</h2>
+<p class="text-muted small mb-3">Expand shops to view products</p>
 
 {% if shops %}
   <div class="accordion" id="shopsAccordion">

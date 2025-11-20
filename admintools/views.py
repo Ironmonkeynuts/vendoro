@@ -1,7 +1,9 @@
+from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import FieldDoesNotExist
+from django.db import IntegrityError
 from django.db.models import (
     Q, F, Count, Avg, Sum, Prefetch, DecimalField, ExpressionWrapper, Min
 )
@@ -19,7 +21,7 @@ from decimal import Decimal
 from datetime import datetime, time, timedelta
 import csv
 
-from marketplace.models import Shop, Product, ProductReview
+from marketplace.models import Shop, Product, ProductReview, Category
 from orders.models import Order, OrderItem
 
 User = get_user_model()
@@ -376,7 +378,15 @@ class ShopsProductsView(StaffOrSuperuserRequiredMixin, TemplateView):
             .order_by("name")
         )
 
+        # NEW: categories for the top section (with product counts)
+        categories = (
+            Category.objects
+            .annotate(product_count=Count("product"))
+            .order_by("name")
+        )
+
         ctx["shops"] = shops
+        ctx["categories"] = categories
         ctx["adm_active"] = "shops"
         return ctx
 
@@ -935,3 +945,76 @@ def review_bulk_action(request):
 
     messages.error(request, "Unknown action.")
     return redirect(next_url)
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name", "slug"]  # leave slug blank to auto-generate
+
+
+def _redirect_to_categories(request):
+    # Reuse your safe redirect helper with Shops & Products fallback
+    return _safe_redirect_next(request, fallback_name="admintools:shops_products")
+
+
+@require_POST
+def category_create(request):
+    """Create a new category (staff or superuser)."""
+    if not (request.user.is_authenticated and
+            (request.user.is_staff or request.user.is_superuser)):
+        messages.error(request, "You do not have permission to do that.")
+        return _redirect_to_categories(request)
+
+    form = CategoryForm(request.POST)
+    if form.is_valid():
+        try:
+            obj = form.save(commit=False)  # model will slugify if blank
+            obj.save()
+            messages.success(request, f'Created category “{obj.name}”.')
+        except IntegrityError:
+            messages.error(request, "Name or slug already exists.")
+    else:
+        messages.error(request, "Please provide a valid name/slug.")
+    return _redirect_to_categories(request)
+
+
+@require_POST
+def category_update(request, pk: int):
+    """Update category name/slug (staff or superuser)."""
+    if not (request.user.is_authenticated and
+            (request.user.is_staff or request.user.is_superuser)):
+        messages.error(request, "You do not have permission to do that.")
+        return _redirect_to_categories(request)
+
+    obj = get_object_or_404(Category, pk=pk)
+    form = CategoryForm(request.POST, instance=obj)
+    if form.is_valid():
+        try:
+            obj = form.save()
+            messages.success(request, f'Updated category “{obj.name}”.')
+        except IntegrityError:
+            messages.error(request, "Name or slug already exists.")
+    else:
+        messages.error(request, "Please provide a valid name/slug.")
+    return _redirect_to_categories(request)
+
+
+@require_POST
+def category_delete(request, pk: int):
+    """Delete a category (superuser only)."""
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        messages.error(request, "You do not have permission to do that.")
+        return _redirect_to_categories(request)
+
+    obj = get_object_or_404(Category, pk=pk)
+    # Server-side guard: do not delete if referenced by products
+    from marketplace.models import Product
+    if Product.objects.filter(category=obj).exists():
+        messages.error(request, "Cannot delete a category that is in use.")
+        return _redirect_to_categories(request)
+
+    name = obj.name
+    obj.delete()
+    messages.success(request, f'Deleted category “{name}”.')
+    return _redirect_to_categories(request)
