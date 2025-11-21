@@ -110,14 +110,15 @@ When you add a color to the palette, the URL is dynamically updated, making it e
 
 ⚠️ --- END --- ⚠️
 
-I used [coolors.co](https://coolors.co/080708-3772ff-df2935-fdca40-e6e8e6) to generate my color palette.
+I used [coolors.co](https://coolors.co/293448-4b9ae9-8db2e5-f4f5f6-ffffff) to generate my color palette.
 
-- `#000000` primary text.
-- `#3772FF` primary highlights.
-- `#DF2935` secondary text.
-- `#FDCA40` secondary highlights.
+- `#293448` primary text.
+- `#4B9AE9` primary brand.
+- `#8DB2E5` secondary brand.
+- `#F4F5F6` primary card background.
+- `#FFFFFF` primary background and secondary text.
 
-![screenshot](documentation/coolors.png)
+![screenshot](documentation/palette.png)
 
 ### Typography
 
