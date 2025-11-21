@@ -159,24 +159,6 @@ I've tested my deployed project to check for responsiveness issues.
 
 ## Browser Compatibility
 
-⚠️ INSTRUCTIONS ⚠️
-
-Use this space to discuss testing the live/deployed site on various browsers. Consider testing at least 3 different browsers, if available on your system. You DO NOT need to use all of the browsers below, just pick any 3 (minimum).
-
-Recommended browsers to consider:
-- [Chrome](https://www.google.com/chrome)
-- [edge (Developer Edition)](https://www.mozilla.org/edge/developer)
-- [Edge](https://www.microsoft.com/edge)
-- [Safari](https://support.apple.com/downloads/safari)
-- [Brave](https://brave.com/download)
-- [Opera](https://www.opera.com/download)
-
-**IMPORTANT**: You must provide screenshots of the browsers you've tested, to "prove" that you've actually tested them.
-
-Please note, there are services out there that can test multiple browser compatibilities at the same time. Some of these are paid services, but some are free. If you use these, you must provide a link to the source used for attribution, and multiple screenshots of the results.
-
-⚠️ --- END --- ⚠️
-
 I've tested my deployed project on multiple browsers to check for compatibility issues.
 
 | Page | Chrome | Edge | Safari | Notes |
@@ -200,16 +182,6 @@ I've tested my deployed project on multiple browsers to check for compatibility 
 
 ## Lighthouse Audit
 
-⚠️ INSTRUCTIONS ⚠️
-
-Use this space to discuss testing the live/deployed site's Lighthouse Audit reports. Avoid testing the local version (Gitpod/VSCode/etc.), as this can have knock-on effects for performance. If you don't have "Lighthouse" in your Developer Tools, it can be added as an [extension](https://chrome.google.com/webstore/detail/lighthouse/blipmdconlkpinefehnmjammfjpmpbjk).
-
-Unless your project is a single-page application (SPA), you should test Lighthouse Audit results for all of your pages, for both *mobile* and *desktop*.
-
-**IMPORTANT**: You must provide screenshots of the results, to "prove" that you've actually tested them.
-
-⚠️ --- END --- ⚠️
-
 I've tested my deployed project using the Lighthouse Audit tool to check for any major issues. Some warnings are outside of my control, and mobile results tend to be lower than desktop.
 
 | Page | Mobile | Desktop |
@@ -232,43 +204,6 @@ I've tested my deployed project using the Lighthouse Audit tool to check for any
 | 404 | ![screenshot](documentation/lighthouse/mobile-404.png) | ![screenshot](documentation/lighthouse/desktop-404.png) |
 
 ## Defensive Programming
-
-⚠️ INSTRUCTIONS ⚠️
-
-Defensive programming (defensive design) is extremely important! When building projects that accept user inputs or forms, you should always test the level of security for each form field. Examples of this could include (but not limited to):
-
-All Projects:
-
-- Users cannot submit an empty form (add the `required` attribute)
-- Users must enter valid field types (ensure the correct input `type=""` is used)
-- Users cannot brute-force a URL to navigate to a restricted pages
-
-Python Projects:
-
-- Users cannot perform CRUD functionality if not authenticated (if login functionality exists)
-- User-A should not be able to manipulate data belonging to User-B, or vice versa
-- Non-Authenticated users should not be able to access pages that require authentication
-- Standard users should not be able to access pages intended for superusers/admins
-
-You'll want to test all functionality on your application, whether it's a standard form, or CRUD functionality, for data manipulation on a database. Try to access various pages on your site as different user types (User-A, User-B, guest user, admin, superuser). You should include any manual tests performed, and the expected results/outcome.
-
-Testing should be replicable (can someone else replicate the same outcome?). Ideally, tests cases should focus on each individual section of every page on the website. Each test case should be specific, objective, and step-wise replicable.
-
-Instead of adding a general overview saying that everything works fine, consider documenting tests on each element of the page (eg. button clicks, input box validation, navigation links, etc.) by testing them in their "happy flow", their "bad/exception flow", mentioning the expected and observed results, and drawing a parallel between them where applicable.
-
-Consider using the following format for manual test cases:
-
-- Expected Outcome / Test Performed / Result Received / Fixes Implemented
-
-- **Expected**: "Feature is expected to do X when the user does Y."
-- **Testing**: "Tested the feature by doing Y."
-- (either) **Result**: "The feature behaved as expected, and it did Y."
-- (or) **Result**: "The feature did not respond to A, B, or C."
-- **Fix**: "I did Z to the code because something was missing."
-
-Use the table below as a basic start, and expand on it using the logic above.
-
-⚠️ --- END --- ⚠️
 
 Defensive programming was manually tested with the below user acceptance testing:
 
@@ -297,18 +232,10 @@ Defensive programming was manually tested with the below user acceptance testing
 
 ## User Story Testing
 
-⚠️ INSTRUCTIONS ⚠️
-
-Testing User Stories is actually quite simple, once you've already got the stories defined on your README.
-
-Most of your project's **Features** should already align with the **User Stories**, so this should be as simple as creating a table with the User Story, matching with the re-used screenshot from the respective Feature.
-
-⚠️ --- END --- ⚠️
-
 | Target | Expectation | Outcome | Screenshot |
 | --- | --- | --- | --- |
 | As a guest user | I would like to browse products without needing to register | so that I can shop freely before deciding to create an account. |  ![screenshot](documentation/features/browse.png) |
-| As a guest user | I would like to be prompted to create an account or log in at checkout | so that I can complete my purchase and track my order history. |   ![screenshot](documentation/features/) |
+| As a guest user | I would like to be prompted to create an account or log in at checkout | so that I can complete my purchase and track my order history. |   ![screenshot](documentation/features/login.png) |
 | As a user | I would like to sign up to the site's newsletter | so that I can stay up to date with any upcoming sales or promotions. |  ![screenshot](documentation/features/newsletter.png) |
 | As a user | I would like to see a 404 error page if I get lost | so that it's obvious that I've stumbled upon a page that doesn't exist. |  ![screenshot](documentation/features/404.png) |
 | As a customer | I would like to browse various product categories (clothing, toys, jewelry, kitchen gadgets, etc.) | so that I can easily find what I'm looking for. |   ![screenshot](documentation/features/filtering.png) |
@@ -323,7 +250,7 @@ Most of your project's **Features** should already align with the **User Stories
 | As a customer | I would like to receive a confirmation email after my purchase | so that I can have a record of my transaction and order details. |  ![screenshot](documentation/features/confirmation-email.png) |
 | As a customer | I would like to see an order confirmation page after completing my purchase | so that I know my order has been successfully placed. |  ![screenshot](documentation/features/order-confirmation.png) |
 | As a customer | I would like to securely enter my card details using Stripe at checkout | so that I can feel confident my payment information is protected. |   ![screenshot](documentation/features/stripe-payment.png) |
-| As a customer | I would like to leave reviews and ratings for products | so that I can help other buyers. |      ![screenshot](documentation/features/) |
+| As a customer | I would like to leave reviews and ratings for products | so that I can help other buyers. |      ![screenshot](documentation/features/add-review.png) |
 | As a returning customer | I would like to be able to log in and view my past orders | so that I can track my previous purchases and order history. |  ![screenshot](documentation/features/order-history.png) |
 | As a returning customer | I would like the checkout process to remember my shipping address | so that future purchases are quicker and easier. |  ![screenshot](documentation/features/saved-address.png) |
 | As a shop owner | I would like to create new products with a name, description, price, images, and category | so that I can add additional items to the store inventory. |  ![screenshot](documentation/features/add-product.png) |
@@ -336,12 +263,12 @@ Most of your project's **Features** should already align with the **User Stories
 | As a shop owner | I would like to view my product market statistics | so that I can monitor my marketplace activity. |  ![screenshot](documentation/features/seller-stats.png) |
 | As a shop owner | I would like to view my shop inventory | so that I can view and modify my shop products. |  ![screenshot](documentation/features/seller-inventory.png) |
 | As a shop owner | I would like to view alerts of recent orders and reviews | so that I can respond and improve my offerings. |  ![screenshot](documentation/features/seller-alerts.png) |
-| As an admin | I would like to manage product categories | so that I can ensure items are correctly organized and easy for customers to find. |  ![screenshot](documentation/features/admintools-categories) |
-| As an admin | I would like to manage user accounts | so that I can maintain platform integrity. |  ![screenshot](documentation/features/admintools-users.png) |
-| As an admin | I would like to moderate product listings and reviews | so that they meet community guidelines. |  ![screenshot](documentation/features/admintools-shops.png) |
-| As an admin | I would like to view site-wide statistics | so that I can monitor marketplace activity for all shops. |  ![screenshot](documentation/features/admintools-reports.png) |
-| As an admin | I would like to view orders made | so that I can monitor customer purcheses and shop responses. |  ![screenshot](documentation/features/admintools-orders.png) |
-| As an admin | I would like to view reviews and replies | so that I can monitor customer comments and replies by shop owners. |  ![screenshot](documentation/features/admintools-reviews.png) |
+| As an admin | I would like to manage product categories | so that I can ensure items are correctly organized and easy for customers to find. |  ![screenshot](documentation/features/admin-categories.png) |
+| As an admin | I would like to manage user accounts | so that I can maintain platform integrity. |  ![screenshot](documentation/features/admin-users.png) |
+| As an admin | I would like to moderate product listings and reviews | so that they meet community guidelines. |  ![screenshot](documentation/features/admin-shops.png) |
+| As an admin | I would like to view site-wide statistics | so that I can monitor marketplace activity for all shops. |  ![screenshot](documentation/features/admin-stats.png) |
+| As an admin | I would like to view orders made | so that I can monitor customer purcheses and shop responses. |  ![screenshot](documentation/features/admin-orders.png) |
+| As an admin | I would like to view reviews and replies | so that I can monitor customer comments and replies by shop owners. |  ![screenshot](documentation/features/admin-reviews.png) |
 
 ## Automated Testing
 
