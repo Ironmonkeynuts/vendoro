@@ -116,7 +116,7 @@ I used [coolors.co](https://coolors.co/293448-4b9ae9-8db2e5-f4f5f6-ffffff) to ge
 - `#4B9AE9` primary brand.
 - `#8DB2E5` secondary brand.
 - `#F4F5F6` primary card background.
-- `#FFFFFF` primary background and secondary text.
+- `#FFFFFF` alt background and secondary text.
 
 ![screenshot](documentation/palette.png)
 
