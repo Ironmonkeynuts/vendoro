@@ -186,18 +186,19 @@ I've used [Balsamiq](https://balsamiq.com/wireframes) to design my site wirefram
 | As a shop owner | I would like to create new products with a name, description, price, images, and category | so that I can add additional items to the store inventory. |
 | As a shop owner | I would like to update product details (name, price, description, image, category) at any time | so that I can keep my product listings accurate and up to date. |
 | As a shop owner | I would like to delete products that are no longer available or relevant | so that I can maintain a clean and accurate inventory. |
-| As a shop owner | I would like to view all orders placed on the shop site | so that I can track and manage customer purchases. |
 | As a shop owner | I would like to create a shop profile | so that I can sell products. |
 | As a shop owner | I would like to customize the appearance of my shop | so that it reflects my brand. |
 | As a shop owner | I would like to see active and inactive products | so that I can control what’s visible. |
 | As a shop owner | I would like to view order notifications | so that I can fulfill them promptly. |
 | As a shop owner | I would like to view my product market statistics | so that I can monitor my marketplace activity. |
+| As a shop owner | I would like to view my shop inventory | so that I can view and modify my shop products. |
+| As a shop owner | I would like to view alerts of recent orders and reviews | so that I can respond and improve my offerings. |
 | As an admin | I would like to manage product categories | so that I can ensure items are correctly organized and easy for customers to find. |
 | As an admin | I would like to manage user accounts | so that I can maintain platform integrity. |
-| As an admin | I would like to approve or reject seller applications | so that only verified users can sell. |
 | As an admin | I would like to moderate product listings and reviews | so that they meet community guidelines. |
-| As an admin | I would like to view site-wide statistics | so that I can monitor marketplace activity for all sops. |
-| As an admin | I would like to manage reports of abuse or fraud | so that I can take corrective action. |
+| As an admin | I would like to view site-wide statistics | so that I can monitor marketplace activity for all shops. |
+| As an admin | I would like to view orders made | so that I can monitor customer purcheses and shop responses. |
+| As an admin | I would like to view reviews and replies | so that I can monitor customer comments and replies by shop owners. |
 
 ## Features
 
