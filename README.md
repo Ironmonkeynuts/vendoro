@@ -110,21 +110,25 @@ When you add a color to the palette, the URL is dynamically updated, making it e
 
 ⚠️ --- END --- ⚠️
 
-I used [coolors.co](https://coolors.co/293448-4b9ae9-8db2e5-f4f5f6-ffffff) to generate my color palette.
+I used [coolors.co](https://coolors.co/212529-6c757d-0d6efd-f8f9fa-ffffff) to generate my color palette.
 
-- `#293448` primary text.
-- `#4B9AE9` primary brand.
-- `#8DB2E5` secondary brand.
-- `#F4F5F6` primary card background.
-- `#FFFFFF` alt background and secondary text.
+- `#212529` primary text.
+- `#6c757d` muted text.
+- `#FFFFFF` buttons, navbar and hero section text.
+- `#0d6efd` alt text and button background.
+- `#f8f9fa` primary background.
+- `#212529` navbar background.
+- `#FFFFFF` welcome panel.
 
 ![screenshot](documentation/palette.png)
 
 ### Typography
 
-- [Montserrat](https://fonts.google.com/specimen/Montserrat) was used for the primary headers and titles.
-- [Lato](https://fonts.google.com/specimen/Lato) was used for all other secondary text.
-- [Font Awesome](https://fontawesome.com) icons were used throughout the site, such as the social media icons in the footer.
+Using Bootstrap 5.3.3 default system stack.
+
+- Body + headings + buttons + forms all inherit:
+  - system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, ...emoji fallbacks
+
 
 ## Wireframes
 
