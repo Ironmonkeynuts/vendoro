@@ -303,7 +303,8 @@ To see the HTML version of the reports, and find out whether some pieces of code
 
 Below are the results from the full coverage report on my application that I've tested:
 
-![screenshot](documentation/automation/html-coverage.png)
+![screenshot](documentation/automation/coverage-1.png)
+![screenshot](documentation/automation/coverage-2.png)
 
 #### Unit Test Issues
 
