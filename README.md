@@ -102,14 +102,6 @@ source: [vendoro amiresponsive](https://ui.dev/amiresponsive?url=https://imn-ven
 
 ### Colour Scheme
 
-⚠️INSTRUCTIONS ⚠️
-
-Explain your colors and color scheme. Consider adding a link and screenshot for your color scheme using [coolors](https://coolors.co/generate).
-
-When you add a color to the palette, the URL is dynamically updated, making it easier for you to return back to your color palette later if needed. See example below:
-
-⚠️ --- END --- ⚠️
-
 I used [coolors.co](https://coolors.co/212529-6c757d-0d6efd-f8f9fa-ffffff) to generate my color palette.
 
 - `#212529` primary text.
