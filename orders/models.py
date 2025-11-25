@@ -20,25 +20,38 @@ class FulfillmentStatus(models.TextChoices):
 
 
 class Cart(models.Model):
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        null=True, blank=True,                  # ✅ allow guests
         on_delete=models.CASCADE,
         related_name="carts"
+    )
+    session_key = models.CharField(
+        max_length=40,
+        null=True, blank=True,                  # ✅ guest identifier
+        db_index=True
     )
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
+            # ✅ One active cart per *authenticated* user
             models.UniqueConstraint(
                 fields=["user"],
-                condition=Q(active=True),
+                condition=Q(active=True, user__isnull=False),
                 name="unique_active_cart_per_user",
-            )
+            ),
+            # ✅ One active cart per *guest* session
+            models.UniqueConstraint(
+                fields=["session_key"],
+                condition=Q(active=True, user__isnull=True),
+                name="unique_active_cart_per_session",
+            ),
         ]
         indexes = [
             models.Index(fields=["user", "active"]),
+            models.Index(fields=["session_key", "active"]),
         ]
 
     def total(self) -> Decimal:
@@ -61,7 +74,8 @@ class Cart(models.Model):
         return self.items.aggregate(c=Sum("quantity"))["c"] or 0
 
     def __str__(self):
-        return f"Cart #{self.id} for {self.user} (active={self.active})"
+        owner = self.user or f"guest:{self.session_key}"
+        return f"Cart #{self.id} for {owner} (active={self.active})"
 
 
 class CartItem(models.Model):
