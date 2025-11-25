@@ -22,52 +22,88 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+/* global cloudinary, fetch */
+document.addEventListener('DOMContentLoaded', function () {
   // Configuration from context processor (no secrets)
-  const cloudName = "{{ CLOUDINARY_CLOUD_NAME }}";
-  const apiKey = "{{ CLOUDINARY_API_KEY }}";
+  var cloudName = "{{ CLOUDINARY_CLOUD_NAME }}";
+  var apiKey = "{{ CLOUDINARY_API_KEY }}";
 
   // Endpoints
-  const signUrl = "{% url 'marketplace:cloudinary_sign' %}";
-  const attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
+  var signUrl = "{% url 'marketplace:cloudinary_sign' %}";
+  var attachUrl = "{% url 'marketplace:product_image_attach' product.id %}";
 
-  function getCookie(name){
-    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-    return m ? m.pop() : '';
+  function getCookie(name) {
+    var match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return match ? match.pop() : '';
   }
 
-  const widget = cloudinary.createUploadWidget({
+  var btn = document.getElementById('btn-upload');
+  if (!btn) {
+    return;
+  }
+  if (!window.cloudinary || !cloudinary.createUploadWidget) {
+    return;
+  }
+
+  var widget = cloudinary.createUploadWidget({
     cloudName: cloudName,
     apiKey: apiKey,
-    uploadSignature: async (callback, paramsToSign) => {
-      const qs = new URLSearchParams(paramsToSign);
-      const res = await fetch(`${signUrl}?${qs.toString()}`, { credentials: 'same-origin' });
-      callback((await res.json()).signature);
+    uploadSignature: function (callback, paramsToSign) {
+      try {
+        var qs = new URLSearchParams(paramsToSign);
+        var url = signUrl + '?' + qs.toString();
+
+        fetch(url, { credentials: 'same-origin' })
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            if (data && data.signature) {
+              callback(data.signature);
+            } else {
+              callback('');
+            }
+          })
+          .catch(function () {
+            callback('');
+          });
+      } catch (e) {
+        callback('');
+      }
     },
     folder: 'vendoro/product_images',
-    sources: ['local','url','camera'],
+    sources: ['local', 'url', 'camera'],
     multiple: true,
-    clientAllowedFormats: ['png','jpg','jpeg','webp'],
-    maxFileSize: 5_000_000
-  }, async (error, result) => {
+    clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
+    maxFileSize: 5000000 // 5 MB
+  }, function (error, result) {
     if (!error && result && result.event === 'success') {
-      const info = result.info;
-      await fetch(attachUrl, {
+      var info = result.info;
+      var payload = {
+        public_id: info.public_id,
+        alt_text: info.original_filename || ''
+      };
+
+      fetch(attachUrl, {
         method: 'POST',
         headers: {
           'X-CSRFToken': getCookie('csrftoken'),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          public_id: info.public_id,
-          alt_text: info.original_filename || ''
+        body: JSON.stringify(payload)
+      })
+        .then(function () {
+          window.location.reload();
         })
-      });
-      location.reload();
+        .catch(function () {
+          window.location.reload();
+        });
     }
   });
 
-  document.getElementById('btn-upload').addEventListener('click', () => widget.open());
+  btn.addEventListener('click', function () {
+    widget.open();
+  });
 });
 </script>
 {% endblock %}
