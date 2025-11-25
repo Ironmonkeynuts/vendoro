@@ -156,10 +156,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://widget.cloudinary.com/v2.0/global/all.js" defer></script>
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.alert[data-auto-dismiss]').forEach(el => {
-          const delay = parseInt(el.getAttribute('data-auto-dismiss'), 10) || 5000;
-          setTimeout(() => bootstrap.Alert.getOrCreateInstance(el).close(), delay);
+    /* jshint esversion: 11 */  
+      document.addEventListener('DOMContentLoaded', function () {
+        var alerts = document.querySelectorAll('.alert[data-auto-dismiss]');
+
+        alerts.forEach(function (el) {
+          var delayAttr = el.getAttribute('data-auto-dismiss');
+          var delay = parseInt(delayAttr, 10);
+          if (isNaN(delay)) {
+            delay = 5000;
+          }
+
+          setTimeout(function () {
+            bootstrap.Alert.getOrCreateInstance(el).close();
+          }, delay);
         });
       });
     </script>
