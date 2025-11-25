@@ -21,6 +21,7 @@
 <!-- Prevent accidental double POSTs -->
 {% block extra_js %}
 <script>
+/* jshint esversion: 11 */
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('form');
   if (!form) return;
