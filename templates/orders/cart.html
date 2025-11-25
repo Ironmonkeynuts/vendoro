@@ -45,41 +45,84 @@
 {% endif %}
 
 <script>
+/* jshint esversion: 11 */
+
 // CSRF helper (reads cookie)
-function getCookie(name){const v=document.cookie.match('(^|;)\s*'+name+'\s*=\s*([^;]+)');return v? v.pop():''}
+function getCookie(name) {
+  const match = document.cookie.match(
+    '(^|;)\\s*' + name + '\\s*=\\s*([^;]+)'
+  );
+  return match ? match.pop() : '';
+}
+
 const csrftoken = getCookie('csrftoken');
 
 // Quantity change
-for (const input of document.querySelectorAll('.qty')){
-  input.addEventListener('change', async (e)=>{
+for (const input of document.querySelectorAll('.qty')) {
+  input.addEventListener('change', async (e) => {
     const tr = e.target.closest('tr');
     const id = tr.dataset.itemId;
     const form = new FormData();
     form.append('quantity', e.target.value);
-    const resp = await fetch('{% url "orders:update_quantity" item_id=0 %}'.replace('0', id),{
-      method:'POST', headers:{'X-CSRFToken': csrftoken, 'X-Requested-With':'XMLHttpRequest'}, body: form
-    });
-    if(!resp.ok){ alert('Update failed'); return; }
+
+    const resp = await fetch(
+      '{% url "orders:update_quantity" item_id=0 %}'.replace('0', id),
+      {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: form
+      }
+    );
+
+    if (!resp.ok) {
+      alert('Update failed');
+      return;
+    }
+
     const data = await resp.json();
-    tr.querySelector('.subtotal').textContent = '£' + data.subtotal.toFixed(2);
-    document.querySelector('#cart-total').textContent = data.total.toFixed(2);
+    tr.querySelector('.subtotal').textContent =
+      '£' + data.subtotal.toFixed(2);
+    document.querySelector('#cart-total').textContent =
+      data.total.toFixed(2);
   });
 }
 
 // Remove item
-for (const btn of document.querySelectorAll('.remove')){
-  btn.addEventListener('click', async (e)=>{
+for (const btn of document.querySelectorAll('.remove')) {
+  btn.addEventListener('click', async (e) => {
     const tr = e.target.closest('tr');
     const id = tr.dataset.itemId;
-    const resp = await fetch('{% url "orders:remove_item" item_id=0 %}'.replace('0', id),{
-      method:'POST', headers:{'X-CSRFToken': csrftoken, 'X-Requested-With':'XMLHttpRequest'}
-    });
-    if(!resp.ok){ alert('Remove failed'); return; }
+
+    const resp = await fetch(
+      '{% url "orders:remove_item" item_id=0 %}'.replace('0', id),
+      {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      }
+    );
+
+    if (!resp.ok) {
+      alert('Remove failed');
+      return;
+    }
+
     const data = await resp.json();
     tr.remove();
+
     const totalEl = document.querySelector('#cart-total');
-    if (totalEl) totalEl.textContent = data.total.toFixed(2);
-    if (document.querySelectorAll('tbody tr').length === 0){ location.reload(); }
+    if (totalEl) {
+      totalEl.textContent = data.total.toFixed(2);
+    }
+
+    if (document.querySelectorAll('tbody tr').length === 0) {
+      location.reload();
+    }
   });
 }
 </script>
