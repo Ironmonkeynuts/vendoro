@@ -56,33 +56,20 @@ I have used the recommended [CSS Jigsaw Validator](https://jigsaw.w3.org/css-val
 
 ### JavaScript
 
-⚠️ INSTRUCTIONS ⚠️
-
-If using modern JavaScript (ES6) methods, then make sure to include the following line at the very top of every single JavaScript file in your project (this should remain in your files for submission as well):
-
-`/* jshint esversion: 11 */`
-
-If you are also including jQuery (`$`), then the updated format will be:
-
-`/* jshint esversion: 11, jquery: true */`
-
-This allows the JShint validator to recognize modern ES6 methods, such as: `let`, `const`, `template literals`, `arrow functions (=>)`, etc.
-
-**IMPORTANT**: External resources
-
-Sometimes we'll write JavaScript that imports variables from other files, such as "an array of questions" from `questions.js`, which are used within the main `script.js` file elsewhere. If that's the case, the JShint validation tool doesn't know how to recognize "unused variables" that would normally be imported locally when running your own project. These warnings are acceptable, so showcase on your screenshot(s).
-
-The same thing applies when using external libraries such as Stripe, Leaflet, Bootstrap, Materialize, etc. To instantiate these components, we need to use their respective declarator. Again, the JShint validation tool would flag these as "undefined/unused variables". These warnings are acceptable, so showcase on your screenshot(s).
-
-⚠️ --- END --- ⚠️
-
 I have used the recommended [JShint Validator](https://jshint.com) to validate all of my JS code. The JS code is situated at the end of some templates and the JS has been pasted into JShint.
 
 | Directory | File | URL | Screenshot | Notes |
 | --- | --- | --- | --- | --- |
-| templates | [reports]() | [URL]() | [Screenshot]() | js code situated at end of template |
-| templates | []() | [URL]() | [Screenshot]() | js code situated at end of template |
-
+| templates | [reports](https://github.com/Ironmonkeynuts/vendoro/blob/main/) | NA | ![Screenshot](documentation/validation/js-reports.png) | js code situated at end of template |
+| templates | [reviews]() | NA | ![Screenshot](documentation/validation/js-reviews.png) | js code situated at end of template |
+| templates | [product_create](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/marketplace/product_create.html) | NA | ![Screenshot](documentation/validation/js-product_create.png) | js code situated at end of template |
+| templates | [product_edit](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/marketplace/product_edit.html) | NA | ![Screenshot](documentation/validation/js-product_edit.png) | js code situated at end of template |
+| templates | [product_images_editor](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/marketplace/product_images_editor.html) | NA | ![Screenshot](documentation/validation/js-product_images_editor.png) | js code situated at end of template |
+| templates | [seller_dashboard](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/marketplace/seller_dashboard.html) | NA | ![Screenshot](documentation/validation/js-seller_dashboard.png) | js code situated at end of template |
+| templates | [shop_banner_settings](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/marketplace/shop_banner_settings.html) | NA | ![Screenshot](documentation/validation/js-shop_banner_settings.png) | js code situated at end of template |
+| templates | [shop_create](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/marketplace/shop_create.html) | NA | ![Screenshot](documentation/validation/js-shop_create.png) | js code situated at end of template |
+| templates | [cart](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/orders/cart.html) | NA | ![Screenshot](documentation/validation/js-cart.png) | js code situated at end of template |
+| templates | [base](https://github.com/Ironmonkeynuts/vendoro/blob/main/templates/base.html) | NA | ![Screenshot](documentation/validation/js-base.png) | js code situated at end of template |
 
 ### Python
 
@@ -91,20 +78,17 @@ I have used the recommended [PEP8 CI Python Linter](https://pep8ci.herokuapp.com
 | Directory | File | URL | Screenshot | Notes |
 | --- | --- | --- | --- | --- |
 | admintools | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/refs/heads/main/admintools/admin.py) | ![screenshot](documentation/validation/py-admintools-admin.png) | NA |
-| admintools | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/tests.py) | ![screenshot](documentation/validation/py-admintools-tests.png) | NA |
 | admintools | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/urls.py) | ![screenshot](documentation/validation/py-admintools-urls.png) | NA |
 | admintools | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/admintools/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/admintools/views.py) | ![screenshot](documentation/validation/py-admintools-views.png) | NA |
 | home | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/admin.py) | ![screenshot](documentation/validation/py-home-admin.png) | NA |
 | home | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/forms.py) | ![screenshot](documentation/validation/py-home-forms.png) | NA |
 | home | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/models.py) | ![screenshot](documentation/validation/py-home-models.png) | NA |
-| home | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/tests.py) | ![screenshot](documentation/validation/py-home-tests.png) | NA |
 | home | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/home/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/home/views.py) | ![screenshot](documentation/validation/py-home-views.png) | NA |
 | marketplace | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/admin.py) | ![screenshot](documentation/validation/py-marketplace-admin.png) | NA |
 | marketplace | [context_processors.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/context_processors.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/context_processors.py) | ![screenshot](documentation/validation/py-marketplace-context_processors.png) | NA |
 | marketplace | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/forms.py) | ![screenshot](documentation/validation/py-marketplace-forms.png) | NA |
 | marketplace | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/models.py) | ![screenshot](documentation/validation/py-marketplace-models.png) | NA |
 | marketplace | [form_extras.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/templatetags/form_extras.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/templatetags/form_extras.py) | ![screenshot](documentation/validation/py-marketplace-form_extras.png) | NA |
-| marketplace | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/tests.py) | ![screenshot](documentation/validation/py-marketplace-tests.png) | NA |
 | marketplace | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/urls.py) | ![screenshot](documentation/validation/py-marketplace-urls.png) | NA |
 | marketplace | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/marketplace/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/marketplace/views.py) | ![screenshot](documentation/validation/py-marketplace-views.png) | NA |
 | orders | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/admin.py) | ![screenshot](documentation/validation/py-orders-admin.png) | NA |
@@ -116,16 +100,14 @@ I have used the recommended [PEP8 CI Python Linter](https://pep8ci.herokuapp.com
 | orders | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/urls.py) | ![screenshot](documentation/validation/py-orders-urls.png) | NA |
 | orders | [utils.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/utils.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/utils.py) | ![screenshot](documentation/validation/py-orders-utils.png) | NA |
 | orders | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/orders/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/orders/views.py) | ![screenshot](documentation/validation/py-orders-views.png) | NA |
-| payments | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/tests.py) | ![screenshot](documentation/validation/py-payments-tests.png) | NA |
 | payments | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/urls.py) | ![screenshot](documentation/validation/py-payments-urls.png) | NA |
 | payments | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/views.py) | ![screenshot](documentation/validation/py-payments-views.png) | NA |
 | payments | [webhook_handler.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/webhook_handler.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/webhook_handler.py) | ![screenshot](documentation/validation/py-payments-webhook_handler.png) | NA |
 | payments | [webhooks.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/payments/webhooks.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/payments/webhooks.py) | ![screenshot](documentation/validation/py-payments-webhooks.png) | NA |
 | users | [admin.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/admin.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/admin.py) | ![screenshot](documentation/validation/py-users-admin.png) | NA |
 | users | [forms.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/forms.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/forms.py) | ![screenshot](documentation/validation/py-users-forms.png) | NA |
-| users | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/models.py) | ![screenshot](documentation/validation/py-users-models.png) | NA |
+| users | [models.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/models.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/models.py) | ![screensh ot](documentation/validation/py-users-models.png) | NA |
 | users | [signals.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/signals.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/signals.py) | ![screenshot](documentation/validation/py-users-signals.png) | NA |
-| users | [tests.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/tests.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/tests.py) | ![screenshot](documentation/validation/py-users-tests.png) | NA |
 | users | [urls.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/urls.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/urls.py) | ![screenshot](documentation/validation/py-users-urls.png) | NA |
 | users | [views.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/users/views.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/users/views.py) | ![screenshot](documentation/validation/py-users-views.png) | NA |
 | vendoro | [settings.py](https://github.com/Ironmonkeynuts/vendoro/blob/main/vendoro/settings.py) | [PEP8 CI Link](https://pep8ci.herokuapp.com/https://raw.githubusercontent.com/Ironmonkeynuts/vendoro/main/vendoro/settings.py) | ![screenshot](documentation/validation/py-vendoro-settings.png) | NA |
@@ -279,12 +261,6 @@ I have conducted a series of automated tests on my application.
 
 ### Python (Unit Testing)
 
-⚠️ INSTRUCTIONS ⚠️
-
-Adjust the code below (file names, function names, etc.) to match your own project files/folders. Use these notes loosely when documenting your own Python Unit tests, and remove/adjust where applicable.
-
-⚠️ SAMPLE ⚠️
-
 I have used Django's built-in unit testing framework to test the application functionality. In order to run the tests, I ran the following command in the terminal each time:
 
 - `python3 manage.py test name-of-app`
@@ -308,27 +284,7 @@ Below are the results from the full coverage report on my application that I've 
 
 #### Unit Test Issues
 
-⚠️ INSTRUCTIONS ⚠️
-
-Use this section to list any known issues you ran into while writing your Python unit tests. Remember to include screenshots (where possible), and a solution to the issue (if known). This can be used for both "fixed" and "unresolved" issues. Remove this sub-section entirely if you somehow didn't run into any issues while working with your tests.
-
-⚠️ --- END --- ⚠️
-
 ## Bugs
-
-⚠️ INSTRUCTIONS ⚠️
-
-Nobody likes bugs,... except the assessors! Projects seem more suspicious if a student doesn't properly track their bugs. If you're about to submit your project without any bugs listed below, you should ask yourself why you're doing this course in the first place, if you're able to build this entire application without running into any bugs. The best thing you can do for any project is to document your bugs! Not only does it show the true stages of development, but think of it as breadcrumbs for yourself in the future, should you encounter the same/similar bug again, it acts as a gentle reminder on what you did to fix the bug.
-
-If/when you encounter bugs during the development stages of your project, you should document them here, ideally with a screenshot explaining what the issue was, and what you did to fix the bug.
-
-Alternatively, an improved way to manage bugs is to use the built-in **[Issues](https://www.github.com/Ironmonkeynuts/vendoro/issues)** tracker on your GitHub repository. This can be found at the top of your repository, the tab called "Issues".
-
-If using the Issues tracker for bug management, you can simplify the documentation process for testing. Issues allow you to directly paste screenshots into the issue page without having to first save the screenshot locally. You can add labels to your issues (e.g. `bug`), assign yourself as the owner, and add comments/updates as you progress with fixing the issue(s). Once you've solved the issue/bug, you should then "Close" it.
-
-When showcasing your bug tracking for assessment, you can use the following examples below.
-
-⚠️ --- END --- ⚠️
 
 ### Fixed Bugs
 
@@ -342,14 +298,6 @@ All previously closed/fixed bugs can be tracked [here](https://www.github.com/Ir
 
 ### Unfixed Bugs
 
-⚠️ INSTRUCTIONS ⚠️
-
-You will need to mention any unfixed bugs and why they are not fixed upon submission of your project. This section should include shortcomings of the frameworks or technologies used. Although time can be a big variable to consider, paucity of time and difficulty understanding implementation is not a valid reason to leave bugs unfixed. Where possible, you must fix all outstanding bugs, unless outside of your control.
-
-If you've identified any unfixed bugs, no matter how small, be sure to list them here! It's better to be honest and list them, because if it's not documented and an assessor finds the issue, they need to know whether or not you're aware of them as well, and why you've not corrected/fixed them.
-
-⚠️ --- END --- ⚠️
-
 [![GitHub issue custom search](https://img.shields.io/github/issues-search/Ironmonkeynuts/vendoro?query=is%3Aissue%2Bis%3Aopen%2Blabel%3Abug&label=Unfixed%20Bugs&color=red)](https://www.github.com/Ironmonkeynuts/vendoro/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
 
 Any remaining open issues can be tracked [here](https://www.github.com/Ironmonkeynuts/vendoro/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
@@ -360,12 +308,7 @@ Any remaining open issues can be tracked [here](https://www.github.com/Ironmonke
 
 | Issue | Screenshot |
 | --- | --- |
-| The project is designed to be responsive from `375px` and upwards, in line with the material taught on the course LMS. Minor layout inconsistencies may occur on extra-wide (e.g. 4k/8k monitors), or smart-display devices (e.g. Nest Hub, Smart Watches, Gameboy Color, etc.), as these resolutions are outside the project’s scope, as taught by Code Institute. | ![screenshot](documentation/issues/poor-responsiveness.png) |
 | When validating HTML with a semantic `<section>` element, the validator warns about lacking a header `h2-h6`. This is acceptable. | ![screenshot](documentation/issues/section-header.png) |
-| Validation errors on "signup.html" coming from the Django Allauth package. | ![screenshot](documentation/issues/allauth.png) |
-| With a known order-number, users can brute-force "checkout_success.html" and see potentially sensitive information. | ![screenshot](documentation/issues/checkout-success.png) |
-| If a product is in your bag/cart, but then gets deleted from the database, it throws errors from the session storage memory. | ![screenshot](documentation/issues/session-storage.png) |
-| The `-`/`+` quantity buttons work well on "product_details.html", but not on "bag.html". | ![screenshot](documentation/issues/quantity-buttons.png) |
 
 > [!IMPORTANT]  
 > There are no remaining bugs that I am aware of, though, even after thorough testing, I cannot rule out the possibility.
