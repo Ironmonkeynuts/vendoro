@@ -7,7 +7,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
 
 from orders.models import Cart, Order, OrderItem
 from orders.emails import send_order_confirmation_now
@@ -28,9 +27,20 @@ def _pence(amount: Decimal) -> int:
     return int((amount * 100).quantize(Decimal("1")))
 
 
-@require_POST
 @login_required
 def create_checkout_session(request):
+    # If we got here via GET (e.g. after logging in with ?next=),
+    # don’t try to create a Stripe session. Send the user back to cart.
+    if request.method != "POST":
+        messages.info(
+            request,
+            (
+                "You’re now signed in. Please click Checkout again "
+                "to start payment."
+            )
+        )
+        return redirect("orders:cart_detail")
+
     # Ensure keys present
     if not settings.STRIPE_SECRET_KEY or not settings.STRIPE_PUBLIC_KEY:
         messages.error(
@@ -116,12 +126,10 @@ def create_checkout_session(request):
 
         session = stripe.checkout.Session.create(**session_kwargs)
 
-        # Save the session id if your model has the field
         if hasattr(order, "stripe_checkout_session_id"):
             order.stripe_checkout_session_id = session.id
             order.save(update_fields=["stripe_checkout_session_id"])
 
-        # 303 when redirecting to external origin is recommended
         return redirect(session.url, code=303)
 
     except stripe.AuthenticationError:
