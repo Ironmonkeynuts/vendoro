@@ -53,18 +53,21 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('btn-upload');
-  if (!btn) return;
+/* global cloudinary, fetch */
+document.addEventListener('DOMContentLoaded', function () {
+  var btn = document.getElementById('btn-upload');
+  if (!btn) {
+    return;
+  }
 
   btn.type = 'button';
   btn.disabled = true;
   btn.textContent = 'Loading…';
 
-  const CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}".trim();
-  const API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}".trim();
-  const signUrl    = "{% url 'marketplace:cloudinary_sign' %}";
-  const attachUrl  = "{% url 'marketplace:product_image_attach' product.id %}";
+  var CLOUD_NAME = "{{ CLOUDINARY_CLOUD_NAME|default:''|escapejs }}".trim();
+  var API_KEY    = "{{ CLOUDINARY_API_KEY|default:''|escapejs }}".trim();
+  var signUrl    = "{% url 'marketplace:cloudinary_sign' %}";
+  var attachUrl  = "{% url 'marketplace:product_image_attach' product.id %}";
 
   if (!CLOUD_NAME || !API_KEY) {
     btn.textContent = 'Uploader unavailable';
@@ -72,66 +75,97 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function ensureCloudinaryLoaded(cb) {
-    if (window.cloudinary?.createUploadWidget) return cb();
-    const s = document.createElement('script');
+    if (window.cloudinary && window.cloudinary.createUploadWidget) {
+      cb();
+      return;
+    }
+    var s = document.createElement('script');
     s.src = 'https://widget.cloudinary.com/v2.0/global/all.js';
     s.async = true;
     s.onload = cb;
-    s.onerror = () => { btn.textContent = 'Uploader failed to load'; };
+    s.onerror = function () {
+      btn.textContent = 'Uploader failed to load';
+    };
     document.head.appendChild(s);
   }
 
-  function getCookie(name){
-    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-    return m ? m.pop() : '';
+  function getCookie(name) {
+    var match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return match ? match.pop() : '';
   }
 
-  ensureCloudinaryLoaded(() => {
-    const widget = cloudinary.createUploadWidget({
+  ensureCloudinaryLoaded(function () {
+    var widget = cloudinary.createUploadWidget({
       cloudName: CLOUD_NAME,
       apiKey: API_KEY,
-      folder: "vendoro/product_images",
+      folder: 'vendoro/product_images',
       multiple: true,
-      sources: ["local","url","camera"],
-      clientAllowedFormats: ["png","jpg","jpeg","webp"],
-      maxFileSize: 5_000_000,
-      uploadSignature: async (cb, params) => {
+      sources: ['local', 'url', 'camera'],
+      clientAllowedFormats: ['png', 'jpg', 'jpeg', 'webp'],
+      maxFileSize: 5000000, // 5 MB
+      uploadSignature: function (cb, params) {
         try {
-          const url = signUrl + "?" + new URLSearchParams(params).toString();
-          const res = await fetch(url, { credentials: "same-origin" });
-          if (!res.ok) return cb("");
-          const { signature } = await res.json();
-          cb(signature);
-        } catch { cb(""); }
-      }
-    }, async (error, result) => {
-      if (error) return;
-      if (result?.event === "success") {
-        const info = result.info;
-        try {
-          const r = await fetch(attachUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCookie("csrftoken"),
-            },
-            credentials: "same-origin",
-            body: JSON.stringify({
-              public_id: info.public_id,
-              alt_text: info.original_filename || ""
-            }),
-          });
-          // Keep it simple: reload to show the new image in the grid.
-          if (r.ok) location.reload(); else location.reload();
-        } catch {
-          location.reload();
+          var url = signUrl + '?' + new URLSearchParams(params).toString();
+          fetch(url, { credentials: 'same-origin' })
+            .then(function (res) {
+              if (!res.ok) {
+                cb('');
+                return null;
+              }
+              return res.json();
+            })
+            .then(function (data) {
+              if (!data) {
+                return;
+              }
+              if (data.signature) {
+                cb(data.signature);
+              } else {
+                cb('');
+              }
+            })
+            .catch(function () {
+              cb('');
+            });
+        } catch (e) {
+          cb('');
         }
+      }
+    }, function (error, result) {
+      if (error) {
+        return;
+      }
+      if (result && result.event === 'success') {
+        var info = result.info;
+        var payload = {
+          public_id: info.public_id,
+          alt_text: info.original_filename || ''
+        };
+
+        fetch(attachUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        })
+          .then(function () {
+            // Reload to show the new image in the grid.
+            window.location.reload();
+          })
+          .catch(function () {
+            window.location.reload();
+          });
       }
     });
 
     btn.disabled = false;
     btn.textContent = 'Add Images';
-    btn.addEventListener('click', () => widget.open());
+    btn.addEventListener('click', function () {
+      widget.open();
+    });
   });
 });
 </script>
