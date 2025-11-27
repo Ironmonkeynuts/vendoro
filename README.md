@@ -1,4 +1,6 @@
 # [![screenshot](documentation/vendoro.png)](https://imn-vendoro-55af0b986025.herokuapp.com)
+> [!Note]
+> Click the logo above to access the deployed site.
 
 Developer: David Doyle-Owen ([Ironmonkeynuts](https://www.github.com/Ironmonkeynuts))
 
