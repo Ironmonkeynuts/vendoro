@@ -10,6 +10,11 @@ urlpatterns = [
         name="seller"
     ),
     path(
+        "seller/products/<int:product_id>/inventory/",
+        views.seller_update_inventory,
+        name="seller_update_inventory"
+    ),
+    path(
         "seller/orders/<int:order_id>/fulfillment/",
         views.seller_update_fulfillment,
         name="seller_update_fulfillment"

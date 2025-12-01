@@ -73,6 +73,7 @@
                 <tr>
                   <th>Product</th>
                   <th class="text-end">Price</th>
+                  <th class="text-center" style="width:240px;">Stock</th>
                   <th class="text-center">Reviews</th>
                   <th>Created</th>
                   <th></th>
@@ -86,6 +87,39 @@
                       {% if p.category %}<div class="text-muted small">{{ p.category.name }}</div>{% endif %}
                     </td>
                     <td class="text-end">£{{ p.price|floatformat:2 }}</td>
+                    <td class="text-center">
+                      {% with inv=p.inventory_record %}
+                        <form method="post"
+                              action="{% url 'marketplace:seller_update_inventory' product_id=p.id %}"
+                              class="d-inline-block w-100 mb-2">
+                          {% csrf_token %}
+                          <input type="hidden" name="tab" value="inventory">
+                          <div class="input-group input-group-sm">
+                            <span class="input-group-text">Qty</span>
+                            <input type="number" name="quantity" min="0"
+                                   class="form-control text-center"
+                                   value="{% if inv %}{{ inv.quantity }}{% else %}0{% endif %}">
+                            <span class="input-group-text">Low</span>
+                            <input type="number" name="low_stock_threshold" min="0"
+                                   class="form-control text-center"
+                                   value="{% if inv %}{{ inv.low_stock_threshold }}{% else %}5{% endif %}">
+                            <button class="btn btn-outline-primary" type="submit">Save</button>
+                          </div>
+                        </form>
+                        {% if inv %}
+                          <div class="small {% if inv.is_low_stock %}text-warning{% else %}text-muted{% endif %}">
+                            {% if inv.is_in_stock %}
+                              {{ inv.quantity }} in stock
+                            {% else %}
+                              Out of stock
+                            {% endif %}
+                            · Low stock at {{ inv.low_stock_threshold }}
+                          </div>
+                        {% else %}
+                          <div class="small text-muted">Inventory not set yet.</div>
+                        {% endif %}
+                      {% endwith %}
+                    </td>
                     <td class="text-center">
                       {% if p.review_count %}
                         {{ p.review_avg|floatformat:1 }}/5 ({{ p.review_count }})

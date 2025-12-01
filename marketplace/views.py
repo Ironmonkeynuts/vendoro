@@ -31,7 +31,8 @@ from .models import (
     Product,
     ProductImage,
     ProductReview,
-    Category
+    Category,
+    Inventory,
 )
 from orders.models import Order, OrderItem
 from users.models import SellerProfile
@@ -694,7 +695,7 @@ def seller_dashboard(request):
     products = (
         Product.objects
         .filter(shop__owner=request.user, is_active=True)
-        .select_related("shop", "category")
+        .select_related("shop", "category", "inventory")
         .annotate(
             review_count=Count("reviews", distinct=True),
             review_avg=Avg("reviews__rating"),
@@ -720,6 +721,11 @@ def seller_dashboard(request):
 
     inventory_by_shop = {}
     for p in products:
+        try:
+            inv = p.inventory
+        except Inventory.DoesNotExist:
+            inv = None
+        p.inventory_record = inv
         inventory_by_shop.setdefault(p.shop, []).append(p)
 
     # ------------------------------------------------
@@ -967,6 +973,60 @@ def seller_update_fulfillment(request, order_id):
 
     # Keep Orders tab active
     return redirect(f"{reverse('marketplace:seller')}?tab=orders")
+
+
+@login_required
+@require_POST
+def seller_update_inventory(request, product_id):
+    """
+    Allow sellers to adjust the on-hand quantity for a product they own.
+    """
+    product = get_object_or_404(
+        Product.objects.select_related("shop", "inventory"),
+        pk=product_id,
+        shop__owner=request.user,
+    )
+
+    quantity_raw = (request.POST.get("quantity") or "").strip()
+    low_stock_raw = (request.POST.get("low_stock_threshold") or "").strip()
+
+    if quantity_raw == "":
+        messages.error(request, "Enter a quantity.")
+        return redirect(f"{reverse('marketplace:seller')}?tab=inventory")
+    try:
+        quantity = int(quantity_raw)
+    except (TypeError, ValueError):
+        messages.error(request, "Enter a valid number for quantity.")
+        return redirect(f"{reverse('marketplace:seller')}?tab=inventory")
+
+    if quantity < 0:
+        messages.error(request, "Quantity cannot be negative.")
+        return redirect(f"{reverse('marketplace:seller')}?tab=inventory")
+
+    low_stock_threshold = None
+    if low_stock_raw:
+        try:
+            low_stock_threshold = int(low_stock_raw)
+        except (TypeError, ValueError):
+            messages.error(request, "Enter a valid number for low stock threshold.")
+            return redirect(f"{reverse('marketplace:seller')}?tab=inventory")
+    if low_stock_threshold is not None and low_stock_threshold < 0:
+        messages.error(request, "Low stock threshold cannot be negative.")
+        return redirect(f"{reverse('marketplace:seller')}?tab=inventory")
+
+    inventory, _ = Inventory.objects.get_or_create(product=product)
+    inventory.quantity = quantity
+    update_fields = ["quantity"]
+    if low_stock_threshold is not None:
+        inventory.low_stock_threshold = low_stock_threshold
+        update_fields.append("low_stock_threshold")
+    inventory.save(update_fields=update_fields)
+
+    msg = f"Updated {product.title} stock to {inventory.quantity}."
+    if low_stock_threshold is not None:
+        msg += f" Low stock alert now at {inventory.low_stock_threshold}."
+    messages.success(request, msg)
+    return redirect(f"{reverse('marketplace:seller')}?tab=inventory")
 
 
 @login_required
