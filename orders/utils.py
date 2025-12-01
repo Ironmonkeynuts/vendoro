@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from .models import Cart
 
 
@@ -88,7 +88,16 @@ def get_active_cart(request, create=True):
                     # Ensure only one active cart for this user
                     qs.exclude(pk=cart.pk).update(active=False)
                 elif create:
-                    cart = Cart.objects.create(user=request.user, active=True)
+                    try:
+                        cart = Cart.objects.create(user=request.user, active=True)
+                    except IntegrityError:
+                        cart = (
+                            Cart.objects
+                            .select_for_update()
+                            .filter(user=request.user, active=True)
+                            .order_by("-id")
+                            .first()
+                        )
 
             if cart:
                 request.session["cart_id"] = cart.id
@@ -120,11 +129,20 @@ def get_active_cart(request, create=True):
             if cart:
                 qs.exclude(pk=cart.pk).update(active=False)
             elif create:
-                cart = Cart.objects.create(
-                    user=None,
-                    session_key=skey,
-                    active=True,
-                )
+                try:
+                    cart = Cart.objects.create(
+                        user=None,
+                        session_key=skey,
+                        active=True,
+                    )
+                except IntegrityError:
+                    cart = (
+                        Cart.objects
+                        .select_for_update()
+                        .filter(user__isnull=True, session_key=skey, active=True)
+                        .order_by("-id")
+                        .first()
+                    )
 
         if cart:
             request.session["cart_id"] = cart.id

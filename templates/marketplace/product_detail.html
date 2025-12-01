@@ -68,8 +68,21 @@
         <form method="post" action="{% url 'orders:add_to_cart' product_id=product.id %}">
           {% csrf_token %}
           <div class="input-group" style="max-width: 260px;">
-            <input type="number" name="quantity" class="form-control" min="1" value="1" required>
-            <button class="btn btn-success" type="submit">Add to cart</button>
+            {% with inv=product.inventory %}
+              {% if inv and inv.is_in_stock %}
+                <input type="number" name="quantity" class="form-control"
+                       min="1" max="{{ inv.quantity }}" value="1" required>
+                <button class="btn btn-success" type="submit">Add to cart</button>
+              {% elif inv and not inv.is_in_stock %}
+                <input type="number" name="quantity" class="form-control"
+                       min="1" value="1" required disabled>
+                <button class="btn btn-success" type="button" disabled>Out of stock</button>
+              {% else %}
+                <input type="number" name="quantity" class="form-control"
+                       min="1" value="1" required>
+                <button class="btn btn-success" type="submit">Add to cart</button>
+              {% endif %}
+            {% endwith %}
           </div>
         </form>
         {% if product.inventory %}

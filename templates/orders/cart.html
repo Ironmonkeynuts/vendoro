@@ -20,6 +20,10 @@
         <td class="text-center">
           <input class="form-control form-control-sm qty text-center"
                  type="number" min="1" value="{{ item.quantity }}"
+                 data-current="{{ item.quantity }}"
+                 {% if item.product.inventory and item.product.inventory.quantity > 0 %}
+                   max="{{ item.product.inventory.quantity }}"
+                 {% endif %}
                  inputmode="numeric">
         </td>
         <td>£{{ item.product.price }}</td>
@@ -62,6 +66,7 @@ for (const input of document.querySelectorAll('.qty')) {
   input.addEventListener('change', async (e) => {
     const tr = e.target.closest('tr');
     const id = tr.dataset.itemId;
+    const previous = e.target.dataset.current || e.target.value;
     const form = new FormData();
     form.append('quantity', e.target.value);
 
@@ -77,16 +82,28 @@ for (const input of document.querySelectorAll('.qty')) {
       }
     );
 
-    if (!resp.ok) {
-      alert('Update failed');
+    const data = await resp.json().catch(() => null);
+
+    if (!resp.ok || !data || data.ok === false) {
+      const message = (data && data.error) ? data.error : 'Update failed';
+      alert(message);
+      const reset = (data && typeof data.qty !== 'undefined')
+        ? data.qty
+        : previous;
+      e.target.value = reset;
+      e.target.dataset.current = reset;
       return;
     }
 
-    const data = await resp.json();
+    e.target.value = data.qty;
+    e.target.dataset.current = data.qty;
     tr.querySelector('.subtotal').textContent =
       '£' + data.subtotal.toFixed(2);
     document.querySelector('#cart-total').textContent =
       data.total.toFixed(2);
+    if (data.warning) {
+      alert(data.warning);
+    }
   });
 }
 
