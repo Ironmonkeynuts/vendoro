@@ -1,4 +1,5 @@
 from django.db import transaction, IntegrityError
+from marketplace.models import Inventory
 from .models import Cart
 
 
@@ -149,3 +150,38 @@ def get_active_cart(request, create=True):
             request.session.modified = True
 
         return cart if (cart or create) else None
+
+
+def deduct_inventory_for_order(order):
+    """
+    Reduce inventory counts for each item in the provided order.
+    Safe to call multiple times; it clamps quantities at zero.
+    """
+    if not order:
+        return
+
+    with transaction.atomic():
+        items_qs = order.items.select_related("product__inventory")
+
+        for item in items_qs:
+            product = getattr(item, "product", None)
+            if not product:
+                continue
+
+            try:
+                inv = product.inventory
+            except Inventory.DoesNotExist:
+                continue
+
+            locked = (
+                Inventory.objects
+                .select_for_update()
+                .filter(pk=inv.pk)
+                .first()
+            )
+            if not locked:
+                continue
+
+            new_qty = locked.quantity - item.quantity
+            locked.quantity = new_qty if new_qty > 0 else 0
+            locked.save(update_fields=["quantity"])

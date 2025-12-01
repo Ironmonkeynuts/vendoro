@@ -10,6 +10,7 @@ from django.urls import reverse
 
 from orders.models import Cart, Order, OrderItem
 from orders.emails import send_order_confirmation_now
+from orders.utils import deduct_inventory_for_order
 
 
 import stripe
@@ -219,6 +220,8 @@ def success(request):
 
                 if changed:
                     order.save()
+                    if transitioned_to_paid:
+                        deduct_inventory_for_order(order)
 
                 # Fallback email: only if we transitioned to PAID here
                 if transitioned_to_paid and getattr(order.user, "email", ""):

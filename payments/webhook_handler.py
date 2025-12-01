@@ -6,6 +6,7 @@ import logging
 from orders.models import Order, Cart
 # NEW: send email after payment
 from orders.emails import send_order_confirmation_on_commit
+from orders.utils import deduct_inventory_for_order
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +48,14 @@ class StripeWH_Handler:
         if order_id:
             try:
                 order = Order.objects.get(id=order_id)
+                current_status = order.status
+                already_processed = current_status in {
+                    Order.Status.PAID,
+                    Order.Status.SHIPPED,
+                    Order.Status.COMPLETED,
+                }
                 # Only transition forward
-                if order.status != Order.Status.PAID:
+                if current_status != Order.Status.PAID:
                     order.status = Order.Status.PAID
                 # Trust Stripe total if present
                 if session.get("amount_total") is not None:
@@ -71,6 +78,9 @@ class StripeWH_Handler:
                         or getattr(order, "stripe_payment_intent", "")
                     )
                 order.save()
+
+                if not already_processed:
+                    deduct_inventory_for_order(order)
 
                 # NEW: send confirmation email after the transaction commits
                 send_order_confirmation_on_commit(order)
