@@ -639,7 +639,7 @@ def review_add(request, shop_slug, product_slug):
     if not has_completed:
         messages.error(
             request,
-            "You can only review products you’ve purchased."
+            "You can only review products you’ve purchased and received."
         )
         return redirect(
             "marketplace:product_detail",
@@ -837,9 +837,6 @@ def seller_dashboard(request):
         *al_sort_map_rev.get(al_sort, ("-created_at", "-id"))
     )[:50]
 
-    # ------------------------------------------------
-    # STATS (your original logic, unchanged)
-    # ------------------------------------------------
     sale_statuses = ["paid", "completed"]
     items_qs = (
         OrderItem.objects
