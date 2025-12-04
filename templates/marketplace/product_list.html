@@ -55,7 +55,9 @@
         {% endwith %}
 
         <div class="card-body d-flex flex-column">
-          <h5 class="card-title mb-1">{{ p.title }}</h5>
+          <h5 class="card-title mb-1">
+            <a href="{% url 'marketplace:product_detail' shop_slug=p.shop.slug product_slug=p.slug %}">{{ p.title }}</a>
+          </h5>
           <div class="text-muted small mb-2">
             <a href="{% url 'marketplace:shop_detail' slug=p.shop.slug %}" class="text-decoration-none">{{ p.shop.name }}</a>
           </div>
