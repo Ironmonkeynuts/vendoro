@@ -36,7 +36,9 @@
       <div class="col">
         <div class="card h-100">
           <div class="card-body">
-            <h5 class="card-title">{{ p.title }}</h5>
+            <h5 class="card-title">
+              <a href="{% url 'marketplace:product_detail' shop_slug=shop.slug product_slug=p.slug %}">{{ p.title }}</a>
+            </h5>
             <p class="card-text">£{{ p.price }}</p>
             <a class="btn btn-sm btn-outline-primary"
                href="{% url 'marketplace:product_detail' shop_slug=shop.slug product_slug=p.slug %}">
